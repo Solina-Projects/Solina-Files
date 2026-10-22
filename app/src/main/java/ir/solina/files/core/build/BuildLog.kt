@@ -1,8 +1,8 @@
-package dev.cluvex.strata.core.build
+package ir.solina.files.core.build
 
-import dev.cluvex.strata.R
-import dev.cluvex.strata.core.i18n.tr
-import dev.cluvex.strata.core.i18n.trPlural
+import ir.solina.files.R
+import ir.solina.files.core.i18n.tr
+import ir.solina.files.core.i18n.trPlural
 import java.util.Locale
 
 enum class StepStatus { WAITING, RUNNING, DONE, FAILED, SKIPPED }

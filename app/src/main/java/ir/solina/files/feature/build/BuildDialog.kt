@@ -1,6 +1,6 @@
-package dev.cluvex.strata.feature.build
+package ir.solina.files.feature.build
 
-import dev.cluvex.strata.core.i18n.separator
+import ir.solina.files.core.i18n.separator
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
@@ -75,12 +75,12 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import dev.cluvex.strata.R
-import dev.cluvex.strata.core.build.BuildRun
-import dev.cluvex.strata.core.build.BuildStep
-import dev.cluvex.strata.core.build.LogLevel
-import dev.cluvex.strata.core.build.StepStatus
-import dev.cluvex.strata.ui.rememberTextClipboard
+import ir.solina.files.R
+import ir.solina.files.core.build.BuildRun
+import ir.solina.files.core.build.BuildStep
+import ir.solina.files.core.build.LogLevel
+import ir.solina.files.core.build.StepStatus
+import ir.solina.files.ui.rememberTextClipboard
 import kotlinx.coroutines.delay
 
 const val BUILD_DIALOG_TAG = "build-dialog"

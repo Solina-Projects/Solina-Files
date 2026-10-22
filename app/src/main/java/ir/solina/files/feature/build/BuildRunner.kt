@@ -1,13 +1,13 @@
-package dev.cluvex.strata.feature.build
+package ir.solina.files.feature.build
 
-import dev.cluvex.strata.R
-import dev.cluvex.strata.core.build.BuildListener
-import dev.cluvex.strata.core.build.BuildRun
-import dev.cluvex.strata.core.build.BuildTracker
-import dev.cluvex.strata.core.dex.SmaliSyntaxException
-import dev.cluvex.strata.core.i18n.tr
-import dev.cluvex.strata.core.sound.UiSound
-import dev.cluvex.strata.core.sound.UiSounds
+import ir.solina.files.R
+import ir.solina.files.core.build.BuildListener
+import ir.solina.files.core.build.BuildRun
+import ir.solina.files.core.build.BuildTracker
+import ir.solina.files.core.dex.SmaliSyntaxException
+import ir.solina.files.core.i18n.tr
+import ir.solina.files.core.sound.UiSound
+import ir.solina.files.core.sound.UiSounds
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
