@@ -27,7 +27,7 @@ jobs:
 
           root = Path(".")
           protected_names = {"LICENSE", "LICENSE.md", "LICENSE.txt", "NOTICE", "THIRD_PARTY_NOTICES"}
-          skip_dirs = {".git", ".gradle", "build", ".idea"}
+          skip_dirs = {".git", ".gradle", ".idea"}
           text_exts = {".kt", ".java", ".aidl", ".xml", ".kts", ".toml", ".properties", ".yml", ".yaml", ".md", ".json", ".rs", ".sh", ".html", ".gradle", ".pro", ".txt", ".cfg", ".conf", ".py", ".js", ".ts", ".css", ".properties", ".lock"}
           replacements = [
               ("dev.cluvex.strata", "ir.solina.files"),
@@ -57,6 +57,9 @@ jobs:
               if rel.parts[:2] == (".github", "workflows"):
                   continue
               if any(part in skip_dirs for part in rel.parts):
+                  continue
+              # Skip generated outputs, not the legitimate Kotlin package core/build.
+              if rel.parts[0] == "build" or rel.parts[:2] == ("app", "build") or rel.parts[:2] == ("native", "target"):
                   continue
               if path.name in protected_names or path.name.startswith("LICENSE"):
                   continue
@@ -112,6 +115,8 @@ jobs:
               rel = path.relative_to(root)
               # Keep every workflow path untouched, including this migration workflow.
               if rel.parts[:2] == (".github", "workflows"):
+                  continue
+              if rel.parts[0] == "build" or rel.parts[:2] == ("app", "build") or rel.parts[:2] == ("native", "target"):
                   continue
               name = path.name
               new_name = name.replace("Strata", "Solina").replace("strata", "solina").replace("STRATA", "SOLINA").replace("cluvex", "solina")
