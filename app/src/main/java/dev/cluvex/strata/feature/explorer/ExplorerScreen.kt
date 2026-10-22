@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -50,6 +51,7 @@ import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -303,7 +305,19 @@ fun ExplorerScreen(
             } else {
                 TopAppBar(
                     navigationIcon = {
-                        IconButton(onClick = onOpenDrawer) { Icon(Icons.Rounded.Menu, contentDescription = stringResource(R.string.explorer_menu)) }
+                        IconButton(onClick = onOpenDrawer) {
+                            Surface(
+                                shape = RoundedCornerShape(13.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            ) {
+                                Icon(
+                                    Icons.Rounded.Menu,
+                                    contentDescription = stringResource(R.string.explorer_menu),
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(8.dp).size(22.dp),
+                                )
+                            }
+                        }
                     },
                     title = { ExplorerTitle(ui.activePane, visibleItems(ui.activePane, ui.settings, ui.query)) },
                     actions = {
