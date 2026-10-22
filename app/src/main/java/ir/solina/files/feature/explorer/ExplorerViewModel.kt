@@ -124,7 +124,7 @@ class ExplorerViewModel(
 
     private val lister = DirectoryLister(
         storageRoot = rootPath,
-        local = { p -> withContext(Dispatchers.IO) { File(p).takeIf { it.isDirectory }?.listFiles()?.map { FileItem.of(it) } } },
+        local = { p -> withContext(Dispatchers.IO) { val calculateChildCount = !settingsRepo.settings.first().dualPanePreferred; File(p).takeIf { it.isDirectory }?.listFiles()?.map { FileItem.of(it, calculateChildCount) } } },
         root = { p -> privilegedAccess()?.let { a -> withContext(Dispatchers.IO) { a.list(p) } } },
         missing = { p -> isMissing(p) },
         fallback = { p -> if (p == "/") withContext(Dispatchers.IO) { TopLevel.probe() } else null },
@@ -431,6 +431,8 @@ class ExplorerViewModel(
     fun setDualPanePreferred(value: Boolean) = viewModelScope.launch {
         if (value) settingsRepo.editList { it.copy(viewMode = ViewMode.LIST) }
         settingsRepo.setDualPanePreferred(value)
+        // Re-list both panes so child counts match the newly selected layout mode.
+        refreshAll()
     }
     fun toggleViewMode() = viewModelScope.launch {
         val next = if (_state.value.settings.list.viewMode == ViewMode.LIST) ViewMode.GRID else ViewMode.LIST
