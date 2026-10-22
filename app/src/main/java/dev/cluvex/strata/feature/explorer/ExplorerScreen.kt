@@ -20,10 +20,13 @@ import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SortByAlpha
+import androidx.compose.material.icons.rounded.ViewAgenda
+import androidx.compose.material.icons.rounded.ViewColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -425,6 +428,19 @@ fun ExplorerScreen(
             }
         }
     }
+    }
+    if (!ui.searchActive) {
+        FloatingActionButton(
+            onClick = { vm.setDualPanePreferred(!dual) },
+            modifier = Modifier.align(androidx.compose.ui.Alignment.BottomEnd).padding(end = 16.dp, bottom = 84.dp),
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        ) {
+            Icon(
+                imageVector = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
+                contentDescription = if (dual) "Switch to single pane" else "Switch to dual pane",
+            )
+        }
     }
     DragLayer(drag) { host[0]?.positionInRoot() ?: Offset.Zero }
     }
