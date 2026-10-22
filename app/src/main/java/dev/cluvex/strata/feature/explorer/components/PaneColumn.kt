@@ -405,41 +405,50 @@ private fun FolderHorizontalList(
     DisposableEffect(drag, listState) {
         onDispose { if (drag?.scrollers?.get(pane.ordinal)?.owner === listState) drag.scrollers.remove(pane.ordinal) }
     }
-    PullToRefreshBox(isRefreshing = refreshing, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
-        LazyRow(
-            state = listState,
-            modifier = Modifier.fillMaxSize().then(
-                if (drag != null) Modifier.onGloballyPositioned {
-                    drag.scrollers[pane.ordinal] = PaneScroller(it.boundsInRoot(), listState) { d -> listState.scrollBy(d) }
-                } else Modifier
-            ),
-            contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            if (folder.path != "/") {
-                item(key = PARENT_KEY, contentType = PARENT_KEY) {
-                    Box(Modifier.width(220.dp)) { ParentRow(onClick = onUp, look = links.parent()) }
+    Box(Modifier.fillMaxSize()) {
+        if (folder.path != "/") {
+            Box(
+                Modifier.align(Alignment.TopStart).fillMaxWidth(0.45f).padding(horizontal = 4.dp, vertical = 2.dp),
+            ) {
+                ParentRow(onClick = onUp, look = links.parent())
+            }
+        }
+        PullToRefreshBox(isRefreshing = refreshing, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
+            LazyRow(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .align(Alignment.Center)
+                    .padding(top = if (folder.path != "/") 34.dp else 0.dp)
+                    .then(
+                        if (drag != null) Modifier.onGloballyPositioned {
+                            drag.scrollers[pane.ordinal] = PaneScroller(it.boundsInRoot(), listState) { d -> listState.scrollBy(d) }
+                        } else Modifier
+                    ),
+                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (folder.items.isEmpty()) {
+                    item(key = "empty", contentType = "empty") { Box(Modifier.width(220.dp)) { EmptyFolder(folder.error) } }
                 }
-            }
-            if (folder.items.isEmpty()) {
-                item(key = "empty", contentType = "empty") { Box(Modifier.width(220.dp)) { EmptyFolder(folder.error) } }
-            }
-            items(folder.items, key = { it.path }, contentType = { "file" }) { item ->
-                FileTile(
-                    item = item,
-                    selected = item.path in selected,
-                    selecting = selecting,
-                    flashKey = 0,
-                    flashPulses = 0,
-                    showThumbnail = !folder.viaRoot && !RemoteUri.isRemote(folder.path),
-                    onClick = { if (selecting) onToggleSelect(item) else onOpen(item) },
-                    onLongClick = { onItemMenu(item) },
-                    onIconClick = { onToggleSelect(item) },
-                    modifier = Modifier.width(116.dp),
-                    horizontalPane = true,
-                    drop = links.look(item),
-                    onDragStart = links.start(item),
-                )
+                items(folder.items, key = { it.path }, contentType = { "file" }) { item ->
+                    FileTile(
+                        item = item,
+                        selected = item.path in selected,
+                        selecting = selecting,
+                        flashKey = 0,
+                        flashPulses = 0,
+                        showThumbnail = !folder.viaRoot && !RemoteUri.isRemote(folder.path),
+                        onClick = { if (selecting) onToggleSelect(item) else onOpen(item) },
+                        onLongClick = { onItemMenu(item) },
+                        onIconClick = { onToggleSelect(item) },
+                        modifier = Modifier.width(116.dp),
+                        horizontalPane = true,
+                        drop = links.look(item),
+                        onDragStart = links.start(item),
+                    )
+                }
             }
         }
     }
