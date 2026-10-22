@@ -528,8 +528,8 @@ fun ExplorerScreen(
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 ) {
                     Icon(
-                        imageVector = if (horizontalSplit) Icons.Rounded.SwapHoriz else Icons.Rounded.SwapVert,
-                        contentDescription = if (horizontalSplit) "تبدیل پنل‌ها به کنار هم" else "تبدیل پنل‌ها به روی هم",
+                        imageVector = if (horizontalSplit) Icons.Rounded.SwapVert else Icons.Rounded.SwapHoriz,
+                        contentDescription = if (horizontalSplit) "چیدن پنل‌ها روی هم" else "چیدن پنل‌ها کنار هم",
                     )
                 }
             } else if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.VIEW_LAYOUT) && !dual) {
@@ -585,7 +585,7 @@ fun ExplorerScreen(
                             val actionIcon = when (action) {
                                 FloatingAction.CREATE -> Icons.Rounded.Add
                                 FloatingAction.PANE_MODE -> if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn
-                                FloatingAction.ORIENTATION -> if (horizontalSplit) Icons.Rounded.SwapHoriz else Icons.Rounded.SwapVert
+                                FloatingAction.ORIENTATION -> if (horizontalSplit) Icons.Rounded.SwapVert else Icons.Rounded.SwapHoriz
                                 FloatingAction.VIEW_LAYOUT -> if (ui.settings.list.viewMode == dev.cluvex.strata.core.model.ViewMode.GRID) Icons.Rounded.GridView else Icons.Rounded.ViewList
                             }
                             DropdownMenuItem(
