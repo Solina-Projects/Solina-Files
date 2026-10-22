@@ -416,7 +416,6 @@ private fun PreviewChip(label: String, count: Int) {
 }
 
 
-@Composable
 private fun floatingActionIcon(action: FloatingAction): ImageVector = when (action) {
     FloatingAction.CREATE -> Icons.Rounded.Add
     FloatingAction.PANE_MODE -> Icons.Rounded.ViewColumn
