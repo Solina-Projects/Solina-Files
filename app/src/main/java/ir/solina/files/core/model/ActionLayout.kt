@@ -260,13 +260,21 @@ data class Zoned<T : Enum<T>>(val zones: List<List<T>>) {
     }
 }
 
+enum class FloatingAction(@StringRes val label: Int) {
+    CREATE(R.string.model_browse_new),
+    PANE_MODE(R.string.settings_two_panes),
+    ORIENTATION(R.string.model_browse_swap),
+    VIEW_LAYOUT(R.string.settings_entry_view_mode),
+}
+
 data class ActionLayout(
     val browse: Zoned<BrowseAction> = DEFAULT_BROWSE,
     val selection: Zoned<SelectionAction> = DEFAULT_SELECTION,
     val sheet: Zoned<SheetAction> = DEFAULT_SHEET,
+    val floating: Zoned<FloatingAction> = DEFAULT_FLOATING,
 ) {
 
-    fun encode(): String = "b=${browse.encode()}|s=${selection.encode()}|q=${sheet.encode()}"
+    fun encode(): String = "b=${browse.encode()}|s=${selection.encode()}|q=${sheet.encode()}|f=${floating.encode()}"
 
     companion object {
         const val BROWSE_SLOTS = 6
@@ -276,6 +284,7 @@ data class ActionLayout(
         val BROWSE_CAPS = listOf(BROWSE_SLOTS, Int.MAX_VALUE, Int.MAX_VALUE)
         val SELECTION_CAPS = listOf(SELECTION_SLOTS, Int.MAX_VALUE, Int.MAX_VALUE)
         val SHEET_CAPS = listOf(QUICK_SLOTS, Int.MAX_VALUE, Int.MAX_VALUE)
+        val FLOATING_CAPS = listOf(4, Int.MAX_VALUE, Int.MAX_VALUE)
 
         val DEFAULT_BROWSE = Zoned(
             listOf(
@@ -297,6 +306,14 @@ data class ActionLayout(
                     SelectionAction.JAR_TO_DEX, SelectionAction.BOOKMARK, SelectionAction.LINKS, SelectionAction.VAULT, SelectionAction.SHARE,
                     SelectionAction.PROPERTIES, SelectionAction.SELECT_ALL, SelectionAction.INVERT,
                 ),
+                emptyList(),
+            ),
+        )
+
+        val DEFAULT_FLOATING = Zoned(
+            listOf(
+                listOf(FloatingAction.CREATE, FloatingAction.PANE_MODE, FloatingAction.ORIENTATION, FloatingAction.VIEW_LAYOUT),
+                emptyList(),
                 emptyList(),
             ),
         )
@@ -324,6 +341,7 @@ data class ActionLayout(
                 browse = Zoned.decode(parts["b"], BrowseAction.entries, DEFAULT_BROWSE, BROWSE_CAPS),
                 selection = Zoned.decode(parts["s"], SelectionAction.entries, DEFAULT_SELECTION, SELECTION_CAPS),
                 sheet = Zoned.decode(parts["q"], SheetAction.entries, DEFAULT_SHEET, SHEET_CAPS),
+                floating = Zoned.decode(parts["f"], FloatingAction.entries, DEFAULT_FLOATING, FLOATING_CAPS),
             )
         }
     }

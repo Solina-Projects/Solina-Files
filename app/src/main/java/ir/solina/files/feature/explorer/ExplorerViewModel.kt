@@ -54,6 +54,8 @@ import ir.solina.files.core.model.ConflictChoice
 import ir.solina.files.core.model.FileItem
 import ir.solina.files.core.pdf.PdfMerger
 import ir.solina.files.core.model.SortOrder
+import ir.solina.files.core.model.ViewMode
+import ir.solina.files.core.model.UiDensity
 import ir.solina.files.core.open.IncomingFiles
 import ir.solina.files.core.open.IncomingPaths
 import ir.solina.files.core.plugin.PluginFiles
@@ -426,6 +428,15 @@ class ExplorerViewModel(
 
     fun setFolderSort(path: String, order: SortOrder?) = viewModelScope.launch { settingsRepo.setFolderSort(path, order) }
     fun setShowHidden(value: Boolean) = viewModelScope.launch { settingsRepo.setShowHidden(value) }
+    fun setDualPanePreferred(value: Boolean) = viewModelScope.launch {
+        if (value) settingsRepo.editList { it.copy(viewMode = ViewMode.LIST) }
+        settingsRepo.setDualPanePreferred(value)
+    }
+    fun toggleViewMode() = viewModelScope.launch {
+        val next = if (_state.value.settings.list.viewMode == ViewMode.LIST) ViewMode.GRID else ViewMode.LIST
+        settingsRepo.editList { it.copy(viewMode = next) }
+    }
+    fun setItemDensity(value: UiDensity) = viewModelScope.launch { settingsRepo.setUiDensity(value) }
 
     fun setSearchActive(active: Boolean) = _state.update {
         it.copy(searchActive = active, query = if (active) it.query else "")

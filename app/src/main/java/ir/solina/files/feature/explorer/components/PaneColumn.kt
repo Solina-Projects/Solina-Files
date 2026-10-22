@@ -2,6 +2,7 @@ package ir.solina.files.feature.explorer.components
 
 import ir.solina.files.ui.asPath
 import ir.solina.files.ui.isolated
+import ir.solina.files.ui.LocalUiDensity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.SizeTransform
@@ -28,10 +29,12 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -139,6 +142,8 @@ fun PaneColumn(
     modifier: Modifier = Modifier,
     displayPath: String? = null,
     pane: Pane = Pane.LEFT,
+    horizontalItems: Boolean = false,
+    singlePane: Boolean = false,
 ) {
     val motion = MaterialTheme.motionScheme
     val activate by rememberUpdatedState(onActivate)
@@ -223,6 +228,8 @@ fun PaneColumn(
                 onItemMenu = onItemMenu,
                 pane = pane,
                 drag = drag,
+                horizontalItems = horizontalItems,
+                singlePane = singlePane,
             )
         }
     }
@@ -266,9 +273,15 @@ private fun FolderList(
     onItemMenu: (FileItem) -> Unit,
     pane: Pane,
     drag: FileDragState?,
+    horizontalItems: Boolean = false,
+    singlePane: Boolean = false,
 ) {
+    if (horizontalItems) {
+        FolderHorizontalList(folder, selected, scrollMemory, refreshing, onRefresh, onUp, onOpen, onToggleSelect, onItemMenu, pane, drag)
+        return
+    }
     if (LocalSettings.current.list.viewMode == ViewMode.GRID) {
-        FolderGrid(folder, selected, scrollMemory, refreshing, onRefresh, onUp, onOpen, onToggleSelect, onItemMenu, pane, drag)
+        FolderGrid(folder, selected, scrollMemory, refreshing, onRefresh, onUp, onOpen, onToggleSelect, onItemMenu, pane, drag, singlePane)
         return
     }
     val motion = MaterialTheme.motionScheme
@@ -360,9 +373,83 @@ private fun FolderList(
                 ),
                 drop = links.look(item),
                 onDragStart = links.start(item),
+                singlePane = singlePane,
             )
         }
     }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun FolderHorizontalList(
+    folder: FolderPage,
+    selected: Set<String>,
+    scrollMemory: MutableMap<String, Pair<Int, Int>>,
+    refreshing: Boolean,
+    onRefresh: () -> Unit,
+    onUp: () -> Unit,
+    onOpen: (FileItem) -> Unit,
+    onToggleSelect: (FileItem) -> Unit,
+    onItemMenu: (FileItem) -> Unit,
+    pane: Pane,
+    drag: FileDragState?,
+) {
+    val saved = scrollMemory[folder.path]
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = saved?.first ?: 0, initialFirstVisibleItemScrollOffset = saved?.second ?: 0)
+    DisposableEffect(folder.path) {
+        onDispose { scrollMemory[folder.path] = listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
+    }
+    val selecting = selected.isNotEmpty()
+    val links = rememberDragLinks(drag, pane, folder, selected)
+    DisposableEffect(drag, listState) {
+        onDispose { if (drag?.scrollers?.get(pane.ordinal)?.owner === listState) drag.scrollers.remove(pane.ordinal) }
+    }
+    Box(Modifier.fillMaxSize()) {
+        PullToRefreshBox(isRefreshing = refreshing, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
+            LazyRow(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = if (folder.path != "/") 42.dp else 0.dp)
+                    .then(
+                        if (drag != null) Modifier.onGloballyPositioned {
+                            drag.scrollers[pane.ordinal] = PaneScroller(it.boundsInRoot(), listState) { d -> listState.scrollBy(d) }
+                        } else Modifier
+                    ),
+                contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                if (folder.items.isEmpty()) {
+                    item(key = "empty", contentType = "empty") { Box(Modifier.width(220.dp)) { EmptyFolder(folder.error) } }
+                }
+                items(folder.items, key = { it.path }, contentType = { "file" }) { item ->
+                    FileTile(
+                        item = item,
+                        selected = item.path in selected,
+                        selecting = selecting,
+                        flashKey = 0,
+                        flashPulses = 0,
+                        showThumbnail = !folder.viaRoot && !RemoteUri.isRemote(folder.path),
+                        onClick = { if (selecting) onToggleSelect(item) else onOpen(item) },
+                        onLongClick = { onItemMenu(item) },
+                        onIconClick = { onToggleSelect(item) },
+                        modifier = Modifier.width(116.dp),
+                        horizontalPane = true,
+                        drop = links.look(item),
+                        onDragStart = links.start(item),
+                    )
+                }
+            }
+        }
+        if (folder.path != "/") {
+            Box(
+                Modifier.align(Alignment.TopStart).fillMaxWidth(0.45f).padding(horizontal = 4.dp, vertical = 2.dp),
+            ) {
+                ParentRow(onClick = onUp, look = links.parent())
+            }
+        }
     }
 }
 
@@ -380,6 +467,7 @@ private fun FolderGrid(
     onItemMenu: (FileItem) -> Unit,
     pane: Pane,
     drag: FileDragState?,
+    singlePane: Boolean = false,
 ) {
     val motion = MaterialTheme.motionScheme
     val hasParent = folder.path != "/"
@@ -427,7 +515,7 @@ private fun FolderGrid(
     }
     PullToRefreshBox(isRefreshing = refreshing, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 92.dp),
+            columns = GridCells.Fixed(if (singlePane) when (LocalUiDensity.current) { ir.solina.files.core.model.UiDensity.COMPACT -> 4; ir.solina.files.core.model.UiDensity.COMFORTABLE -> 3; ir.solina.files.core.model.UiDensity.LARGE -> 2 } else 2),
             state = gridState,
             modifier = Modifier
                 .fillMaxSize()
@@ -461,6 +549,7 @@ private fun FolderGrid(
                     ),
                     drop = links.look(item),
                     onDragStart = links.start(item),
+                    singlePane = singlePane,
                 )
             }
         }

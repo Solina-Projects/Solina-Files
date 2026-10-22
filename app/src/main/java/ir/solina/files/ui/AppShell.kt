@@ -101,6 +101,7 @@ import ir.solina.files.feature.editor.TextEditorScreen
 import ir.solina.files.feature.explorer.ExplorerScreen
 import ir.solina.files.feature.explorer.ExplorerViewModel
 import ir.solina.files.feature.hex.HexEditorScreen
+import ir.solina.files.feature.home.HomeScreen
 import ir.solina.files.feature.keys.ImportKeyDialog
 import ir.solina.files.feature.keys.SigningKeysScreen
 import ir.solina.files.feature.plugin.PluginsScreen
@@ -122,7 +123,7 @@ import ir.solina.files.feature.share.ShareScreen
 import ir.solina.files.feature.termux.LanguagesScreen
 import ir.solina.files.feature.trash.RecycleBinScreen
 import ir.solina.files.ui.drawer.DrawerActions
-import ir.solina.files.ui.drawer.SolinaDrawerContent
+import ir.solina.files.ui.drawer.StrataDrawerContent
 import java.io.File
 import ir.solina.files.ui.expressive.Art
 import ir.solina.files.ui.expressive.ExpressiveHero
@@ -131,6 +132,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 sealed interface Route {
+    data object Home : Route
     data object Files : Route
     data object Settings : Route
     data class Customize(val tab: ToolbarTab) : Route
@@ -330,7 +332,7 @@ fun AppShell(
                     scope.launch { drawerState.close() }
                     stack.push(r)
                 }
-                SolinaDrawerContent(
+                StrataDrawerContent(
                     root = root,
                     rootMode = settings.rootAccess,
                     bookmarks = sidebarBookmarks,
@@ -490,6 +492,19 @@ private fun Screen(
     actions: ShellActions,
 ) {
     when (r) {
+        Route.Home -> {
+            val scope = rememberCoroutineScope()
+            HomeScreen(
+                dualPanePreferred = settings.dualPanePreferred,
+                onBrowse = { dual ->
+                    scope.launch { settingsRepo.setDualPanePreferred(dual) }
+                    actions.pop()
+                },
+                onOpenFolder = { path -> actions.locate(path, null) },
+                onSearch = { actions.push(Route.Search(vm.state.value.activePane.path)) },
+                onSettings = { actions.push(Route.Settings) },
+            )
+        }
         Route.Files -> Unit
         Route.Settings -> {
             val s = rememberCoroutineScope()

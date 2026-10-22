@@ -32,6 +32,7 @@ data class FileItem(
                 canRead = file.canRead(),
                 canWrite = file.canWrite(),
                 isSymlink = ir.solina.files.core.fs.FsUtil.isSymlink(file),
+                childCount = if (file.isDirectory) file.listFiles()?.size ?: -1 else -1,
             )
         }
     }

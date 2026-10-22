@@ -6,30 +6,53 @@ import ir.solina.files.feature.vault.VaultUnlockDialog
 import android.app.Activity
 import android.os.SystemClock
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Code
+import androidx.compose.material.icons.rounded.CreateNewFolder
+import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.ViewList
+import androidx.compose.material.icons.rounded.SwapVert
+import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.automirrored.rounded.ManageSearch
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SortByAlpha
+import androidx.compose.material.icons.rounded.ViewAgenda
+import androidx.compose.material.icons.rounded.ViewColumn
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -47,6 +70,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -71,6 +95,7 @@ import ir.solina.files.core.model.FolderSorts
 import ir.solina.files.core.archive.ArchiveFormat
 import ir.solina.files.core.fs.Conflict
 import ir.solina.files.core.model.FileItem
+import ir.solina.files.core.model.FloatingAction
 import ir.solina.files.core.open.Opener
 import ir.solina.files.core.remote.RemoteProtocol
 import ir.solina.files.core.remote.RemoteUri
@@ -120,7 +145,7 @@ import kotlinx.coroutines.withContext
 private sealed interface Dialog {
     data object None : Dialog
     data class NewFolder(val pane: Pane) : Dialog
-    data class NewFile(val pane: Pane) : Dialog
+    data class NewFile(val pane: Pane, val initial: String = "") : Dialog
     data object Delete : Dialog
     data object Sort : Dialog
     data object Bookmarks : Dialog
@@ -165,6 +190,10 @@ fun ExplorerScreen(
     var lastBackPress by remember { mutableLongStateOf(0L) }
     val rootPath = vm.rootPath
     val dual = ui.settings.dualPanePreferred
+    var horizontalSplit by rememberSaveable { mutableStateOf(false) }
+    var quickCreateExpanded by rememberSaveable { mutableStateOf(false) }
+    var floatingMoreExpanded by rememberSaveable { mutableStateOf(false) }
+    var layoutMenuExpanded by remember { mutableStateOf(false) }
     val termux = viewModel<TermuxViewModel>().session
     val sshHere = RemoteUri.parse(ui.activePane.path)?.let { (id, dir) ->
         ui.storages.firstOrNull { it.id == id && it.protocol == RemoteProtocol.SFTP }?.let { it to dir }
@@ -277,7 +306,19 @@ fun ExplorerScreen(
             } else {
                 TopAppBar(
                     navigationIcon = {
-                        IconButton(onClick = onOpenDrawer) { Icon(Icons.Rounded.Menu, contentDescription = stringResource(R.string.explorer_menu)) }
+                        IconButton(onClick = onOpenDrawer) {
+                            Surface(
+                                shape = RoundedCornerShape(13.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            ) {
+                                Icon(
+                                    Icons.Rounded.Menu,
+                                    contentDescription = stringResource(R.string.explorer_menu),
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.padding(8.dp).size(22.dp),
+                                )
+                            }
+                        }
                     },
                     title = { ExplorerTitle(ui.activePane, visibleItems(ui.activePane, ui.settings, ui.query)) },
                     actions = {
@@ -394,39 +435,195 @@ fun ExplorerScreen(
             )
         },
     ) { padding ->
-        Row(
-            Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            val panes = if (dual) listOf(Pane.LEFT, Pane.RIGHT) else listOf(ui.active)
-            for (pane in panes) {
-                val state = ui.pane(pane)
-                val visible = remember(state.items, ui.settings, ui.query) { visibleItems(state, ui.settings, ui.query) }
-                PaneColumn(
-                    state = state,
-                    visible = visible,
-                    isActive = ui.active == pane,
-                    showActive = dual,
-                    rootPath = rootPath,
-                    onActivate = { vm.setActive(pane) },
-                    onUp = { vm.setActive(pane); vm.navigateUp(pane) },
-                    onOpen = { handleOpen(pane, it) },
-                    onToggleSelect = { vm.toggleSelect(pane, it) },
-                    onItemMenu = { dialog = Dialog.ItemSheet(pane, it) },
-                    onJumpTo = { dialog = Dialog.JumpTo(pane) },
-                    onRefresh = { vm.setActive(pane); vm.refresh(pane) },
-                    modifier = Modifier.weight(1f).fillMaxSize(),
-                    displayPath = if (RemoteUri.isRemote(state.path)) ui.displayPath(state.path) else null,
-                    pane = pane,
-                )
+        val panes = if (dual) listOf(Pane.LEFT, Pane.RIGHT) else listOf(ui.active)
+        @Composable
+        fun PaneContent(pane: Pane, modifier: Modifier) {
+            val state = ui.pane(pane)
+            val visible = remember(state.items, ui.settings, ui.query) { visibleItems(state, ui.settings, ui.query) }
+            PaneColumn(
+                state = state,
+                visible = visible,
+                isActive = ui.active == pane,
+                showActive = dual,
+                rootPath = rootPath,
+                onActivate = { vm.setActive(pane) },
+                onUp = { vm.setActive(pane); vm.navigateUp(pane) },
+                onOpen = { handleOpen(pane, it) },
+                onToggleSelect = { vm.toggleSelect(pane, it) },
+                onItemMenu = { dialog = Dialog.ItemSheet(pane, it) },
+                onJumpTo = { dialog = Dialog.JumpTo(pane) },
+                onRefresh = { vm.setActive(pane); vm.refresh(pane) },
+                modifier = modifier,
+                displayPath = if (RemoteUri.isRemote(state.path)) ui.displayPath(state.path) else null,
+                pane = pane,
+                horizontalItems = dual && horizontalSplit,
+                singlePane = !dual,
+            )
+        }
+        AnimatedContent(
+            targetState = dual to horizontalSplit,
+            transitionSpec = {
+                (fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.92f))
+                    .togetherWith(fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.96f))
+            },
+            label = "singleDualPaneTransition",
+            modifier = Modifier.fillMaxSize().padding(padding),
+        ) { (showDual, splitHorizontal) ->
+            if (showDual && splitHorizontal) {
+                Column(
+                    Modifier.fillMaxSize().padding(horizontal = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
+                ) {
+                    PaneContent(Pane.LEFT, Modifier.weight(1f).fillMaxWidth())
+                    PaneContent(Pane.RIGHT, Modifier.weight(1f).fillMaxWidth())
+                }
+            } else {
+                Row(
+                    Modifier.fillMaxSize().padding(horizontal = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    (if (showDual) listOf(Pane.LEFT, Pane.RIGHT) else listOf(ui.active))
+                        .forEach { pane -> PaneContent(pane, Modifier.weight(1f).fillMaxSize()) }
+                }
             }
         }
     }
     }
+    if (!ui.searchActive) {
+        Column(
+            modifier = Modifier.align(androidx.compose.ui.Alignment.BottomEnd).padding(end = 16.dp, bottom = 84.dp),
+            horizontalAlignment = androidx.compose.ui.Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            val floatingZones = ui.settings.actions.floating.zones
+            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.CREATE)) {
+            AnimatedVisibility(
+                visible = quickCreateExpanded,
+                enter = fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.7f),
+                exit = fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.7f),
+            ) {
+                Column(horizontalAlignment = androidx.compose.ui.Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ExtendedFloatingActionButton(
+                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFolder(ui.active) },
+                        icon = { Icon(Icons.Rounded.CreateNewFolder, contentDescription = null) },
+                        text = { Text("پوشه جدید") },
+                    )
+                    ExtendedFloatingActionButton(
+                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "untitled.txt") },
+                        icon = { Icon(Icons.Rounded.Description, contentDescription = null) },
+                        text = { Text("فایل متنی") },
+                    )
+                    ExtendedFloatingActionButton(
+                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "index.html") },
+                        icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
+                        text = { Text("فایل HTML") },
+                    )
+                    if (!ui.isRemote(ui.active)) {
+                        ExtendedFloatingActionButton(
+                            onClick = { quickCreateExpanded = false; dialog = Dialog.NewProject(ui.activePane.path) },
+                            icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
+                            text = { Text("پروژه جدید") },
+                        )
+                    }
+                }
+            }
+            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.CREATE)) {
+            FloatingActionButton(
+                onClick = { quickCreateExpanded = !quickCreateExpanded; layoutMenuExpanded = false },
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+            ) {
+                Icon(Icons.Rounded.Add, contentDescription = if (quickCreateExpanded) "بستن ایجاد سریع" else "ایجاد فایل یا پوشه")
+            }
+            }
+            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.ORIENTATION) && dual) {
+                FloatingActionButton(
+                    onClick = { horizontalSplit = !horizontalSplit },
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                ) {
+                    Icon(
+                        imageVector = if (horizontalSplit) Icons.Rounded.SwapVert else Icons.Rounded.SwapHoriz,
+                        contentDescription = if (horizontalSplit) "چیدن پنل‌ها روی هم" else "چیدن پنل‌ها کنار هم",
+                    )
+                }
+            } else if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.VIEW_LAYOUT) && !dual) {
+                Box {
+                    FloatingActionButton(
+                        onClick = { layoutMenuExpanded = true },
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    ) {
+                        Icon(
+                            imageVector = if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) Icons.Rounded.GridView else Icons.Rounded.ViewList,
+                            contentDescription = "تنظیم چیدمان و اندازه",
+                        )
+                    }
+                    DropdownMenu(expanded = layoutMenuExpanded, onDismissRequest = { layoutMenuExpanded = false }) {
+                        DropdownMenuItem(
+                            text = { Text(if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.LIST) "چیدمان شبکه‌ای" else "چیدمان فهرستی") },
+                            leadingIcon = { Icon(if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.LIST) Icons.Rounded.GridView else Icons.Rounded.ViewList, contentDescription = null) },
+                            onClick = { vm.toggleViewMode(); layoutMenuExpanded = false },
+                        )
+                        DropdownMenuItem(text = { Text("اندازه فشرده") }, onClick = { vm.setItemDensity(ir.solina.files.core.model.UiDensity.COMPACT); layoutMenuExpanded = false })
+                        DropdownMenuItem(text = { Text("اندازه معمولی") }, onClick = { vm.setItemDensity(ir.solina.files.core.model.UiDensity.COMFORTABLE); layoutMenuExpanded = false })
+                        DropdownMenuItem(text = { Text("اندازه بزرگ") }, onClick = { vm.setItemDensity(ir.solina.files.core.model.UiDensity.LARGE); layoutMenuExpanded = false })
+                    }
+                }
+            }
+            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.PANE_MODE)) {
+            FloatingActionButton(
+                onClick = { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false },
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            ) {
+                Icon(
+                    imageVector = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
+                    contentDescription = if (dual) "Switch to single pane" else "Switch to dual pane",
+                )
+            }
+            }
+            val floatingMenuActions = floatingZones.getOrNull(1).orEmpty()
+            if (floatingMenuActions.isNotEmpty()) {
+                Box {
+                    FloatingActionButton(onClick = { floatingMoreExpanded = true }) {
+                        Icon(Icons.Rounded.MoreVert, contentDescription = "گزینه‌های نوار شناور")
+                    }
+                    DropdownMenu(expanded = floatingMoreExpanded, onDismissRequest = { floatingMoreExpanded = false }) {
+                        floatingMenuActions.forEach { action ->
+                            val title = when (action) {
+                                FloatingAction.CREATE -> "ایجاد فایل یا پوشه"
+                                FloatingAction.PANE_MODE -> if (dual) "تک‌پنجره" else "دوپنجره"
+                                FloatingAction.ORIENTATION -> if (horizontalSplit) "پنل‌ها کنار هم" else "پنل‌ها روی هم"
+                                FloatingAction.VIEW_LAYOUT -> "تنظیم چیدمان و اندازه"
+                            }
+                            val actionIcon = when (action) {
+                                FloatingAction.CREATE -> Icons.Rounded.Add
+                                FloatingAction.PANE_MODE -> if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn
+                                FloatingAction.ORIENTATION -> if (horizontalSplit) Icons.Rounded.SwapVert else Icons.Rounded.SwapHoriz
+                                FloatingAction.VIEW_LAYOUT -> if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) Icons.Rounded.GridView else Icons.Rounded.ViewList
+                            }
+                            DropdownMenuItem(
+                                text = { Text(title) },
+                                leadingIcon = { Icon(actionIcon, contentDescription = null) },
+                                onClick = {
+                                    floatingMoreExpanded = false
+                                    when (action) {
+                                        FloatingAction.CREATE -> quickCreateExpanded = !quickCreateExpanded
+                                        FloatingAction.PANE_MODE -> { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false }
+                                        FloatingAction.ORIENTATION -> if (dual) horizontalSplit = !horizontalSplit else layoutMenuExpanded = true
+                                        FloatingAction.VIEW_LAYOUT -> layoutMenuExpanded = true
+                                    }
+                                },
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
     DragLayer(drag) { host[0]?.positionInRoot() ?: Offset.Zero }
+    }
     }
 
     when (val d = dialog) {
@@ -437,7 +634,7 @@ fun ExplorerScreen(
             onDismiss = { dialog = Dialog.None },
         )
         is Dialog.NewFile -> InputDialog(
-            title = stringResource(R.string.common_new_file), label = stringResource(R.string.explorer_file_name),
+            title = stringResource(R.string.common_new_file), label = stringResource(R.string.explorer_file_name), initial = d.initial,
             onConfirm = { vm.newFile(d.pane, it); dialog = Dialog.None },
             onDismiss = { dialog = Dialog.None },
         )
@@ -678,7 +875,7 @@ fun ExplorerScreen(
 @Composable
 private fun ExplorerTitle(pane: PaneState, visible: List<FileItem>) {
     Column {
-        Text("Solina", maxLines = 1)
+        Text("Strata", maxLines = 1)
         Text(
             countsLine(visible),
             style = MaterialTheme.typography.labelMedium,

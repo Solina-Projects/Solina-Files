@@ -27,6 +27,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AddCircleOutline
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.ViewAgenda
+import androidx.compose.material.icons.rounded.ViewColumn
+import androidx.compose.material.icons.rounded.SwapVert
+import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.material.icons.rounded.Restore
@@ -71,6 +76,7 @@ import ir.solina.files.core.util.Formatters
 import ir.solina.files.core.data.SolinaSettings
 import ir.solina.files.core.model.ActionLayout
 import ir.solina.files.core.model.BrowseAction
+import ir.solina.files.core.model.FloatingAction
 import ir.solina.files.core.model.SelectionAction
 import ir.solina.files.core.model.SheetAction
 import ir.solina.files.core.model.SheetGroup
@@ -83,6 +89,7 @@ enum class ToolbarTab(@StringRes val label: Int) {
     BROWSE(R.string.settings_tab_bottom_bar),
     SELECTION(R.string.settings_tab_selection),
     SHEET(R.string.settings_tab_long_press),
+    FLOATING(R.string.settings_tab_floating_bar),
 }
 
 private fun joinNames(names: List<String>): String = names.reduce { a, b -> tr(R.string.settings_toolbar_and, a, b) }
@@ -165,6 +172,29 @@ fun ToolbarPage(settings: SolinaSettings, act: SettingsActions, onBack: () -> Un
                             onSpill = { list -> spilled(list.map { tr(it.label) }, R.plurals.settings_toolbar_spill_bar, ActionLayout.SELECTION_SLOTS) },
                         )
                         ResetButton { commit(layout.copy(selection = ActionLayout.DEFAULT_SELECTION)) }
+                    }
+                    ToolbarTab.FLOATING -> {
+                        var preview by remember { mutableStateOf(layout.floating) }
+                        BarPreview(preview.zones[0].map { PreviewButton(floatingActionIcon(it), stringResource(it.label), false) }, selecting = false)
+                        SettingNote(stringResource(R.string.settings_floating_bar_note))
+                        ZoneEditor(
+                            zoned = layout.floating,
+                            caps = ActionLayout.FLOATING_CAPS,
+                            styles = listOf(
+                                ZoneStyle(tr(R.string.settings_zone_quick), tr(R.string.settings_zone_drop_here), MaterialShapes.Cookie9Sided, Tint.PRIMARY),
+                                ZoneStyle(tr(R.string.settings_zone_in_menu), tr(R.string.settings_zone_nothing), MaterialShapes.Square, Tint.SECONDARY),
+                                ZoneStyle(tr(R.string.settings_zone_hidden), tr(R.string.settings_zone_hidden_empty), MaterialShapes.Ghostish, Tint.NEUTRAL),
+                            ),
+                            buttons = { zone -> zoneButtons(zone, sheet = true) },
+                            label = { tr(it.label) },
+                            icon = { floatingActionIcon(it) },
+                            scroll = scroll,
+                            onPreview = { preview = it },
+                            onChange = { commit(layout.copy(floating = it)) },
+                            hint = { null },
+                            onSpill = { list -> spilled(list.map { tr(it.label) }, R.plurals.settings_toolbar_spill_quick, ActionLayout.FLOATING_CAPS.first()) },
+                        )
+                        ResetButton { commit(layout.copy(floating = ActionLayout.DEFAULT_FLOATING)) }
                     }
                     ToolbarTab.SHEET -> {
                         var preview by remember { mutableStateOf(layout.sheet) }
@@ -383,4 +413,12 @@ private fun PreviewChip(label: String, count: Int) {
             modifier = Modifier.padding(horizontal = 10.dp, vertical = 5.dp),
         )
     }
+}
+
+
+private fun floatingActionIcon(action: FloatingAction): ImageVector = when (action) {
+    FloatingAction.CREATE -> Icons.Rounded.Add
+    FloatingAction.PANE_MODE -> Icons.Rounded.ViewColumn
+    FloatingAction.ORIENTATION -> Icons.Rounded.SwapVert
+    FloatingAction.VIEW_LAYOUT -> Icons.Rounded.GridView
 }

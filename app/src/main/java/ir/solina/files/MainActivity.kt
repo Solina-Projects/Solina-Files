@@ -34,10 +34,7 @@ import ir.solina.files.ui.security.AppLock
 import ir.solina.files.ui.security.AppLockGate
 import ir.solina.files.ui.security.DeviceAuth
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeoutOrNull
 import ir.solina.files.ui.theme.SolinaTheme
 
 class MainActivity : FragmentActivity() {
@@ -92,7 +89,8 @@ class MainActivity : FragmentActivity() {
         val startPath2 = if (BuildConfig.DEBUG) intent?.getStringExtra(EXTRA_PATH_OTHER) else null
 
         val settingsFlow = settingsRepo.settings.catch { emit(SolinaSettings()) }
-        val initial = runBlocking { withTimeoutOrNull(500) { settingsFlow.first() } } ?: SolinaSettings()
+        // Do not block the main thread waiting for DataStore; apply persisted settings as soon as the flow emits.
+        val initial = SolinaSettings()
         if (initial.security.secureScreen) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         AppLock.apply(initial.security)
         applySecurity(initial.security.appLock)

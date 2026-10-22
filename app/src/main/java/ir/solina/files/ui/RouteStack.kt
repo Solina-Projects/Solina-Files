@@ -31,6 +31,10 @@ class RouteStack(private val app: Application) {
     val entries: SnapshotStateList<RouteEntry> = mutableStateListOf()
 
     val top: RouteEntry? get() = entries.lastOrNull()
+
+    // Keep the route stack empty while the file explorer is the base screen.
+    // Route.Files is rendered by ExplorerScreen behind AnimatedContent; adding a
+    // RouteEntry(Route.Files) here overlays it with Screen(Route.Files) == Unit.
     val route: Route get() = top?.route ?: Route.Files
 
     fun push(route: Route) {
