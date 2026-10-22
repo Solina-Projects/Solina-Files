@@ -92,6 +92,7 @@ import dev.cluvex.strata.core.model.FolderSorts
 import dev.cluvex.strata.core.archive.ArchiveFormat
 import dev.cluvex.strata.core.fs.Conflict
 import dev.cluvex.strata.core.model.FileItem
+import dev.cluvex.strata.core.model.FloatingAction
 import dev.cluvex.strata.core.open.Opener
 import dev.cluvex.strata.core.remote.RemoteProtocol
 import dev.cluvex.strata.core.remote.RemoteUri
@@ -188,6 +189,7 @@ fun ExplorerScreen(
     val dual = ui.settings.dualPanePreferred
     var horizontalSplit by rememberSaveable { mutableStateOf(false) }
     var quickCreateExpanded by rememberSaveable { mutableStateOf(false) }
+    var floatingMoreExpanded by rememberSaveable { mutableStateOf(false) }
     var layoutMenuExpanded by remember { mutableStateOf(false) }
     val termux = viewModel<TermuxViewModel>().session
     val sshHere = RemoteUri.parse(ui.activePane.path)?.let { (id, dir) ->
@@ -478,6 +480,8 @@ fun ExplorerScreen(
             horizontalAlignment = androidx.compose.ui.Alignment.End,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            val floatingZones = ui.settings.actions.floating.zones
+            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.CREATE)) {
             AnimatedVisibility(
                 visible = quickCreateExpanded,
                 enter = fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.7f),
@@ -515,7 +519,8 @@ fun ExplorerScreen(
             ) {
                 Icon(Icons.Rounded.Add, contentDescription = if (quickCreateExpanded) "بستن ایجاد سریع" else "ایجاد فایل یا پوشه")
             }
-            if (dual) {
+            }
+            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.ORIENTATION) && dual) {
                 FloatingActionButton(
                     onClick = { horizontalSplit = !horizontalSplit },
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -526,7 +531,7 @@ fun ExplorerScreen(
                         contentDescription = if (horizontalSplit) "تبدیل پنل‌ها به کنار هم" else "تبدیل پنل‌ها به روی هم",
                     )
                 }
-            } else {
+            } else if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.VIEW_LAYOUT) && !dual) {
                 Box {
                     FloatingActionButton(
                         onClick = { layoutMenuExpanded = true },
@@ -550,6 +555,7 @@ fun ExplorerScreen(
                     }
                 }
             }
+            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.PANE_MODE)) {
             FloatingActionButton(
                 onClick = { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false },
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -559,6 +565,44 @@ fun ExplorerScreen(
                     imageVector = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
                     contentDescription = if (dual) "Switch to single pane" else "Switch to dual pane",
                 )
+            }
+            }
+            val floatingMenuActions = floatingZones.getOrNull(1).orEmpty()
+            if (floatingMenuActions.isNotEmpty()) {
+                Box {
+                    FloatingActionButton(onClick = { floatingMoreExpanded = true }) {
+                        Icon(Icons.Rounded.MoreVert, contentDescription = "گزینه‌های نوار شناور")
+                    }
+                    DropdownMenu(expanded = floatingMoreExpanded, onDismissRequest = { floatingMoreExpanded = false }) {
+                        floatingMenuActions.forEach { action ->
+                            val title = when (action) {
+                                FloatingAction.CREATE -> "ایجاد فایل یا پوشه"
+                                FloatingAction.PANE_MODE -> if (dual) "تک‌پنجره" else "دوپنجره"
+                                FloatingAction.ORIENTATION -> if (horizontalSplit) "پنل‌ها کنار هم" else "پنل‌ها روی هم"
+                                FloatingAction.VIEW_LAYOUT -> "تنظیم چیدمان و اندازه"
+                            }
+                            val actionIcon = when (action) {
+                                FloatingAction.CREATE -> Icons.Rounded.Add
+                                FloatingAction.PANE_MODE -> if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn
+                                FloatingAction.ORIENTATION -> if (horizontalSplit) Icons.Rounded.SwapHoriz else Icons.Rounded.SwapVert
+                                FloatingAction.VIEW_LAYOUT -> if (ui.settings.list.viewMode == dev.cluvex.strata.core.model.ViewMode.GRID) Icons.Rounded.GridView else Icons.Rounded.ViewList
+                            }
+                            DropdownMenuItem(
+                                text = { Text(title) },
+                                leadingIcon = { Icon(actionIcon, contentDescription = null) },
+                                onClick = {
+                                    floatingMoreExpanded = false
+                                    when (action) {
+                                        FloatingAction.CREATE -> quickCreateExpanded = !quickCreateExpanded
+                                        FloatingAction.PANE_MODE -> { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false }
+                                        FloatingAction.ORIENTATION -> if (dual) horizontalSplit = !horizontalSplit else layoutMenuExpanded = true
+                                        FloatingAction.VIEW_LAYOUT -> layoutMenuExpanded = true
+                                    }
+                                },
+                            )
+                        }
+                    }
+                }
             }
         }
     }
