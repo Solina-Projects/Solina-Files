@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="settings_tab_floating_bar">نوار شناور</string>
+    <string name="settings_floating_bar_note">مشخص کنید کدام دکمه‌های شناور نمایش داده شوند، در منوی بیشتر قرار بگیرند یا مخفی شوند. تنظیمات تک‌پنجره و دوپنجره جداست.</string>
     <string name="settings_page_appearance">ظاهر</string>
     <string name="settings_page_file_list">فهرست فایل‌ها</string>
     <string name="settings_page_toolbar">نوار ابزار و منوها</string>

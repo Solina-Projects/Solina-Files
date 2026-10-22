@@ -101,6 +101,7 @@ import dev.cluvex.strata.feature.editor.TextEditorScreen
 import dev.cluvex.strata.feature.explorer.ExplorerScreen
 import dev.cluvex.strata.feature.explorer.ExplorerViewModel
 import dev.cluvex.strata.feature.hex.HexEditorScreen
+import dev.cluvex.strata.feature.home.HomeScreen
 import dev.cluvex.strata.feature.keys.ImportKeyDialog
 import dev.cluvex.strata.feature.keys.SigningKeysScreen
 import dev.cluvex.strata.feature.plugin.PluginsScreen
@@ -131,6 +132,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 sealed interface Route {
+    data object Home : Route
     data object Files : Route
     data object Settings : Route
     data class Customize(val tab: ToolbarTab) : Route
@@ -490,6 +492,19 @@ private fun Screen(
     actions: ShellActions,
 ) {
     when (r) {
+        Route.Home -> {
+            val scope = rememberCoroutineScope()
+            HomeScreen(
+                dualPanePreferred = settings.dualPanePreferred,
+                onBrowse = { dual ->
+                    scope.launch { settingsRepo.setDualPanePreferred(dual) }
+                    actions.pop()
+                },
+                onOpenFolder = { path -> actions.locate(path, null) },
+                onSearch = { actions.push(Route.Search(vm.state.value.activePane.path)) },
+                onSettings = { actions.push(Route.Settings) },
+            )
+        }
         Route.Files -> Unit
         Route.Settings -> {
             val s = rememberCoroutineScope()

@@ -187,6 +187,8 @@ class SettingsRepository(private val context: Context) {
         val READER_SPOTS = stringPreferencesKey("reader_spots")
         val READER_MARKS = stringPreferencesKey("reader_marks")
         val ACTION_LAYOUT = stringPreferencesKey("action_layout")
+        val ACTION_LAYOUT_SINGLE = stringPreferencesKey("action_layout_single")
+        val ACTION_LAYOUT_DUAL = stringPreferencesKey("action_layout_dual")
 
         val BOOLEANS = listOf(
             SORT_DESC, DIRS_FIRST, SHOW_HIDDEN, DYNAMIC, PURE_BLACK, COLORFUL_ICONS, HAPTICS, SOUNDS, SOUNDS_IN_SILENT, THUMBNAILS, APK_ICONS, SHOW_DATE,
@@ -202,7 +204,7 @@ class SettingsRepository(private val context: Context) {
             SORT_BY, FOLDER_SORTS, THEME_MODE, THEME_STYLE, CONTRAST, CORNERS, ICON_SHAPE, MOTION, VIEW_MODE, DATE_STYLE, SIZE_UNITS,
             START_FOLDER, START_PATH, CONFLICT, UI_DENSITY, OPEN_DEFAULTS, EDITOR_THEME, APK_EXTRACT_DIR, APK_NAME_PATTERN,
             RENAME_HISTORY, RECENT_COLORS, PLUGIN_PINS, LAST_LEFT, LAST_RIGHT, RUN_COMMANDS, READER_THEME, READER_SPOTS, READER_MARKS,
-            ACTION_LAYOUT, LOCK_DELAY, VAULT_LOCK_DELAY,
+            ACTION_LAYOUT, ACTION_LAYOUT_SINGLE, ACTION_LAYOUT_DUAL, LOCK_DELAY, VAULT_LOCK_DELAY,
         )
 
         val PRIVATE: Set<String> = setOf(
@@ -227,8 +229,12 @@ class SettingsRepository(private val context: Context) {
     suspend fun editSecurity(change: (SecurityPrefs) -> SecurityPrefs) = context.dataStore.edit { writeSecurity(it, change(readSecurity(it))) }
     suspend fun editEditor(change: (EditorPrefs) -> EditorPrefs) = context.dataStore.edit { writeEditor(it, change(readEditor(it))) }
     suspend fun editReader(change: (ReaderPrefs) -> ReaderPrefs) = context.dataStore.edit { writeReader(it, change(readReader(it))) }
-    suspend fun editActions(change: (ActionLayout) -> ActionLayout) = context.dataStore.edit {
-        it[Keys.ACTION_LAYOUT] = change(ActionLayout.decode(it[Keys.ACTION_LAYOUT])).encode()
+     suspend fun editActions(change: (ActionLayout) -> ActionLayout) = context.dataStore.edit { p ->
+        val dual = p[Keys.DUAL_PANE] ?: true
+        val key = if (dual) Keys.ACTION_LAYOUT_DUAL else Keys.ACTION_LAYOUT_SINGLE
+        val legacy = p[Keys.ACTION_LAYOUT]
+        val current = ActionLayout.decode(p[key] ?: legacy)
+        p[key] = change(current).encode()
     }
 
     val readerSpots: Flow<Map<String, ReadingSpot>> = context.dataStore.data.map { p -> ReaderMemory.decodeSpots(p[Keys.READER_SPOTS]) }
@@ -379,7 +385,13 @@ class SettingsRepository(private val context: Context) {
             apkNamePattern = p[Keys.APK_NAME_PATTERN] ?: "{A}_{V}",
             runCommands = RunCommands.decode(p[Keys.RUN_COMMANDS]),
             reader = readReader(p),
-            actions = ActionLayout.decode(p[Keys.ACTION_LAYOUT]),
+            actions = ActionLayout.decode(
+                if (p[Keys.DUAL_PANE] ?: true) {
+                    p[Keys.ACTION_LAYOUT_DUAL] ?: p[Keys.ACTION_LAYOUT]
+                } else {
+                    p[Keys.ACTION_LAYOUT_SINGLE] ?: p[Keys.ACTION_LAYOUT]
+                },
+            ),
         )
 
         internal fun readReader(p: Preferences) = ReaderPrefs(

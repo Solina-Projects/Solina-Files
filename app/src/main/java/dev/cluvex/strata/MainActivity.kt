@@ -34,10 +34,7 @@ import dev.cluvex.strata.ui.security.AppLock
 import dev.cluvex.strata.ui.security.AppLockGate
 import dev.cluvex.strata.ui.security.DeviceAuth
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withTimeoutOrNull
 import dev.cluvex.strata.ui.theme.StrataTheme
 
 class MainActivity : FragmentActivity() {
@@ -92,7 +89,8 @@ class MainActivity : FragmentActivity() {
         val startPath2 = if (BuildConfig.DEBUG) intent?.getStringExtra(EXTRA_PATH_OTHER) else null
 
         val settingsFlow = settingsRepo.settings.catch { emit(StrataSettings()) }
-        val initial = runBlocking { withTimeoutOrNull(500) { settingsFlow.first() } } ?: StrataSettings()
+        // Do not block the main thread waiting for DataStore; apply persisted settings as soon as the flow emits.
+        val initial = StrataSettings()
         if (initial.security.secureScreen) window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         AppLock.apply(initial.security)
         applySecurity(initial.security.appLock)

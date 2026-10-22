@@ -66,6 +66,7 @@ import coil3.request.ImageRequest
 import dev.cluvex.strata.R
 import dev.cluvex.strata.core.media.ApkIcon
 import dev.cluvex.strata.core.model.FileItem
+import dev.cluvex.strata.core.model.UiDensity
 import dev.cluvex.strata.core.model.ListPrefs
 import dev.cluvex.strata.core.util.FileKind
 import dev.cluvex.strata.core.util.FileKinds
@@ -95,13 +96,16 @@ fun FileRow(
     flashPulses: Int = FLASH_PULSES,
     drop: DropLook = DropLook.NONE,
     onDragStart: ((Offset, PointerId) -> Boolean)? = null,
+    singlePane: Boolean = false,
 ) {
     val motion = MaterialTheme.motionScheme
     val colors = MaterialTheme.colorScheme
     val density = LocalUiDensity.current
     val settings = LocalSettings.current
     val list = settings.list
-    val iconSize = density.iconDp.dp
+    val layoutScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.5f; UiDensity.COMFORTABLE -> 2.5f; UiDensity.LARGE -> 3.5f }
+    val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
+    val iconSize = density.iconDp.dp * layoutScale
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.96f else 1f, motion.fastSpatialSpec(), label = "press")
@@ -135,7 +139,7 @@ fun FileRow(
                 if (a > 0f) drawRect(flashColor, alpha = a)
             }
             .fileGestures(interaction, onClick, onLongClick, onDragStart)
-            .padding(horizontal = 6.dp, vertical = density.rowPadDp.dp),
+            .padding(horizontal = 6.dp, vertical = density.rowPadDp.dp * layoutScale),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         DropHalo(look, drop.anchor) {
@@ -146,7 +150,7 @@ fun FileRow(
             Text(
                 isolated(Formatters.displayName(item.name, item.isDirectory, list.showExtensions)),
                 style = MaterialTheme.typography.bodyMedium,
-                fontSize = density.nameSp.sp,
+                fontSize = (density.nameSp * fontScale).sp,
                 maxLines = if (list.wrapNames) 3 else density.nameMaxLines,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -157,7 +161,7 @@ fun FileRow(
                     Text(
                         date.orEmpty(),
                         style = MaterialTheme.typography.labelSmall,
-                        fontSize = density.metaSp.sp,
+                        fontSize = (density.metaSp * fontScale).sp,
                         color = colors.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -167,7 +171,7 @@ fun FileRow(
                         Text(
                             info,
                             style = MaterialTheme.typography.labelSmall,
-                            fontSize = density.metaSp.sp,
+                            fontSize = (density.metaSp * fontScale).sp,
                             color = colors.onSurfaceVariant,
                             maxLines = 1,
                             modifier = Modifier.padding(start = 6.dp),
@@ -194,11 +198,16 @@ fun FileTile(
     flashPulses: Int = FLASH_PULSES,
     drop: DropLook = DropLook.NONE,
     onDragStart: ((Offset, PointerId) -> Boolean)? = null,
+    singlePane: Boolean = false,
+    horizontalPane: Boolean = false,
 ) {
     val motion = MaterialTheme.motionScheme
     val colors = MaterialTheme.colorScheme
     val settings = LocalSettings.current
     val list = settings.list
+    val density = LocalUiDensity.current
+    val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
+    val tileIconSize = if (horizontalPane) 36.dp else 56.dp
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.95f else 1f, motion.fastSpatialSpec(), label = "press")
@@ -250,8 +259,8 @@ fun FileTile(
                         modifier = Modifier.fillMaxSize().clip(MaterialTheme.shapes.medium),
                     )
                 }
-                apk -> ApkIconOrKind(item, 56.dp, shape)
-                else -> KindIcon(item, 56.dp, shape)
+                apk -> ApkIconOrKind(item, tileIconSize, shape)
+                else -> KindIcon(item, tileIconSize, shape)
             }
             Box(
                 Modifier
@@ -274,12 +283,13 @@ fun FileTile(
         Text(
             isolated(Formatters.displayName(item.name, item.isDirectory, list.showExtensions)),
             style = MaterialTheme.typography.labelMedium,
+            fontSize = ((if (horizontalPane) density.nameSp * 0.85f else density.nameSp * fontScale)).sp,
             maxLines = if (list.wrapNames) 3 else 2,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 6.dp),
         )
-        val info = trailingInfo(item, list) ?: if (list.showDate) Formatters.listDate(item.lastModified, list.dateStyle, list.use24Hour) else null
+        val info: String? = null
         if (info != null) {
             Text(info, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
@@ -313,7 +323,7 @@ fun flashDurationMs(pulses: Int): Long = (pulses * (FLASH_IN_MS + FLASH_OUT_MS) 
 @Composable
 private fun trailingInfo(item: FileItem, list: ListPrefs): String? = when {
     item.isSymlink -> stringResource(R.string.explorer_link)
-    item.isDirectory -> null
+    item.isDirectory -> if (item.childCount >= 0) "${Formatters.number(item.childCount.toLong())} مورد" else null
     !list.showSize -> null
     else -> Formatters.size(item.size, list.sizeUnits)
 }

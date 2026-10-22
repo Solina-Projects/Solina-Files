@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="settings_tab_floating_bar">Floating bar</string>
+    <string name="settings_floating_bar_note">Choose which floating actions are visible, available in the overflow menu, or hidden. These settings are separate for single-pane and dual-pane modes.</string>
     <string name="settings_shizuku" translatable="false">Shizuku</string>
     <string name="settings_page_appearance">Appearance</string>
     <string name="settings_page_file_list">File list</string>

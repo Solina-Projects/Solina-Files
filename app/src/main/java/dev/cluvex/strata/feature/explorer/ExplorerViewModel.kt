@@ -54,6 +54,8 @@ import dev.cluvex.strata.core.model.ConflictChoice
 import dev.cluvex.strata.core.model.FileItem
 import dev.cluvex.strata.core.pdf.PdfMerger
 import dev.cluvex.strata.core.model.SortOrder
+import dev.cluvex.strata.core.model.ViewMode
+import dev.cluvex.strata.core.model.UiDensity
 import dev.cluvex.strata.core.open.IncomingFiles
 import dev.cluvex.strata.core.open.IncomingPaths
 import dev.cluvex.strata.core.plugin.PluginFiles
@@ -426,6 +428,15 @@ class ExplorerViewModel(
 
     fun setFolderSort(path: String, order: SortOrder?) = viewModelScope.launch { settingsRepo.setFolderSort(path, order) }
     fun setShowHidden(value: Boolean) = viewModelScope.launch { settingsRepo.setShowHidden(value) }
+    fun setDualPanePreferred(value: Boolean) = viewModelScope.launch {
+        if (value) settingsRepo.editList { it.copy(viewMode = ViewMode.LIST) }
+        settingsRepo.setDualPanePreferred(value)
+    }
+    fun toggleViewMode() = viewModelScope.launch {
+        val next = if (_state.value.settings.list.viewMode == ViewMode.LIST) ViewMode.GRID else ViewMode.LIST
+        settingsRepo.editList { it.copy(viewMode = next) }
+    }
+    fun setItemDensity(value: UiDensity) = viewModelScope.launch { settingsRepo.setUiDensity(value) }
 
     fun setSearchActive(active: Boolean) = _state.update {
         it.copy(searchActive = active, query = if (active) it.query else "")
