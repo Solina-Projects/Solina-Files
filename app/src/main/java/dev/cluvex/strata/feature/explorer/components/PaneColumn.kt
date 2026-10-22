@@ -406,20 +406,12 @@ private fun FolderHorizontalList(
         onDispose { if (drag?.scrollers?.get(pane.ordinal)?.owner === listState) drag.scrollers.remove(pane.ordinal) }
     }
     Box(Modifier.fillMaxSize()) {
-        if (folder.path != "/") {
-            Box(
-                Modifier.align(Alignment.TopStart).fillMaxWidth(0.45f).padding(horizontal = 4.dp, vertical = 2.dp),
-            ) {
-                ParentRow(onClick = onUp, look = links.parent())
-            }
-        }
         PullToRefreshBox(isRefreshing = refreshing, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
             LazyRow(
                 state = listState,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .align(Alignment.Center)
-                    .padding(top = if (folder.path != "/") 34.dp else 0.dp)
+                    .fillMaxSize()
+                    .padding(top = if (folder.path != "/") 42.dp else 0.dp)
                     .then(
                         if (drag != null) Modifier.onGloballyPositioned {
                             drag.scrollers[pane.ordinal] = PaneScroller(it.boundsInRoot(), listState) { d -> listState.scrollBy(d) }
@@ -449,6 +441,13 @@ private fun FolderHorizontalList(
                         onDragStart = links.start(item),
                     )
                 }
+            }
+        }
+        if (folder.path != "/") {
+            Box(
+                Modifier.align(Alignment.TopStart).fillMaxWidth(0.45f).padding(horizontal = 4.dp, vertical = 2.dp),
+            ) {
+                ParentRow(onClick = onUp, look = links.parent())
             }
         }
     }
