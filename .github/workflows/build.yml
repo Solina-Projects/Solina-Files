@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'fix/fork-ci-workflow']
     tags: ['v*']
   pull_request:
   workflow_dispatch:
@@ -64,7 +64,7 @@ jobs:
           if-no-files-found: error
 
       - name: Signing key
-        if: github.event_name != 'pull_request'
+        if: startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request'
         env:
           KEYSTORE_BASE64: ${{ secrets.STRATA_KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.STRATA_KEYSTORE_PASSWORD }}
@@ -79,7 +79,7 @@ jobs:
           printf 'storeFile=release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > keystore.properties
 
       - name: Build the signed release APKs
-        if: github.event_name != 'pull_request'
+        if: startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request'
         run: |
           version=$(grep '^strata.versionName=' gradle.properties | cut -d= -f2)
           if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != "v${version}" ]]; then
@@ -94,7 +94,7 @@ jobs:
           (cd dist && sha256sum *.apk > SHA256SUMS.txt)
 
       - name: Upload the signed release APKs
-        if: github.event_name != 'pull_request'
+        if: startsWith(github.ref, 'refs/tags/v') && github.event_name != 'pull_request'
         uses: actions/upload-artifact@v7
         with:
           name: strata-release
