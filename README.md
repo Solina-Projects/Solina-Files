@@ -2,12 +2,14 @@
 
 **Solina Files** is an open-source file manager for Android, developed under the **Solin** project identity. It aims to make everyday file organization and advanced file workflows clear, capable, and convenient.
 
+**Languages:** English · [فارسی](README.fa.md)
+
 <p align="center">
   <a href="https://github.com/Solina-Projects/Solina-Files/actions/workflows/build.yml"><img src="https://github.com/Solina-Projects/Solina-Files/actions/workflows/build.yml/badge.svg" alt="Solina Files build status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-2456B3" alt="License: GNU AGPL v3.0 or later"></a>
 </p>
 
-## Project identity
+## Project information
 
 - **Project:** Solin
 - **Application:** Solina Files
@@ -20,15 +22,15 @@ Solin is the project identity; Solina Files is its Android file-management appli
 
 Solina Files is being developed around these file-management areas:
 
-- **File browsing:** navigate folders and manage files on device storage.
-- **Dual-pane workflow:** work with two locations to make file-to-file operations easier.
-- **File operations:** organize, copy, move, rename, delete, search, and select multiple items where supported.
-- **Storage overview:** browse storage locations and inspect files and folders.
-- **Archives:** work with supported archive formats.
-- **Android apps:** inspect supported application package information and related tools.
-- **Media and documents:** access supported image, audio, video, and document files.
-- **Network access:** support for configured network-storage protocols where available.
-- **Privacy and access:** device-dependent options for protected storage and advanced access.
+- **File browsing:** Navigate folders and manage files on device storage.
+- **Dual-pane workflow:** Work with two locations to make file-to-file operations easier.
+- **File operations:** Organize, copy, move, rename, delete, search, and select multiple items where supported.
+- **Storage overview:** Browse storage locations and inspect files and folders.
+- **Archives:** Work with supported archive formats.
+- **Android apps:** Inspect supported application package information and related tools.
+- **Media and documents:** Access supported image, audio, video, and document files.
+- **Network access:** Support for configured network-storage protocols where available.
+- **Privacy and access:** Device-dependent options for protected storage and advanced access.
 - **Interface:** Material Design components, light and dark appearance, and Persian right-to-left usability.
 
 Feature availability may vary by version, device, permissions, and build configuration. Only features present in the installed build should be considered available.
@@ -36,6 +38,8 @@ Feature availability may vary by version, device, permissions, and build configu
 ## Download and builds
 
 Check the repository's [Releases](https://github.com/Solina-Projects/Solina-Files/releases) for published versions and the [Actions](https://github.com/Solina-Projects/Solina-Files/actions) page for automated build results and development artifacts.
+
+When available, choose the APK matching your device architecture. ARM64 (`arm64-v8a`) is suitable for most modern 64-bit Android devices, while ARMv7 (`armeabi-v7a`) is for compatible 32-bit ARM devices. A universal APK may support a wider range of devices but can be larger. Check the actual release assets and notes before installing.
 
 A successful workflow run is required before treating a build as verified. Development builds and release builds may differ in signing, optimization, and supported configurations.
 
