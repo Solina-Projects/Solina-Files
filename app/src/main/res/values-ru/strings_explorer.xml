@@ -168,7 +168,7 @@
     <string name="explorer_encrypt_file">Зашифровать файл</string>
     <string name="explorer_confirm_password">Повторите пароль</string>
     <string name="explorer_passwords_mismatch">Пароли не совпадают</string>
-    <string name="explorer_encrypt_warning">Strata не хранит этот пароль. Если вы его забудете, файл нельзя будет восстановить. Исходный файл сохраняется.</string>
+    <string name="explorer_encrypt_warning">Solina не хранит этот пароль. Если вы его забудете, файл нельзя будет восстановить. Исходный файл сохраняется.</string>
     <string name="explorer_encrypt">Зашифровать</string>
     <string name="explorer_create_link">Создать символическую ссылку</string>
     <plurals name="explorer_links_named">
@@ -265,7 +265,7 @@
     <string name="explorer_drop_on_folder">Отпустите над папкой</string>
     <string name="explorer_up_one_folder">На уровень выше</string>
     <string name="explorer_drop_into">В %1$s</string>
-    <string name="explorer_incoming_hidden">Strata не видит, где хранится %1$s</string>
+    <string name="explorer_incoming_hidden">Solina не видит, где хранится %1$s</string>
     <string name="explorer_incoming_save">Сохранить в Download</string>
     <string name="explorer_incoming_unreadable">Другое приложение не дало прочитать этот файл</string>
 </resources>

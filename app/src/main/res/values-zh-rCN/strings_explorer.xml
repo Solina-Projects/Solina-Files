@@ -147,7 +147,7 @@
     <string name="explorer_encrypt_file">加密文件</string>
     <string name="explorer_confirm_password">确认密码</string>
     <string name="explorer_passwords_mismatch">两次输入的密码不一致</string>
-    <string name="explorer_encrypt_warning">Strata 不会保存此密码。如果忘记密码，文件将无法恢复。原文件会保留。</string>
+    <string name="explorer_encrypt_warning">Solina 不会保存此密码。如果忘记密码，文件将无法恢复。原文件会保留。</string>
     <string name="explorer_encrypt">加密</string>
     <string name="explorer_create_link">创建软链接</string>
     <plurals name="explorer_links_named">
@@ -229,7 +229,7 @@
     <string name="explorer_drop_on_folder">拖放到文件夹上</string>
     <string name="explorer_up_one_folder">上一级文件夹</string>
     <string name="explorer_drop_into">放入 %1$s</string>
-    <string name="explorer_incoming_hidden">Strata 无法看到 %1$s 的存储位置</string>
+    <string name="explorer_incoming_hidden">Solina 无法看到 %1$s 的存储位置</string>
     <string name="explorer_incoming_save">保存到 Download</string>
     <string name="explorer_incoming_unreadable">另一个应用不允许读取此文件</string>
 </resources>

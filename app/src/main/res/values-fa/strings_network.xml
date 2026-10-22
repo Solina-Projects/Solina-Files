@@ -107,7 +107,7 @@
     <string name="remote_op_mkdir">ساختن پوشه</string>
     <string name="remote_op_delete">حذف</string>
     <string name="remote_op_rename">تغییر نام</string>
-    <string name="remote_saf_no_access">\u200FStrata دیگر به این پوشه دسترسی ندارد — دوباره آن را اضافه کنید</string>
+    <string name="remote_saf_no_access">\u200FSolina دیگر به این پوشه دسترسی ندارد — دوباره آن را اضافه کنید</string>
     <string name="remote_saf_unavailable">برنامه‌ای که این پوشه را ارائه می‌دهد در دسترس نیست (\u2068%1$s\u2069)</string>
     <string name="remote_saf_unavailable_silent">برنامه‌ای که این پوشه را ارائه می‌دهد در دسترس نیست (پاسخی نداد)</string>
     <string name="remote_provider_no_answer">ارائه‌دهنده پاسخی نداد</string>
@@ -133,7 +133,7 @@
     <string name="share_sharing">اشتراک‌گذاری \u200E%1$s\u200E</string>
     <string name="share_sharing_read_only">اشتراک‌گذاری \u200E%1$s\u200E (فقط خواندنی)</string>
     <string name="share_no_such_folder">چنین پوشه‌ای وجود ندارد</string>
-    <string name="share_cant_read_folder">\u200FStrata نمی‌تواند این پوشه را بخواند</string>
+    <string name="share_cant_read_folder">\u200FSolina نمی‌تواند این پوشه را بخواند</string>
     <string name="share_browser_access">دسترسی با مرورگر</string>
     <string name="share_web_how">نشانی را در مرورگر رایانه‌ای که به همین Wi-Fi وصل است باز کنید و رمز عبور را وارد کنید.</string>
     <string name="share_web_description">از مرورگر رایانه، فایل‌ها را مرور، بارگیری و بارگذاری کنید — بدون نیاز به نصب چیزی.</string>
@@ -155,7 +155,7 @@
     <string name="share_set_password">یک رمز عبور تعیین کنید</string>
     <string name="plugin_title">افزونه‌ها</string>
     <string name="plugin_coming_soon">به‌زودی</string>
-    <string name="plugin_coming_soon_body">افزونه‌هایی که ابزارهای تازه برای فایل‌هایتان می‌آورند، در نسخه‌های بعدی Strata اضافه می‌شوند.</string>
+    <string name="plugin_coming_soon_body">افزونه‌هایی که ابزارهای تازه برای فایل‌هایتان می‌آورند، در نسخه‌های بعدی Solina اضافه می‌شوند.</string>
     <string name="plugin_plugin">افزونه</string>
     <string name="plugin_files_title">افزونه‌های فایل</string>
     <string name="plugin_files_body">روی فایل لمس طولانی کنید ← افزونه‌ها… هر افزونه یک برنامه جداست: یک کپی فقط خواندنی از فایل می‌گیرد و آنچه برمی‌گرداند فقط در صورتی ذخیره می‌شود که خودتان بخواهید.</string>
@@ -166,12 +166,12 @@
     <string name="plugin_text_body">در ویرایشگر کد، متنی را انتخاب کنید ← منو ← پردازش متن با… این برنامه‌ها این کار را انجام می‌دهند (مترجم‌ها، ابزارهای تغییر حروف…)؛ نتیجه جای متن انتخاب‌شده را می‌گیرد و قابل واگرد است.</string>
     <string name="plugin_no_text_apps">هیچ برنامه‌ای این امکان را ارائه نمی‌دهد.</string>
     <string name="plugin_writing_title">نوشتن افزونه</string>
-    <string name="plugin_writing_body">یک برنامه معمولی Android با یک activity برای کنش \u200E%1$s\u200E. فایل را از content URI موجود در Intent می‌خواند و متن، فایل (یک content URI که اجازه دسترسی به آن را می‌دهد) یا پیامی برمی‌گرداند. Strata هرگز کد افزونه را درون خودش اجرا نمی‌کند. پروتکل در \u200Edocs/plugins.md\u200E در کد منبع Strata آمده است.</string>
+    <string name="plugin_writing_body">یک برنامه معمولی Android با یک activity برای کنش \u200E%1$s\u200E. فایل را از content URI موجود در Intent می‌خواند و متن، فایل (یک content URI که اجازه دسترسی به آن را می‌دهد) یا پیامی برمی‌گرداند. Solina هرگز کد افزونه را درون خودش اجرا نمی‌کند. پروتکل در \u200Edocs/plugins.md\u200E در کد منبع Solina آمده است.</string>
     <string name="plugin_any_file">هر فایلی</string>
-    <string name="plugin_newer_api">ساخته‌شده برای نسخه جدیدتر Strata (API %1$d)</string>
-    <string name="plugin_status_new">هنوز اجرا نشده — Strata پیش از اولین اجرا می‌پرسد</string>
+    <string name="plugin_newer_api">ساخته‌شده برای نسخه جدیدتر Solina (API %1$d)</string>
+    <string name="plugin_status_new">هنوز اجرا نشده — Solina پیش از اولین اجرا می‌پرسد</string>
     <string name="plugin_status_trusted">مورد اعتماد</string>
-    <string name="plugin_status_changed">امضاکننده با زمانی که به آن اعتماد کردید فرق دارد — Strata دوباره می‌پرسد</string>
+    <string name="plugin_status_changed">امضاکننده با زمانی که به آن اعتماد کردید فرق دارد — Solina دوباره می‌پرسد</string>
     <string name="plugin_signed_by">امضاکننده (SHA-256)</string>
     <string name="plugin_forget_trust">لغو اعتماد</string>
     <string name="plugin_read_failed">خواندن \u200E%1$s\u200E ممکن نشد: \u2068%2$s\u2069</string>
@@ -180,7 +180,7 @@
     <string name="plugin_refused_scheme">افزونه به‌جای فایلی که به اشتراک می‌گذارد، یک پیوند \u200E%1$s\u200E فرستاد</string>
     <string name="plugin_refused_no_scheme">افزونه به‌جای فایلی که به اشتراک می‌گذارد، یک پیوند نامعتبر فرستاد</string>
     <string name="plugin_refused_malformed">افزونه یک پیوند نامعتبر فرستاد</string>
-    <string name="plugin_refused_own">افزونه به فایل‌های خود Strata اشاره کرد</string>
+    <string name="plugin_refused_own">افزونه به فایل‌های خود Solina اشاره کرد</string>
     <string name="plugin_refused_too_long">متن افزونه برای دریافت به این روش بیش از حد طولانی است</string>
     <string name="plugin_file_too_large">فایل افزونه بزرگ‌تر از %1$d مگابایت است</string>
     <string name="plugin_no_folder">پوشه‌ای برای ذخیره وجود ندارد</string>
@@ -203,11 +203,11 @@
     <string name="plugin_replace_original">جایگزینی فایل اصلی…</string>
     <string name="plugin_save_new">ذخیره به‌عنوان فایل جدید</string>
     <string name="termux_not_installed_title">\u200FTermux نصب نیست</string>
-    <string name="termux_not_installed_body">\u200FStrata کد شما را با Termux اجرا می‌کند؛ یک محیط لینوکس رایگان برای Android. آن را نصب کنید و بعد به اینجا برگردید.</string>
+    <string name="termux_not_installed_body">\u200FSolina کد شما را با Termux اجرا می‌کند؛ یک محیط لینوکس رایگان برای Android. آن را نصب کنید و بعد به اینجا برگردید.</string>
     <string name="termux_get_fdroid">دریافت از F-Droid</string>
     <string name="termux_github_releases">نسخه‌های منتشرشده در GitHub</string>
-    <string name="termux_allow_title">به Strata اجازه استفاده از Termux بدهید</string>
-    <string name="termux_allow_body">\u200FAndroid یک بار می‌پرسد که آیا Strata می‌تواند به Termux فرمان بفرستد. هر زمان بخواهید می‌توانید این اجازه را در تنظیمات پس بگیرید.</string>
+    <string name="termux_allow_title">به Solina اجازه استفاده از Termux بدهید</string>
+    <string name="termux_allow_body">\u200FAndroid یک بار می‌پرسد که آیا Solina می‌تواند به Termux فرمان بفرستد. هر زمان بخواهید می‌توانید این اجازه را در تنظیمات پس بگیرید.</string>
     <string name="termux_open_settings">باز کردن تنظیمات</string>
     <string name="termux_allow">اجازه دادن</string>
     <string name="termux_setup_title">راه‌اندازی یک‌باره در Termux</string>

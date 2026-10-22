@@ -563,7 +563,7 @@ fn optional_string(env: &mut JNIEnv, s: &JString) -> Option<String> {
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nInit<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_pdf_view_Pdfium_nInit<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -573,7 +573,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nInit<'local>
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nOpenPath<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_pdf_view_Pdfium_nOpenPath<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -590,7 +590,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nOpenPath<'lo
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nOpenFd<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_pdf_view_Pdfium_nOpenFd<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     fd: jint,
@@ -606,7 +606,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nOpenFd<'loca
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nClose<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_pdf_view_Pdfium_nClose<'local>(
     _env: JNIEnv<'local>,
     _this: JObject<'local>,
     id: jlong,
@@ -621,7 +621,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nClose<'local
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nPageSizes<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_pdf_view_Pdfium_nPageSizes<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     id: jlong,
@@ -651,13 +651,13 @@ pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nPageSizes<'l
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nCancel<'local>(_env: JNIEnv<'local>, _this: JObject<'local>) {
+pub extern "system" fn Java_dev_solina_solina_core_pdf_view_Pdfium_nCancel<'local>(_env: JNIEnv<'local>, _this: JObject<'local>) {
     CANCEL.store(true, Ordering::Relaxed);
 }
 
 #[no_mangle]
 #[allow(clippy::too_many_arguments)]
-pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nRender<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_pdf_view_Pdfium_nRender<'local>(
     env: JNIEnv<'local>,
     _this: JObject<'local>,
     id: jlong,
@@ -725,7 +725,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nRender<'loca
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nPageTransform<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_pdf_view_Pdfium_nPageTransform<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     id: jlong,
@@ -751,7 +751,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nPageTransfor
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nPageText<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_pdf_view_Pdfium_nPageText<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     id: jlong,
@@ -814,7 +814,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nPageText<'lo
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nLinks<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_pdf_view_Pdfium_nLinks<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     id: jlong,
@@ -933,7 +933,7 @@ fn walk_outline(api: &Api, doc: Handle, parent: Handle, depth: usize, floats: &m
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nOutline<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_pdf_view_Pdfium_nOutline<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     id: jlong,
@@ -957,7 +957,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nOutline<'loc
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nPageLabels<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_pdf_view_Pdfium_nPageLabels<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     id: jlong,
@@ -977,7 +977,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nPageLabels<'
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_pdf_view_Pdfium_nMeta<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_pdf_view_Pdfium_nMeta<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     id: jlong,

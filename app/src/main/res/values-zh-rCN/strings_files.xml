@@ -109,8 +109,8 @@
     <string name="files_cipher_damaged">加密文件已损坏或不完整</string>
     <string name="files_cipher_failed">加密失败</string>
     <string name="files_cipher_too_large">文件过大</string>
-    <string name="files_cipher_not_ours">%1$s 不是 Strata 加密文件</string>
-    <string name="files_cipher_newer">此文件由更新版本的 Strata 加密（格式 %1$d）</string>
+    <string name="files_cipher_not_ours">%1$s 不是 Solina 加密文件</string>
+    <string name="files_cipher_newer">此文件由更新版本的 Solina 加密（格式 %1$d）</string>
     <string name="files_cipher_unsupported">不支持的加密方式</string>
     <string name="files_cipher_bad_params">密钥参数无效</string>
     <string name="files_cipher_unavailable">此设备无法使用加密</string>

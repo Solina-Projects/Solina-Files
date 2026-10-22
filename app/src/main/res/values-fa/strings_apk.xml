@@ -38,7 +38,7 @@
     <string name="apk_reinstall">نصب دوباره</string>
     <string name="apk_clone_choose_different">نام بسته دیگری انتخاب کنید</string>
     <string name="apk_clone_title">کلون APK</string>
-    <string name="apk_clone_body">یک نسخه دیگر کنار نسخه اصلی نصب می‌کند (دو حساب، نسخه آزمایشی و…). این نسخه نام بسته جدیدی می‌گیرد و با کلید Strata امضا می‌شود.</string>
+    <string name="apk_clone_body">یک نسخه دیگر کنار نسخه اصلی نصب می‌کند (دو حساب، نسخه آزمایشی و…). این نسخه نام بسته جدیدی می‌گیرد و با کلید Solina امضا می‌شود.</string>
     <string name="apk_clone_new_package">نام بسته جدید</string>
     <string name="apk_clone_original_package">اصلی: \u2068%1$s\u2069</string>
     <string name="apk_clone_app_name">نام برنامه (اختیاری)</string>
@@ -84,7 +84,7 @@
     <string name="apk_sign_saved">کلید ذخیره‌شده</string>
     <string name="apk_sign_custom">کلید سفارشی</string>
     <string name="apk_sign_keystore">فایل مخزن کلید</string>
-    <string name="apk_sign_quick_body">با کلیدی که Strata نگه می‌دارد امضا می‌کند، بدون نام یا رمز عبور. همین کلید دوباره به کار می‌رود، پس به‌روزرسانی‌های یک برنامه امضای یکسانی خواهند داشت.</string>
+    <string name="apk_sign_quick_body">با کلیدی که Solina نگه می‌دارد امضا می‌کند، بدون نام یا رمز عبور. همین کلید دوباره به کار می‌رود، پس به‌روزرسانی‌های یک برنامه امضای یکسانی خواهند داشت.</string>
     <string name="apk_sign_no_saved">هنوز کلیدی ذخیره نشده است. برای وارد کردن، روی یک فایل \u200E.jks / .keystore / .p12 / .bks (یا \u200E.pk8) بزنید، یا در «کلیدهای امضا» کلیدی بسازید.</string>
     <string name="apk_sign_save_jks">فایل \u2068%1$s\u200E.jks\u2069 هم کنار APK ذخیره شود</string>
     <string name="apk_sign_custom_body">کلید جدیدی با مشخصات شما ساخته و در «کلیدهای امضا» نگه داشته می‌شود تا بتوانید به‌روزرسانی‌ها را با همان امضا دوباره امضا کنید. فایل \u200E.jks (محافظت‌شده با همین رمز عبور) مال شماست و روی رایانه هم می‌توانید با آن امضا کنید.</string>
@@ -99,7 +99,7 @@
     <string name="apk_split_title">نصب APK چندتکه</string>
     <string name="apk_split_version">نسخه \u2068%1$s\u2069</string>
     <string name="apk_split_version_installed">نسخه \u2068%1$s\u2069، نصب‌شده: \u2068%2$s\u2069 (\u2068%3$s\u2069)</string>
-    <string name="apk_split_explain">این یک برنامه است که به چند بخش تقسیم شده. Strata بخش‌هایی را که دستگاه شما لازم دارد (پردازنده، زبان، صفحه‌نمایش) علامت زده است؛ همه با هم به‌صورت یک برنامه نصب می‌شوند. علامت بخش‌های اضافه‌ای را که نمی‌خواهید بردارید.</string>
+    <string name="apk_split_explain">این یک برنامه است که به چند بخش تقسیم شده. Solina بخش‌هایی را که دستگاه شما لازم دارد (پردازنده، زبان، صفحه‌نمایش) علامت زده است؛ همه با هم به‌صورت یک برنامه نصب می‌شوند. علامت بخش‌های اضافه‌ای را که نمی‌خواهید بردارید.</string>
     <string name="apk_split_count">\u200F%1$d از %2$d</string>
     <string name="apk_split_installed_apks">\u200F%1$d فایل APK نصب شد.</string>
     <string name="apk_split_installed_apks_obb">\u200F%1$d فایل APK نصب و %2$d فایل OBB کپی شد.</string>
@@ -182,7 +182,7 @@
     <string name="keys_title">کلیدهای امضا</string>
     <string name="keys_import_keystore">وارد کردن مخزن کلید</string>
     <string name="keys_generate_key">ساخت کلید</string>
-    <string name="keys_intro">کلیدهایی که Strata با آن‌ها امضا می‌کند. برای وارد کردن، در فهرست فایل‌ها روی یک فایل \u200E.jks / .keystore / .bks / .p12 یا \u200E.pk8 بزنید. فایل‌های صادرشده در پوشه فعلی فهرست فایل‌ها ذخیره می‌شوند: \u2068%1$s\u2069</string>
+    <string name="keys_intro">کلیدهایی که Solina با آن‌ها امضا می‌کند. برای وارد کردن، در فهرست فایل‌ها روی یک فایل \u200E.jks / .keystore / .bks / .p12 یا \u200E.pk8 بزنید. فایل‌های صادرشده در پوشه فعلی فهرست فایل‌ها ذخیره می‌شوند: \u2068%1$s\u2069</string>
     <string name="keys_until">تا \u2068%1$s\u2069</string>
     <string name="keys_export_to">صادر کردن به \u2068%1$s\u2069</string>
     <string name="keys_pk8_warning">فایل \u200E.pk8 خودِ کلید بدون محافظت است: هر کسی آن را داشته باشد می‌تواند به جای شما امضا کند. فایل‌های صادرشده را خصوصی نگه دارید.</string>
@@ -236,7 +236,7 @@
     <string name="keys_error_key_no_cert">کلید «\u2068%1$s\u2069» گواهی ندارد</string>
     <string name="keys_error_not_keystore">این فایل مخزن کلید نیست</string>
     <string name="keys_error_jceks">مخزن‌های کلید JCEKS پشتیبانی نمی‌شوند — آن را روی رایانه تبدیل کنید: keytool -importkeystore -deststoretype pkcs12</string>
-    <string name="keys_error_unknown_keystore">مخزن کلیدی نیست که Strata بشناسد (JKS، PKCS #12 یا BKS)</string>
+    <string name="keys_error_unknown_keystore">مخزن کلیدی نیست که Solina بشناسد (JKS، PKCS #12 یا BKS)</string>
     <string name="keys_error_not_pkcs8">کلید PKCS #8 نیست</string>
     <string name="keys_error_wrong_pk8_password">رمز کلید \u200E.pk8 اشتباه است</string>
     <string name="keys_error_no_cert_in_pem">فایل \u200E.x509.pem گواهی ندارد</string>

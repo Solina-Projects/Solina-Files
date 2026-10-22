@@ -35,7 +35,7 @@
     <queries>
         <package android:name="com.termux" />
         <intent>
-            <action android:name="dev.cluvex.strata.plugin.action.FILE" />
+            <action android:name="ir.solina.files.plugin.action.FILE" />
             <data android:mimeType="*/*" />
         </intent>
         <intent>
@@ -45,7 +45,7 @@
     </queries>
 
     <application
-        android:name=".StrataApp"
+        android:name=".SolinaFilesApp"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -56,7 +56,7 @@
         android:supportsRtl="true"
         android:localeConfig="@xml/locales_config"
         android:enableOnBackInvokedCallback="true"
-        android:theme="@style/Theme.Strata"
+        android:theme="@style/Theme.SolinaFiles"
         tools:targetApi="36">
 
         <activity
@@ -64,7 +64,7 @@
             android:exported="true"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden|density|uiMode"
             android:windowSoftInputMode="adjustResize"
-            android:theme="@style/Theme.Strata.Splash">
+            android:theme="@style/Theme.SolinaFiles.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

@@ -154,7 +154,7 @@
     <string name="explorer_encrypt_file">رمزگذاری فایل</string>
     <string name="explorer_confirm_password">تکرار رمز عبور</string>
     <string name="explorer_passwords_mismatch">رمزهای عبور یکسان نیستند</string>
-    <string name="explorer_encrypt_warning">\u200FStrata این رمز عبور را ذخیره نمی‌کند. اگر آن را فراموش کنید، فایل قابل بازیابی نیست. فایل اصلی حفظ می‌شود.</string>
+    <string name="explorer_encrypt_warning">\u200FSolina این رمز عبور را ذخیره نمی‌کند. اگر آن را فراموش کنید، فایل قابل بازیابی نیست. فایل اصلی حفظ می‌شود.</string>
     <string name="explorer_encrypt">رمزگذاری</string>
     <string name="explorer_create_link">ساخت پیوند نمادین</string>
     <plurals name="explorer_links_named">
@@ -241,7 +241,7 @@
     <string name="explorer_drop_on_folder">روی یک پوشه رها کنید</string>
     <string name="explorer_up_one_folder">یک پوشه بالاتر</string>
     <string name="explorer_drop_into">به داخل \u2068%1$s\u2069</string>
-    <string name="explorer_incoming_hidden">\u200FStrata محل ذخیره‌ی \u2068%1$s\u2069 را نمی‌بیند</string>
+    <string name="explorer_incoming_hidden">\u200FSolina محل ذخیره‌ی \u2068%1$s\u2069 را نمی‌بیند</string>
     <string name="explorer_incoming_save">ذخیره در Download</string>
     <string name="explorer_incoming_unreadable">برنامه‌ی دیگر اجازه‌ی خواندن این فایل را نداد</string>
 </resources>

@@ -1,0 +1,183 @@
+package ir.solina.files.feature.media
+
+import ir.solina.files.core.i18n.separator
+import android.content.ComponentName
+import android.graphics.BitmapFactory
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.MusicNote
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
+import androidx.media3.common.Player
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
+import androidx.media3.ui.compose.material3.buttons.NextButton
+import androidx.media3.ui.compose.material3.buttons.PlayPauseButton
+import androidx.media3.ui.compose.material3.buttons.PlaybackSpeedToggleButton
+import androidx.media3.ui.compose.material3.buttons.PreviousButton
+import androidx.media3.ui.compose.material3.buttons.RepeatButton
+import androidx.media3.ui.compose.material3.buttons.ShuffleButton
+import androidx.media3.ui.compose.material3.indicator.DurationText
+import androidx.media3.ui.compose.material3.indicator.PositionText
+import androidx.media3.ui.compose.material3.indicator.ProgressSlider
+import ir.solina.files.R
+import ir.solina.files.core.media.MediaSiblings
+import ir.solina.files.core.util.FileKind
+import ir.solina.files.ui.rememberSheetState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
+
+@Composable
+fun rememberMediaController(): MediaController? {
+    val context = LocalContext.current
+    var controller by remember { mutableStateOf<MediaController?>(null) }
+    DisposableEffect(Unit) {
+        val token = SessionToken(context, ComponentName(context, PlaybackService::class.java))
+        val future = MediaController.Builder(context, token).buildAsync()
+        future.addListener({ controller = runCatching { future.get() }.getOrNull() }, ContextCompat.getMainExecutor(context))
+        onDispose {
+            controller = null
+            MediaController.releaseFuture(future)
+        }
+    }
+    return controller
+}
+
+@OptIn(ExperimentalMaterial3Api::class, androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
+@Composable
+fun MusicPlayerSheet(path: String, showHidden: Boolean, onDismiss: () -> Unit) {
+    val controller = rememberMediaController()
+    var metadata by remember { mutableStateOf(MediaMetadata.EMPTY) }
+    var artwork by remember { mutableStateOf<ImageBitmap?>(null) }
+
+    LaunchedEffect(controller, path) {
+        val c = controller ?: return@LaunchedEffect
+        if (c.currentMediaItem?.mediaId == path) return@LaunchedEffect
+        val list = withContext(Dispatchers.IO) { MediaSiblings.of(File(path), FileKind.AUDIO, showHidden) }
+        c.setMediaItems(list.files.map(::songItem), list.start, 0L)
+        c.prepare()
+        c.play()
+    }
+    DisposableEffect(controller) {
+        val c = controller
+        val listener = object : Player.Listener {
+            override fun onMediaMetadataChanged(mediaMetadata: MediaMetadata) {
+                metadata = mediaMetadata
+                artwork = mediaMetadata.artworkData?.let { bytes ->
+                    runCatching { BitmapFactory.decodeByteArray(bytes, 0, bytes.size)?.asImageBitmap() }.getOrNull()
+                }
+            }
+        }
+        c?.addListener(listener)
+        c?.let { listener.onMediaMetadataChanged(it.mediaMetadata) }
+        onDispose { c?.removeListener(listener) }
+    }
+
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = rememberSheetState(),
+        modifier = Modifier.testTag("music-player"),
+    ) {
+        Column(
+            Modifier.fillMaxWidth().padding(horizontal = 24.dp).padding(bottom = 24.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Box(
+                Modifier.size(200.dp).clip(RoundedCornerShape(28.dp)).background(MaterialTheme.colorScheme.secondaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                val art = artwork
+                if (art != null) {
+                    Image(art, contentDescription = stringResource(R.string.media_cover), contentScale = ContentScale.Crop, modifier = Modifier.size(200.dp))
+                } else {
+                    Icon(Icons.Rounded.MusicNote, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(72.dp))
+                }
+            }
+            val c = controller
+            if (c == null) {
+                LoadingIndicator()
+                return@Column
+            }
+            Text(
+                metadata.title?.toString() ?: metadata.displayTitle?.toString() ?: File(path).nameWithoutExtension,
+                style = MaterialTheme.typography.titleLarge,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            val subtitle = listOfNotNull(metadata.artist, metadata.albumTitle).joinToString(separator())
+            if (subtitle.isNotEmpty()) {
+                Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Ltr) {
+                ProgressSlider(c, Modifier.fillMaxWidth())
+                Row(Modifier.fillMaxWidth()) {
+                    PositionText(c)
+                    Spacer(Modifier.weight(1f))
+                    DurationText(c)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                    ShuffleButton(c)
+                    PreviousButton(c)
+                    PlayPauseButton(c, Modifier.size(72.dp))
+                    NextButton(c)
+                    RepeatButton(c)
+                }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                PlaybackSpeedToggleButton(c)
+                Spacer(Modifier.weight(1f))
+                TextButton(onClick = { c.stop(); c.clearMediaItems(); onDismiss() }) { Text(stringResource(R.string.common_stop)) }
+            }
+        }
+    }
+}
+
+private fun songItem(file: File): MediaItem = MediaItem.Builder()
+    .setUri(android.net.Uri.fromFile(file))
+    .setMediaId(file.path)
+    .setMediaMetadata(MediaMetadata.Builder().setDisplayTitle(file.nameWithoutExtension).build())
+    .build()

@@ -108,7 +108,7 @@
     <string name="model_motion_expressive">Expressive</string>
     <string name="model_motion_standard">Standard</string>
     <string name="model_motion_reduced">Reduced</string>
-    <string name="model_seed_strata" translatable="false">Strata</string>
+    <string name="model_seed_solina" translatable="false">Solina</string>
     <string name="model_seed_ocean">Ocean</string>
     <string name="model_seed_indigo">Indigo</string>
     <string name="model_seed_violet">Violet</string>

@@ -11,7 +11,7 @@
     <string name="settings_page_access">Root и Shizuku</string>
     <string name="settings_page_opening">Открытие файлов</string>
     <string name="settings_page_backup">Резервное копирование</string>
-    <string name="settings_page_about">О Strata</string>
+    <string name="settings_page_about">О Solina</string>
     <string name="settings_home_look">Внешний вид</string>
     <string name="settings_home_files">Работа с файлами</string>
     <string name="settings_home_system">Система</string>
@@ -137,7 +137,7 @@
     <string name="settings_contrast">Контраст</string>
     <string name="settings_group_text_shapes">Текст и формы</string>
     <string name="settings_text_size">Размер текста</string>
-    <string name="settings_text_size_sample">Strata держит ваши файлы в порядке</string>
+    <string name="settings_text_size_sample">Solina держит ваши файлы в порядке</string>
     <string name="settings_corners">Углы</string>
     <string name="settings_corners_summary">Насколько скруглены карточки, панели и кнопки</string>
     <string name="settings_group_file_icons">Значки файлов</string>
@@ -196,7 +196,7 @@
     <string name="settings_two_panes_summary">Две папки рядом</string>
     <string name="settings_group_gestures">Жесты</string>
     <string name="settings_double_back">Выход двойным нажатием «Назад»</string>
-    <string name="settings_double_back_summary">Чтобы случайное нажатие «Назад» не закрывало Strata</string>
+    <string name="settings_double_back_summary">Чтобы случайное нажатие «Назад» не закрывало Solina</string>
     <string name="settings_icon_tap">Выделение нажатием на значок</string>
     <string name="settings_icon_tap_summary">Нажатие на значок файла выделяет его, нажатие на имя — открывает</string>
     <string name="settings_group_working">Во время работы</string>
@@ -217,13 +217,13 @@
     <string name="settings_trash_clean">Очищать элементы старше</string>
     <string name="settings_never">Никогда</string>
     <string name="settings_open_recycle_bin">Открыть корзину</string>
-    <string name="settings_reader_subtitle">Чтение PDF в Strata</string>
+    <string name="settings_reader_subtitle">Чтение PDF в Solina</string>
     <string name="settings_group_pages">Страницы</string>
     <string name="settings_page_color">Цвет страницы</string>
     <string name="settings_page_color_summary">В режиме «Ночь» изображения сохраняют свои цвета</string>
     <string name="settings_reader_screen_on">Не выключать экран при чтении</string>
     <string name="settings_group_memory">Память</string>
-    <string name="settings_memory_footer">Strata открывает каждый PDF там, где вы остановились. Добавленные закладки остаются, пока вы их не удалите.</string>
+    <string name="settings_memory_footer">Solina открывает каждый PDF там, где вы остановились. Добавленные закладки остаются, пока вы их не удалите.</string>
     <string name="settings_forget_spots">Забыть, где я остановился</string>
     <string name="settings_forget_spots_done">Готово — PDF снова открываются с первой страницы</string>
     <string name="settings_forget_spots_summary">Каждый PDF снова откроется с первой страницы</string>
@@ -265,8 +265,8 @@
     <string name="settings_install_root_needs">Сначала включите root-доступ</string>
     <string name="settings_group_extracting">Извлечение</string>
     <string name="settings_apk_folder">Папка для извлечённых APK</string>
-    <string name="settings_apk_folder_default">Strata/APKs во внутренней памяти</string>
-    <string name="settings_apk_folder_hint">Пусто: Strata/APKs во внутренней памяти</string>
+    <string name="settings_apk_folder_default">Solina/APKs во внутренней памяти</string>
+    <string name="settings_apk_folder_hint">Пусто: Solina/APKs во внутренней памяти</string>
     <string name="settings_name_pattern">Шаблон имени</string>
     <string name="settings_name_pattern_legend">{A} имя, {P} пакет, {V} версия, {C} код</string>
     <string name="settings_name_pattern_summary">"%1$s   (%2$s)"</string>
@@ -281,7 +281,7 @@
     <string name="settings_shizuku_off">Нужно приложение Shizuku. Root выше уже даёт доступ к этим папкам.</string>
     <string name="settings_shizuku_install">Установите приложение Shizuku и запустите его через отладку по Wi-Fi или USB</string>
     <string name="settings_shizuku_start">Откройте приложение Shizuku и запустите службу</string>
-    <string name="settings_shizuku_allow">Разрешите Strata в Shizuku (нажмите, чтобы запросить снова)</string>
+    <string name="settings_shizuku_allow">Разрешите Solina в Shizuku (нажмите, чтобы запросить снова)</string>
     <string name="settings_shizuku_on">Вкл.: Android/data и Android/obb открываются через Shizuku</string>
     <string name="settings_opening_subtitle">Приложения по умолчанию для типов файлов</string>
     <string name="settings_opening_none">Пока ничего не назначено. В окне «Открыть с помощью…» нажмите и удерживайте приложение или инструмент, чтобы открывать им этот тип файлов по умолчанию.</string>
@@ -304,7 +304,7 @@
     <string name="settings_choose_file_summary">Файл настроек из любого места</string>
     <string name="settings_group_reset">Сброс</string>
     <string name="settings_reset_all">Сбросить все настройки</string>
-    <string name="settings_reset_all_summary">Вернуть Strata к состоянию после установки. Закладки, хранилища и ключи останутся.</string>
+    <string name="settings_reset_all_summary">Вернуть Solina к состоянию после установки. Закладки, хранилища и ключи останутся.</string>
     <string name="settings_restore_title">Восстановить настройки?</string>
     <string name="settings_restore_body">Настройки из «%1$s» заменят текущие.</string>
     <string name="settings_restore_body_unnamed">Настройки из файла заменят текущие.</string>
@@ -313,13 +313,13 @@
     <string name="settings_reset_body">Тема, список, редактор и все остальные параметры вернутся к значениям по умолчанию.</string>
     <string name="settings_reset">Сбросить</string>
     <string name="settings_reset_done">Настройки сброшены</string>
-    <string name="settings_backup_not_strata">Это не файл настроек Strata</string>
-    <string name="settings_backup_newer">Этот файл настроек создан более новой версией Strata (формат %1$d)</string>
+    <string name="settings_backup_not_solina">Это не файл настроек Solina</string>
+    <string name="settings_backup_newer">Этот файл настроек создан более новой версией Solina (формат %1$d)</string>
     <string name="settings_backup_empty">В файле нет настроек</string>
     <string name="settings_about_version">Версия %1$s (%2$d)</string>
     <string name="settings_about_tagline">Свободный файловый менеджер с открытым исходным кодом</string>
     <string name="settings_group_license">Лицензия</string>
-    <string name="settings_license_summary">Вы можете использовать, изучать, распространять и изменять Strata. Изменённая версия, которая обслуживает людей по сети, должна предоставлять им свой исходный код.</string>
+    <string name="settings_license_summary">Вы можете использовать, изучать, распространять и изменять Solina. Изменённая версия, которая обслуживает людей по сети, должна предоставлять им свой исходный код.</string>
     <string name="settings_group_device">Это устройство</string>
     <string name="settings_device_android">Android %1$s (API %2$d)</string>
     <string name="settings_group_components">Компоненты с открытым исходным кодом</string>
@@ -389,7 +389,7 @@
     <string name="ui_default_no_extension">Назначено по умолчанию для файлов без расширения</string>
     <string name="ui_default_for_ext">Назначено по умолчанию для файлов .%1$s</string>
     <string name="ui_storage_title">Нужен доступ к хранилищу</string>
-    <string name="ui_storage_body">Strata нужен доступ ко всем файлам, чтобы просматривать, редактировать и упорядочивать содержимое памяти устройства.</string>
+    <string name="ui_storage_body">Solina нужен доступ ко всем файлам, чтобы просматривать, редактировать и упорядочивать содержимое памяти устройства.</string>
     <string name="ui_storage_grant">Предоставить доступ</string>
     <plurals name="settings_summary_bar_buttons">
         <item quantity="one">%d кнопка на панели</item>
@@ -446,8 +446,8 @@
         <item quantity="other">Помещается только %1$d быстрой кнопки, поэтому в меню перемещено: %2$s</item>
     </plurals>
     <string name="settings_support_title">Поддержать разработчика</string>
-    <string name="settings_support_summary">Strata бесплатна и с открытым кодом. Ваша поддержка помогает ей развиваться.</string>
-    <string name="settings_support_body">Strata бесплатна, с открытым исходным кодом, без рекламы и слежки. Если она вам пригодилась и вы хотите помочь её развитию, можно отправить пожертвование на один из этих адресов. Спасибо за любую поддержку!</string>
+    <string name="settings_support_summary">Solina бесплатна и с открытым кодом. Ваша поддержка помогает ей развиваться.</string>
+    <string name="settings_support_body">Solina бесплатна, с открытым исходным кодом, без рекламы и слежки. Если она вам пригодилась и вы хотите помочь её развитию, можно отправить пожертвование на один из этих адресов. Спасибо за любую поддержку!</string>
     <string name="settings_support_wallets">Кошельки</string>
     <string name="settings_support_network_hint">Отправляйте каждую монету только в сети, указанной над её адресом: средства, отправленные через другую сеть, вернуть нельзя.</string>
     <string name="settings_support_copy">Скопировать адрес %1$s</string>

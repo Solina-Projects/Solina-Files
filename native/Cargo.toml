@@ -1,13 +1,13 @@
 [package]
-name = "strata_native"
+name = "solina_native"
 version = "0.1.0"
 edition = "2021"
 publish = false
-description = "Strata native core — small, fast file utilities written in Rust and exposed to the app over JNI."
+description = "Solina native core — small, fast file utilities written in Rust and exposed to the app over JNI."
 license = "Apache-2.0"
 
 [lib]
-name = "strata_native"
+name = "solina_native"
 crate-type = ["cdylib"]
 
 [dependencies]

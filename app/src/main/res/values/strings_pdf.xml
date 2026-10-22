@@ -83,12 +83,12 @@
     <string name="pdf_error_file">The file can\'t be read</string>
     <string name="pdf_error_format">This isn\'t a PDF file, or it\'s damaged</string>
     <string name="pdf_error_password">This PDF is protected with a password</string>
-    <string name="pdf_error_security">This PDF uses an encryption Strata can\'t open</string>
+    <string name="pdf_error_security">This PDF uses an encryption Solina can\'t open</string>
     <string name="pdf_error_page">A page of this PDF is damaged</string>
     <string name="pdf_error_engine">The PDF engine isn\'t available on this device</string>
     <string name="pdf_error_unknown">The PDF couldn\'t be opened</string>
     <string name="pdf_nothing_to_open">Nothing to open</string>
-    <string name="pdf_needs_root">Strata can\'t read this file. Turn on root mode to open it.</string>
+    <string name="pdf_needs_root">Solina can\'t read this file. Turn on root mode to open it.</string>
     <string name="pdf_root_unavailable">Root access isn\'t available</string>
     <string name="pdf_merge_need_two">Select at least two PDF files</string>
     <string name="pdf_merge_not_file">%1$s is not a file</string>
@@ -100,8 +100,8 @@
     <string name="pdf_error_no_catalog">The document has no catalog</string>
     <string name="pdf_error_no_pages">The document has no pages</string>
     <string name="pdf_error_encryption_dictionary">Broken encryption dictionary</string>
-    <string name="pdf_error_unsupported_encryption">This PDF uses %1$s encryption, which Strata can\'t open</string>
-    <string name="pdf_error_unknown_encryption">This PDF uses an unknown encryption, which Strata can\'t open</string>
+    <string name="pdf_error_unsupported_encryption">This PDF uses %1$s encryption, which Solina can\'t open</string>
+    <string name="pdf_error_unknown_encryption">This PDF uses an unknown encryption, which Solina can\'t open</string>
     <string name="pdf_error_stream_length">A stream came out %1$d bytes long instead of %2$d</string>
     <string name="media_number" translatable="false">%1$d</string>
     <string name="media_image_size" translatable="false">%1$d × %2$d</string>

@@ -88,12 +88,12 @@
     <string name="pdf_error_file">Не удаётся прочитать файл</string>
     <string name="pdf_error_format">Это не PDF-файл, или он повреждён</string>
     <string name="pdf_error_password">Этот PDF защищён паролем</string>
-    <string name="pdf_error_security">В этом PDF используется шифрование, которое Strata не может открыть</string>
+    <string name="pdf_error_security">В этом PDF используется шифрование, которое Solina не может открыть</string>
     <string name="pdf_error_page">Одна из страниц этого PDF повреждена</string>
     <string name="pdf_error_engine">Модуль PDF недоступен на этом устройстве</string>
     <string name="pdf_error_unknown">Не удалось открыть PDF</string>
     <string name="pdf_nothing_to_open">Нечего открывать</string>
-    <string name="pdf_needs_root">Strata не может прочитать этот файл. Включите режим root, чтобы открыть его.</string>
+    <string name="pdf_needs_root">Solina не может прочитать этот файл. Включите режим root, чтобы открыть его.</string>
     <string name="pdf_root_unavailable">Root-доступ недоступен</string>
     <string name="pdf_merge_need_two">Выберите хотя бы два PDF-файла</string>
     <string name="pdf_merge_not_file">%1$s — не файл</string>
@@ -105,8 +105,8 @@
     <string name="pdf_error_no_catalog">В документе нет каталога</string>
     <string name="pdf_error_no_pages">В документе нет страниц</string>
     <string name="pdf_error_encryption_dictionary">Словарь шифрования повреждён</string>
-    <string name="pdf_error_unsupported_encryption">В этом PDF используется шифрование %1$s, которое Strata не может открыть</string>
-    <string name="pdf_error_unknown_encryption">В этом PDF используется неизвестное шифрование, которое Strata не может открыть</string>
+    <string name="pdf_error_unsupported_encryption">В этом PDF используется шифрование %1$s, которое Solina не может открыть</string>
+    <string name="pdf_error_unknown_encryption">В этом PDF используется неизвестное шифрование, которое Solina не может открыть</string>
     <string name="pdf_error_stream_length">Длина потока данных в байтах: %1$d вместо %2$d</string>
     <string name="media_open_with">Открыть с помощью</string>
     <string name="media_image_info">Сведения об изображении</string>
