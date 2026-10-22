@@ -28,7 +28,7 @@ jobs:
           root = Path(".")
           protected_names = {"LICENSE", "LICENSE.md", "LICENSE.txt", "NOTICE", "THIRD_PARTY_NOTICES"}
           skip_dirs = {".git", ".gradle", "build", ".idea"}
-          text_exts = {".kt", ".java", ".aidl", ".xml", ".kts", ".toml", ".properties", ".yml", ".yaml", ".md", ".json", ".rs", ".sh", ".html", ".gradle", ".pro", ".txt", ".cfg", ".conf", ".py", ".js", ".ts", ".css", ".properties"}
+          text_exts = {".kt", ".java", ".aidl", ".xml", ".kts", ".toml", ".properties", ".yml", ".yaml", ".md", ".json", ".rs", ".sh", ".html", ".gradle", ".pro", ".txt", ".cfg", ".conf", ".py", ".js", ".ts", ".css", ".properties", ".lock"}
           replacements = [
               ("dev.cluvex.strata", "ir.solina.files"),
               ("dev/cluvex/strata", "ir/solina/files"),
