@@ -21,7 +21,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.solina.files"
+        applicationId = "ir.solina.fm"
         minSdk = 24
         targetSdk = 36
         versionCode = (project.property("strata.versionCode") as String).toInt()
