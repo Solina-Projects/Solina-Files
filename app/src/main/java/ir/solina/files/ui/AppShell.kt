@@ -72,6 +72,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ir.solina.files.core.bookmarks.Bookmark
 import ir.solina.files.core.bookmarks.Bookmarks
 import ir.solina.files.core.data.SettingsRepository
+import ir.solina.files.core.model.ThemeMode
 import ir.solina.files.core.data.SolinaSettings
 import ir.solina.files.core.model.FileItem
 import ir.solina.files.core.open.OpenResolver
@@ -503,6 +504,14 @@ private fun Screen(
                 onOpenFolder = { path -> actions.locate(path, null) },
                 onSearch = { actions.push(Route.Search(vm.state.value.activePane.path)) },
                 onSettings = { actions.push(Route.Settings) },
+                isDarkTheme = settings.themeMode == ThemeMode.DARK,
+                onToggleTheme = {
+                    scope.launch {
+                        settingsRepo.editAppearance {
+                            it.copy(themeMode = if (settings.themeMode == ThemeMode.DARK) ThemeMode.LIGHT else ThemeMode.DARK)
+                        }
+                    }
+                },
             )
         }
         Route.Files -> Unit
