@@ -87,9 +87,9 @@ jobs:
               Path("app/src/androidTest/java/dev/cluvex/strata"),
           ):
               if old_root.exists():
-                  new_root = old_root.parents[3] / "ir/solina/files" if "aidl" not in old_root.parts else old_root.parents[3] / "ir/solina/files"
+                  new_root = old_root.parents[2] / "ir/solina/files" if "aidl" not in old_root.parts else old_root.parents[2] / "ir/solina/files"
                   # Use the source-set root rather than relying on package depth.
-                  source_root = old_root.parents[3]
+                  source_root = old_root.parents[2]
                   new_root = source_root / "ir/solina/files"
                   new_root.parent.mkdir(parents=True, exist_ok=True)
                   if new_root.exists():
