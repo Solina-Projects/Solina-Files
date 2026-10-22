@@ -72,7 +72,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.STRATA_KEY_PASSWORD }}
         run: |
           if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
-            echo "::error::Add the STRATA_KEYSTORE_BASE64, STRATA_KEYSTORE_PASSWORD, STRATA_KEY_ALIAS and STRATA_KEY_PASSWORD secrets to sign releases."
+            echo "::error::Add the STRATA_KEYSTORE_BASE64, STRATA_KEYSTORE_PASSWORD, STRATA_KEY_ALIAS and STRATA_KEY_PASSWORD (legacy secret names; keep until new Solina secrets are configured) secrets to sign releases."
             exit 1
           fi
           echo "$KEYSTORE_BASE64" | base64 -d > release.jks
@@ -81,12 +81,12 @@ jobs:
       - name: Build the signed release APKs
         if: github.event_name != 'pull_request'
         run: |
-          version=$(grep '^strata.versionName=' gradle.properties | cut -d= -f2)
+          version=$(grep '^solina.versionName=' gradle.properties | cut -d= -f2)
           if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != "v${version}" ]]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match strata.versionName=${version} in gradle.properties."
+            echo "::error::Tag $GITHUB_REF_NAME does not match solina.versionName=${version} in gradle.properties."
             exit 1
           fi
-          ./gradlew --stacktrace :app:assembleRelease -Pstrata.splitApks=true
+          ./gradlew --stacktrace :app:assembleRelease -Psolina.splitApks=true
           mkdir -p dist
           for abi in arm64-v8a armeabi-v7a x86_64 universal; do
             cp "app/build/outputs/apk/release/app-${abi}-release.apk" "dist/Solina-Files-v${version}-${abi}.apk"
