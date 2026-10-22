@@ -124,7 +124,7 @@ import ir.solina.files.feature.share.ShareScreen
 import ir.solina.files.feature.termux.LanguagesScreen
 import ir.solina.files.feature.trash.RecycleBinScreen
 import ir.solina.files.ui.drawer.DrawerActions
-import ir.solina.files.ui.drawer.StrataDrawerContent
+import ir.solina.files.ui.drawer.SolinaDrawerContent
 import java.io.File
 import ir.solina.files.ui.expressive.Art
 import ir.solina.files.ui.expressive.ExpressiveHero
@@ -333,7 +333,7 @@ fun AppShell(
                     scope.launch { drawerState.close() }
                     stack.push(r)
                 }
-                StrataDrawerContent(
+                SolinaDrawerContent(
                     root = root,
                     rootMode = settings.rootAccess,
                     bookmarks = sidebarBookmarks,
