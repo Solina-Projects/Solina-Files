@@ -83,7 +83,7 @@ data class SolinaSettings(
     val behavior: BehaviorPrefs = BehaviorPrefs(),
     val operations: OperationPrefs = OperationPrefs(),
     val security: SecurityPrefs = SecurityPrefs(),
-    val dualPanePreferred: Boolean = true,
+    val dualPanePreferred: Boolean = false,
     val trashByDefault: Boolean = true,
     val trashAutoCleanDays: Int = 0,
     val rootAccess: Boolean = false,
@@ -371,7 +371,7 @@ class SettingsRepository(private val context: Context) {
             behavior = readBehavior(p),
             operations = readOperations(p),
             security = readSecurity(p),
-            dualPanePreferred = p[Keys.DUAL_PANE] ?: true,
+            dualPanePreferred = p[Keys.DUAL_PANE] ?: false,
             trashByDefault = p[Keys.TRASH_DEFAULT] ?: true,
             trashAutoCleanDays = p[Keys.TRASH_CLEAN_DAYS] ?: 0,
             rootAccess = p[Keys.ROOT_ACCESS] ?: false,
@@ -386,7 +386,7 @@ class SettingsRepository(private val context: Context) {
             runCommands = RunCommands.decode(p[Keys.RUN_COMMANDS]),
             reader = readReader(p),
             actions = ActionLayout.decode(
-                if (p[Keys.DUAL_PANE] ?: true) {
+                if (p[Keys.DUAL_PANE] ?: false) {
                     p[Keys.ACTION_LAYOUT_DUAL] ?: p[Keys.ACTION_LAYOUT]
                 } else {
                     p[Keys.ACTION_LAYOUT_SINGLE] ?: p[Keys.ACTION_LAYOUT]
