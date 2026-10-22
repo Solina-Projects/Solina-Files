@@ -32,6 +32,7 @@ data class FileItem(
                 canRead = file.canRead(),
                 canWrite = file.canWrite(),
                 isSymlink = dev.cluvex.strata.core.fs.FsUtil.isSymlink(file),
+                childCount = if (file.isDirectory) file.listFiles()?.size ?: 0 else -1,
             )
         }
     }
