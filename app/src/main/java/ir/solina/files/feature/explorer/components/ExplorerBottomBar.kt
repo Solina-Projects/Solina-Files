@@ -243,7 +243,7 @@ private fun BrowseActions(
         }
     fun actionIcon(action: BrowseAction): ImageVector =
         if (action == BrowseAction.SWAP && dual) {
-            if (horizontalSplit) Icons.Rounded.SwapHoriz else Icons.Rounded.SwapVert
+            if (horizontalSplit) Icons.Rounded.SwapVert else Icons.Rounded.SwapHoriz
         } else if (action == BrowseAction.HIDDEN_FILES && showHidden) {
             Icons.Rounded.VisibilityOff
         } else {
