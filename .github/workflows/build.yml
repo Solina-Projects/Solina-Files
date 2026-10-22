@@ -88,7 +88,7 @@ jobs:
           fi
           ./gradlew --stacktrace :app:assembleRelease -Psolina.splitApks=true
           mkdir -p dist
-          for abi in arm64-v8a armeabi-v7a x86_64 universal; do
+          for abi in arm64-v8a armeabi-v7a universal; do
             cp "app/build/outputs/apk/release/app-${abi}-release.apk" "dist/Solina-Files-v${version}-${abi}.apk"
           done
           (cd dist && sha256sum *.apk > SHA256SUMS.txt)
