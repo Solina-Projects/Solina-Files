@@ -163,7 +163,7 @@ fun HomeScreen(
                         val parts = categories.filter { it.bytes > 0L }.map { it.color to it.bytes } +
                             listOf(Color(0xFF78909C) to other, MaterialTheme.colorScheme.surfaceVariant to storage.second)
                         parts.filter { it.second > 0L }.forEach { (color, bytes) ->
-                            Spacer(Modifier.weight(bytes.coerceAtLeast(1L).toFloat()).fillMaxWidth(0.0001f).height(12.dp).background(color))
+                            Box(Modifier.weight(bytes.coerceAtLeast(1L).toFloat()).height(12.dp).background(color))
                         }
                     }
                     Text("Storage categories", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
