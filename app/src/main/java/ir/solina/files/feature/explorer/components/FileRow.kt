@@ -155,7 +155,7 @@ fun FileRow(
                 overflow = TextOverflow.Ellipsis,
             )
             val date = if (list.showDate) Formatters.listDate(item.lastModified, list.dateStyle, list.use24Hour) else null
-            val info = trailingInfo(item, list)
+            val info = trailingInfo(item, list, singlePane)
             if (date != null || info != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -321,7 +321,7 @@ private const val FLASH_FADE_MS = 520
 fun flashDurationMs(pulses: Int): Long = (pulses * (FLASH_IN_MS + FLASH_OUT_MS) + FLASH_FADE_MS).toLong()
 
 @Composable
-private fun trailingInfo(item: FileItem, list: ListPrefs): String? = when {
+private fun trailingInfo(item: FileItem, list: ListPrefs, singlePane: Boolean): String? = when {
     item.isSymlink -> stringResource(R.string.explorer_link)
     item.isDirectory -> if (singlePane && item.childCount >= 0) "${Formatters.number(item.childCount.toLong())} مورد" else null
     !list.showSize -> null
