@@ -2,6 +2,7 @@ package dev.cluvex.strata.feature.explorer.components
 
 import dev.cluvex.strata.ui.asPath
 import dev.cluvex.strata.ui.isolated
+import dev.cluvex.strata.ui.LocalUiDensity
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.SizeTransform
