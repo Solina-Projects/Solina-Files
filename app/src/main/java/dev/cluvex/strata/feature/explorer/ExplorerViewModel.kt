@@ -426,6 +426,7 @@ class ExplorerViewModel(
 
     fun setFolderSort(path: String, order: SortOrder?) = viewModelScope.launch { settingsRepo.setFolderSort(path, order) }
     fun setShowHidden(value: Boolean) = viewModelScope.launch { settingsRepo.setShowHidden(value) }
+    fun setDualPanePreferred(value: Boolean) = viewModelScope.launch { settingsRepo.setDualPanePreferred(value) }
 
     fun setSearchActive(active: Boolean) = _state.update {
         it.copy(searchActive = active, query = if (active) it.query else "")
