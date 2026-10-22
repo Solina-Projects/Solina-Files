@@ -21,10 +21,10 @@ data class FileItem(
         get() = File(path).parent
 
     companion object {
-        fun of(file: File): FileItem {
+        fun of(file: File, calculateChildCount: Boolean = true): FileItem {
             val name = file.name
             val isDirectory = file.isDirectory
-            val childCount = if (isDirectory) file.list()?.size ?: -1 else -1
+            val childCount = if (isDirectory && calculateChildCount) file.list()?.size ?: -1 else -1
             return FileItem(
                 name = name,
                 path = file.absolutePath,
