@@ -428,7 +428,10 @@ class ExplorerViewModel(
 
     fun setFolderSort(path: String, order: SortOrder?) = viewModelScope.launch { settingsRepo.setFolderSort(path, order) }
     fun setShowHidden(value: Boolean) = viewModelScope.launch { settingsRepo.setShowHidden(value) }
-    fun setDualPanePreferred(value: Boolean) = viewModelScope.launch { settingsRepo.setDualPanePreferred(value) }
+    fun setDualPanePreferred(value: Boolean) = viewModelScope.launch {
+        if (value) settingsRepo.editList { it.copy(viewMode = ViewMode.LIST) }
+        settingsRepo.setDualPanePreferred(value)
+    }
     fun toggleViewMode() = viewModelScope.launch {
         val next = if (_state.value.settings.list.viewMode == ViewMode.LIST) ViewMode.GRID else ViewMode.LIST
         settingsRepo.editList { it.copy(viewMode = next) }
