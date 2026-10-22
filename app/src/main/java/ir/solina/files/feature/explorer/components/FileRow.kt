@@ -323,7 +323,7 @@ fun flashDurationMs(pulses: Int): Long = (pulses * (FLASH_IN_MS + FLASH_OUT_MS) 
 @Composable
 private fun trailingInfo(item: FileItem, list: ListPrefs): String? = when {
     item.isSymlink -> stringResource(R.string.explorer_link)
-    item.isDirectory -> if (item.childCount >= 0) "${Formatters.number(item.childCount.toLong())} مورد" else null
+    item.isDirectory -> if (singlePane && item.childCount >= 0) "${Formatters.number(item.childCount.toLong())} مورد" else null
     !list.showSize -> null
     else -> Formatters.size(item.size, list.sizeUnits)
 }
