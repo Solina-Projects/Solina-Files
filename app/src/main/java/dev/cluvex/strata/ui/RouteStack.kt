@@ -33,7 +33,7 @@ class RouteStack(private val app: Application) {
     val top: RouteEntry? get() = entries.lastOrNull()
 
     init {
-        entries.add(RouteEntry(Route.Home, app))
+        entries.add(RouteEntry(Route.Files, app))
     }
     val route: Route get() = top?.route ?: Route.Files
 
