@@ -142,6 +142,7 @@ fun PaneColumn(
     displayPath: String? = null,
     pane: Pane = Pane.LEFT,
     horizontalItems: Boolean = false,
+    singlePane: Boolean = false,
 ) {
     val motion = MaterialTheme.motionScheme
     val activate by rememberUpdatedState(onActivate)
@@ -227,6 +228,7 @@ fun PaneColumn(
                 pane = pane,
                 drag = drag,
                 horizontalItems = horizontalItems,
+                singlePane = singlePane,
             )
         }
     }
@@ -271,13 +273,14 @@ private fun FolderList(
     pane: Pane,
     drag: FileDragState?,
     horizontalItems: Boolean = false,
+    singlePane: Boolean = false,
 ) {
     if (horizontalItems) {
         FolderHorizontalList(folder, selected, scrollMemory, refreshing, onRefresh, onUp, onOpen, onToggleSelect, onItemMenu, pane, drag)
         return
     }
     if (LocalSettings.current.list.viewMode == ViewMode.GRID) {
-        FolderGrid(folder, selected, scrollMemory, refreshing, onRefresh, onUp, onOpen, onToggleSelect, onItemMenu, pane, drag)
+        FolderGrid(folder, selected, scrollMemory, refreshing, onRefresh, onUp, onOpen, onToggleSelect, onItemMenu, pane, drag, singlePane)
         return
     }
     val motion = MaterialTheme.motionScheme
@@ -369,6 +372,7 @@ private fun FolderList(
                 ),
                 drop = links.look(item),
                 onDragStart = links.start(item),
+                singlePane = singlePane,
             )
         }
     }
@@ -409,7 +413,7 @@ private fun FolderHorizontalList(
                 } else Modifier
             ),
             contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
+            horizontalArrangement = Arrangement.spacedBy(4.dp),
         ) {
             if (folder.path != "/") {
                 item(key = PARENT_KEY, contentType = PARENT_KEY) {
@@ -420,16 +424,18 @@ private fun FolderHorizontalList(
                 item(key = "empty", contentType = "empty") { Box(Modifier.width(220.dp)) { EmptyFolder(folder.error) } }
             }
             items(folder.items, key = { it.path }, contentType = { "file" }) { item ->
-                FileRow(
+                FileTile(
                     item = item,
                     selected = item.path in selected,
+                    selecting = selecting,
                     flashKey = 0,
                     flashPulses = 0,
                     showThumbnail = !folder.viaRoot && !RemoteUri.isRemote(folder.path),
                     onClick = { if (selecting) onToggleSelect(item) else onOpen(item) },
                     onLongClick = { onItemMenu(item) },
                     onIconClick = { onToggleSelect(item) },
-                    modifier = Modifier.width(240.dp),
+                    modifier = Modifier.width(116.dp),
+                    horizontalPane = true,
                     drop = links.look(item),
                     onDragStart = links.start(item),
                 )
@@ -452,6 +458,7 @@ private fun FolderGrid(
     onItemMenu: (FileItem) -> Unit,
     pane: Pane,
     drag: FileDragState?,
+    singlePane: Boolean = false,
 ) {
     val motion = MaterialTheme.motionScheme
     val hasParent = folder.path != "/"
@@ -499,7 +506,7 @@ private fun FolderGrid(
     }
     PullToRefreshBox(isRefreshing = refreshing, onRefresh = onRefresh, modifier = Modifier.fillMaxSize()) {
         LazyVerticalGrid(
-            columns = GridCells.Adaptive(minSize = 92.dp),
+            columns = GridCells.Fixed(if (singlePane) when (LocalUiDensity.current) { dev.cluvex.strata.core.model.UiDensity.COMPACT -> 4; dev.cluvex.strata.core.model.UiDensity.COMFORTABLE -> 3; dev.cluvex.strata.core.model.UiDensity.LARGE -> 2 } else 2),
             state = gridState,
             modifier = Modifier
                 .fillMaxSize()
@@ -533,6 +540,7 @@ private fun FolderGrid(
                     ),
                     drop = links.look(item),
                     onDragStart = links.start(item),
+                    singlePane = singlePane,
                 )
             }
         }
