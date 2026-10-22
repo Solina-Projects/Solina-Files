@@ -175,7 +175,7 @@ fun StrataDrawerContent(
             .verticalScroll(rememberScrollState())
             .padding(horizontal = 16.dp)
             .padding(top = 18.dp, bottom = 20.dp)
-            .testTag("strata-drawer"),
+            .testTag("solina-files-drawer"),
     ) {
         Brand(reduced, Modifier.stagger())
         StorageStrata(root, !closed, reduced, Modifier.stagger().padding(top = 16.dp)) { actions.onShortcut(root) }
@@ -273,7 +273,7 @@ private fun Brand(reduced: Boolean, modifier: Modifier) {
     Row(modifier.fillMaxWidth().padding(start = 4.dp), verticalAlignment = Alignment.CenterVertically) {
         StrataMark(reduced, Modifier.size(40.dp))
         Column(Modifier.padding(start = 12.dp)) {
-            Text("Strata", style = MaterialTheme.typography.headlineSmallEmphasized, color = colors.onSurface)
+            Text("Solina Files", style = MaterialTheme.typography.headlineSmallEmphasized, color = colors.onSurface)
             Text(stringResource(R.string.drawer_tagline), style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
         }
     }
