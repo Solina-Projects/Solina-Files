@@ -236,7 +236,7 @@ private fun BrowseActions(
     }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
         for (action in browse.zones[0]) {
-            if (action == BrowseAction.NEW || (!dual && action in setOf(BrowseAction.UP, BrowseAction.SWAP))) continue
+            if (!action.available(context)) continue
             when (action) {
                 BrowseAction.PASTE -> AnimatedVisibility(
                     visible = clipboardCount > 0,
@@ -266,7 +266,6 @@ private fun BrowseActions(
             BarButton(Icons.Rounded.MoreVert, stringResource(R.string.common_more)) { more = true }
             val entries = buildList {
                 for (action in browse.zones[1]) {
-                    if (action == BrowseAction.NEW || (!dual && action in setOf(BrowseAction.UP, BrowseAction.SWAP))) continue
                     if (!action.available(context)) continue
                     if (action == BrowseAction.NEW) {
                         addAll(newEntries)
