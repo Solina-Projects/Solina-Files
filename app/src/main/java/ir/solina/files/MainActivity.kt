@@ -100,6 +100,8 @@ class MainActivity : FragmentActivity() {
         val incoming = incomingPdf(intent)
         val incomingFile = if (incoming == null && savedInstanceState == null) incomingFile(intent) else null
         setContent {
+            // Start each fresh app session in the simpler single-pane workspace.
+            LaunchedEffect(Unit) { settingsRepo.setDualPanePreferred(false) }
             val settings by settingsFlow.collectAsStateWithLifecycle(initialValue = initial)
             val sounds = settings.appearance.sounds
             LaunchedEffect(sounds) { UiSounds.enabled = sounds }
