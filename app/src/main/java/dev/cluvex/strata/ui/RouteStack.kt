@@ -31,6 +31,10 @@ class RouteStack(private val app: Application) {
     val entries: SnapshotStateList<RouteEntry> = mutableStateListOf()
 
     val top: RouteEntry? get() = entries.lastOrNull()
+
+    init {
+        entries.add(RouteEntry(Route.Home, app))
+    }
     val route: Route get() = top?.route ?: Route.Files
 
     fun push(route: Route) {
