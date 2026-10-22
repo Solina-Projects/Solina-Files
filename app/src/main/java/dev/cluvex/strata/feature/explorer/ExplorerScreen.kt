@@ -6,7 +6,9 @@ import dev.cluvex.strata.feature.vault.VaultUnlockDialog
 import android.app.Activity
 import android.os.SystemClock
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -28,6 +30,7 @@ import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.ViewList
 import androidx.compose.material.icons.rounded.SwapVert
+import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.automirrored.rounded.ManageSearch
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.MoreVert
@@ -437,22 +440,34 @@ fun ExplorerScreen(
                 displayPath = if (RemoteUri.isRemote(state.path)) ui.displayPath(state.path) else null,
                 pane = pane,
                 horizontalItems = dual && horizontalSplit,
+                singlePane = !dual,
             )
         }
-        if (dual && horizontalSplit) {
-            Column(
-                Modifier.fillMaxSize().padding(padding).padding(horizontal = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                PaneContent(Pane.LEFT, Modifier.weight(1f).fillMaxWidth())
-                PaneContent(Pane.RIGHT, Modifier.weight(1f).fillMaxWidth())
-            }
-        } else {
-            Row(
-                Modifier.fillMaxSize().padding(padding).padding(horizontal = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                panes.forEach { pane -> PaneContent(pane, Modifier.weight(1f).fillMaxSize()) }
+        AnimatedContent(
+            targetState = dual to horizontalSplit,
+            transitionSpec = {
+                (fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.92f))
+                    .togetherWith(fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.96f))
+            },
+            label = "singleDualPaneTransition",
+            modifier = Modifier.fillMaxSize().padding(padding),
+        ) { (showDual, splitHorizontal) ->
+            if (showDual && splitHorizontal) {
+                Column(
+                    Modifier.fillMaxSize().padding(horizontal = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
+                ) {
+                    PaneContent(Pane.LEFT, Modifier.weight(1f).fillMaxWidth())
+                    PaneContent(Pane.RIGHT, Modifier.weight(1f).fillMaxWidth())
+                }
+            } else {
+                Row(
+                    Modifier.fillMaxSize().padding(horizontal = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    (if (showDual) listOf(Pane.LEFT, Pane.RIGHT) else listOf(ui.active))
+                        .forEach { pane -> PaneContent(pane, Modifier.weight(1f).fillMaxSize()) }
+                }
             }
         }
     }
@@ -465,8 +480,8 @@ fun ExplorerScreen(
         ) {
             AnimatedVisibility(
                 visible = quickCreateExpanded,
-                enter = fadeIn() + scaleIn(),
-                exit = fadeOut() + scaleOut(),
+                enter = fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.7f),
+                exit = fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.7f),
             ) {
                 Column(horizontalAlignment = androidx.compose.ui.Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     ExtendedFloatingActionButton(
@@ -484,27 +499,46 @@ fun ExplorerScreen(
                         icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
                         text = { Text("فایل HTML") },
                     )
+                    if (!ui.isRemote(ui.active)) {
+                        ExtendedFloatingActionButton(
+                            onClick = { quickCreateExpanded = false; dialog = Dialog.NewProject(ui.activePane.path) },
+                            icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
+                            text = { Text("پروژه جدید") },
+                        )
+                    }
                 }
             }
-            Box {
+            FloatingActionButton(
+                onClick = { quickCreateExpanded = !quickCreateExpanded; layoutMenuExpanded = false },
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+            ) {
+                Icon(Icons.Rounded.Add, contentDescription = if (quickCreateExpanded) "بستن ایجاد سریع" else "ایجاد فایل یا پوشه")
+            }
+            if (dual) {
                 FloatingActionButton(
-                    onClick = { layoutMenuExpanded = true },
+                    onClick = { horizontalSplit = !horizontalSplit },
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 ) {
                     Icon(
-                        imageVector = if (dual) Icons.Rounded.SwapVert else if (ui.settings.list.viewMode == dev.cluvex.strata.core.model.ViewMode.GRID) Icons.Rounded.GridView else Icons.Rounded.ViewList,
-                        contentDescription = "تنظیم چیدمان و اندازه",
+                        imageVector = if (horizontalSplit) Icons.Rounded.SwapHoriz else Icons.Rounded.SwapVert,
+                        contentDescription = if (horizontalSplit) "تبدیل پنل‌ها به کنار هم" else "تبدیل پنل‌ها به روی هم",
                     )
                 }
-                DropdownMenu(expanded = layoutMenuExpanded, onDismissRequest = { layoutMenuExpanded = false }) {
-                    if (dual) {
-                        DropdownMenuItem(
-                            text = { Text(if (horizontalSplit) "پنل‌های کنار هم (عمودی)" else "پنل‌های روی هم (افقی)") },
-                            leadingIcon = { Icon(Icons.Rounded.SwapVert, contentDescription = null) },
-                            onClick = { horizontalSplit = !horizontalSplit; layoutMenuExpanded = false },
+            } else {
+                Box {
+                    FloatingActionButton(
+                        onClick = { layoutMenuExpanded = true },
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    ) {
+                        Icon(
+                            imageVector = if (ui.settings.list.viewMode == dev.cluvex.strata.core.model.ViewMode.GRID) Icons.Rounded.GridView else Icons.Rounded.ViewList,
+                            contentDescription = "تنظیم چیدمان و اندازه",
                         )
-                    } else {
+                    }
+                    DropdownMenu(expanded = layoutMenuExpanded, onDismissRequest = { layoutMenuExpanded = false }) {
                         DropdownMenuItem(
                             text = { Text(if (ui.settings.list.viewMode == dev.cluvex.strata.core.model.ViewMode.LIST) "چیدمان شبکه‌ای" else "چیدمان فهرستی") },
                             leadingIcon = { Icon(if (ui.settings.list.viewMode == dev.cluvex.strata.core.model.ViewMode.LIST) Icons.Rounded.GridView else Icons.Rounded.ViewList, contentDescription = null) },
@@ -517,7 +551,7 @@ fun ExplorerScreen(
                 }
             }
             FloatingActionButton(
-                onClick = { vm.setDualPanePreferred(!dual); quickCreateExpanded = false },
+                onClick = { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false },
                 containerColor = MaterialTheme.colorScheme.primaryContainer,
                 contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
             ) {
@@ -525,13 +559,6 @@ fun ExplorerScreen(
                     imageVector = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
                     contentDescription = if (dual) "Switch to single pane" else "Switch to dual pane",
                 )
-            }
-            FloatingActionButton(
-                onClick = { quickCreateExpanded = !quickCreateExpanded },
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-            ) {
-                Icon(Icons.Rounded.Add, contentDescription = if (quickCreateExpanded) "بستن ایجاد سریع" else "ایجاد فایل یا پوشه")
             }
         }
     }
