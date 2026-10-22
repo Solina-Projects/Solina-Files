@@ -482,21 +482,7 @@ fun ExplorerScreen(
                     PaneContent(Pane.RIGHT, Modifier.weight(1f).fillMaxWidth())
                 }
             } else if (!showDual) {
-                val activeItems = visibleItems(ui.activePane, ui.settings, ui.query)
-                val folderCount = activeItems.count { it.isDirectory }
-                val fileItems = activeItems.filterNot { it.isDirectory }
-                val totalBytes = fileItems.sumOf { it.size.coerceAtLeast(0L) }
-                Column(
-                    Modifier.fillMaxSize().padding(horizontal = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(3.dp),
-                ) {
-                    SinglePaneSummary(
-                        folderCount = folderCount,
-                        fileCount = fileItems.size,
-                        totalSize = ir.solina.files.core.util.Formatters.size(totalBytes, ui.settings.list.sizeUnits),
-                    )
-                    PaneContent(ui.active, Modifier.weight(1f).fillMaxWidth())
-                }
+                PaneContent(ui.active, Modifier.fillMaxSize().padding(horizontal = 4.dp))
             } else {
                 Row(
                     Modifier.fillMaxSize().padding(horizontal = 4.dp),
@@ -935,31 +921,4 @@ private fun FilterBar(query: String, onQuery: (String) -> Unit, onClose: () -> U
 }
 
 
-@Composable
-private fun SinglePaneSummary(folderCount: Int, fileCount: Int, totalSize: String) {
-    val colors = MaterialTheme.colorScheme
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        color = colors.surfaceContainerLow,
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 9.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-        ) {
-            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                Icon(Icons.Rounded.Folder, contentDescription = "پوشه‌ها", tint = colors.primary, modifier = Modifier.size(17.dp))
-                Text(ir.solina.files.core.util.Formatters.number(folderCount.toLong()), style = MaterialTheme.typography.labelMedium, maxLines = 1)
-            }
-            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                Icon(Icons.Rounded.Description, contentDescription = "فایل‌ها", tint = colors.tertiary, modifier = Modifier.size(17.dp))
-                Text(ir.solina.files.core.util.Formatters.number(fileCount.toLong()), style = MaterialTheme.typography.labelMedium, maxLines = 1)
-            }
-            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
-                Icon(Icons.Rounded.Storage, contentDescription = "حجم داده‌ها", tint = colors.secondary, modifier = Modifier.size(17.dp))
-                Text(totalSize, style = MaterialTheme.typography.labelMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-        }
-    }
-}
+
