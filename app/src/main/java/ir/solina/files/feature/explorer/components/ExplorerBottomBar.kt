@@ -235,6 +235,7 @@ private fun BrowseActions(
         BrowseAction.FORWARD -> canForward
         else -> true
     }
+    @Composable
     fun actionText(action: BrowseAction): String =
         if (action == BrowseAction.SWAP && dual) {
             if (horizontalSplit) "چیدن پنل‌ها کنار هم" else "چیدن پنل‌ها روی هم"
