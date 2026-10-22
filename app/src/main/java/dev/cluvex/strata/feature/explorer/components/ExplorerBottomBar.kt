@@ -163,7 +163,7 @@ fun ExplorerBottomBar(
                 SelectionActions(selectionCount, context, activeIsLeft, selection, actions)
             } else {
                 val context = BrowseContext(clipboard = clipboardCount > 0, termux = !remote, project = projectLabel != null)
-                BrowseActions(canBack, canForward, clipboardCount, clipboardIsMove, context, projectLabel, browse, showHidden, actions)
+                BrowseActions(canBack, canForward, clipboardCount, clipboardIsMove, context, projectLabel, browse, showHidden, dual, actions)
             }
         }
     }
@@ -218,6 +218,7 @@ private fun BrowseActions(
     projectLabel: String?,
     browse: Zoned<BrowseAction>,
     showHidden: Boolean,
+    dual: Boolean,
     a: BottomBarActions,
 ) {
     val motion = MaterialTheme.motionScheme
@@ -235,6 +236,7 @@ private fun BrowseActions(
     }
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
         for (action in browse.zones[0]) {
+            if (action == BrowseAction.NEW || (!dual && action in setOf(BrowseAction.UP, BrowseAction.SWAP))) continue
             when (action) {
                 BrowseAction.PASTE -> AnimatedVisibility(
                     visible = clipboardCount > 0,
@@ -264,6 +266,7 @@ private fun BrowseActions(
             BarButton(Icons.Rounded.MoreVert, stringResource(R.string.common_more)) { more = true }
             val entries = buildList {
                 for (action in browse.zones[1]) {
+                    if (action == BrowseAction.NEW || (!dual && action in setOf(BrowseAction.UP, BrowseAction.SWAP))) continue
                     if (!action.available(context)) continue
                     if (action == BrowseAction.NEW) {
                         addAll(newEntries)
