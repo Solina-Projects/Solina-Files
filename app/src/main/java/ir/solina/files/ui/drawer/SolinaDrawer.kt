@@ -305,93 +305,85 @@ private fun SolinaMark(reduced: Boolean, modifier: Modifier) {
     }
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun StorageSolina(path: String, open: Boolean, reduced: Boolean, modifier: Modifier, onClick: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     val usage = remember(path) { runCatching { StatFs(path).let { it.availableBytes to it.totalBytes } }.getOrNull() }
-    val used = usage?.let { (free, total) -> if (total > 0) (1f - free.toFloat() / total).coerceIn(0f, 1f) else 0f } ?: 0f
-    val fill by animateFloatAsState(if (open || reduced) used else 0f, if (reduced) snap() else spring(dampingRatio = 0.62f, stiffness = 90f))
+    val free = usage?.first ?: 0L
+    val total = usage?.second ?: 0L
+    val used = if (total > 0L) ((total - free).toFloat() / total).coerceIn(0f, 1f) else 0f
+    val fill by animateFloatAsState(
+        targetValue = if (open || reduced) used else 0f,
+        animationSpec = if (reduced) snap() else tween(450),
+        label = "drawer-storage-usage",
+    )
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(30.dp),
+        shape = RoundedCornerShape(22.dp),
         color = colors.surfaceContainerHigh,
         modifier = modifier.fillMaxWidth().testTag("drawer-storage"),
     ) {
-        Column(Modifier.padding(start = 18.dp, end = 14.dp, top = 16.dp, bottom = 16.dp)) {
+        Column(
+            Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.model_start_home), style = MaterialTheme.typography.titleMediumEmphasized)
-                    if (usage != null && usage.second > 0) {
-                        Text(
-                            stringResource(R.string.drawer_free_of, Formatters.size(usage.first), Formatters.size(usage.second)),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colors.onSurfaceVariant,
-                        )
-                    }
-                }
                 Box(
-                    Modifier.size(48.dp).clip(MaterialShapes.Cookie9Sided.toShape()).background(colors.primaryContainer),
+                    Modifier.size(40.dp).clip(RoundedCornerShape(13.dp)).background(colors.primaryContainer),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Text(stringResource(R.string.ui_percent, (used * 100).roundToInt()), style = MaterialTheme.typography.labelLarge, color = colors.onPrimaryContainer)
+                    Icon(Icons.Rounded.Storage, contentDescription = null, tint = colors.onPrimaryContainer)
                 }
-            }
-            SolinaGauge(fill, reduced, Modifier.fillMaxWidth().padding(top = 14.dp).height(30.dp))
-        }
-    }
-}
-
-@Composable
-private fun SolinaGauge(fill: Float, reduced: Boolean, modifier: Modifier) {
-    val colors = MaterialTheme.colorScheme
-    val phase = if (reduced) {
-        0f
-    } else {
-        val t = rememberInfiniteTransition()
-        t.animateFloat(0f, (2 * PI).toFloat(), infiniteRepeatable(tween(5200, easing = LinearEasing))).value
-    }
-    val track = colors.surfaceContainerHighest
-    val bands = listOf(colors.secondaryContainer, colors.tertiary, colors.primary)
-    Canvas(modifier.clip(CircleShape)) {
-        drawRect(track)
-        if (fill <= 0.001f) return@Canvas
-        scale(if (layoutDirection == LayoutDirection.Rtl) -1f else 1f, 1f) {
-            drawSolina(fill, phase, bands)
-        }
-    }
-}
-
-private fun DrawScope.drawSolina(fill: Float, phase: Float, bands: List<Color>) {
-    val w = size.width
-    val h = size.height
-    val front = Path().apply {
-        moveTo(0f, 0f)
-        val step = 3f
-        var y = 0f
-        val amp = h * 0.16f
-        while (y <= h) {
-            lineTo(w * fill + amp * sin(y / h * 2f * PI.toFloat() * 1.3f + phase * 1.6f), y)
-            y += step
-        }
-        lineTo(w * fill, h)
-        lineTo(0f, h)
-        close()
-    }
-    clipPath(front) {
-        drawRect(bands[0])
-        listOf(0.34f to bands[1], 0.66f to bands[2]).forEachIndexed { i, (level, color) ->
-            val band = Path().apply {
-                moveTo(0f, h)
-                var x = 0f
-                while (x <= w) {
-                    lineTo(x, h * level + h * 0.1f * sin(x / w * 2f * PI.toFloat() * (2f + i) + phase * (1f + i * 0.5f)))
-                    x += 4f
+                Column(
+                    Modifier.weight(1f).padding(start = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
+                ) {
+                    Text(stringResource(R.string.model_start_home), style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        if (total > 0L) stringResource(R.string.drawer_free_of, Formatters.size(free), Formatters.size(total))
+                        else stringResource(R.string.drawer_tagline),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
-                lineTo(w, h)
-                close()
+                Text(
+                    stringResource(R.string.ui_percent, (used * 100).roundToInt()),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = when {
+                        used >= 0.9f -> colors.error
+                        used >= 0.75f -> colors.tertiary
+                        else -> colors.primary
+                    },
+                )
             }
-            drawPath(band, color)
+            Box(
+                Modifier.fillMaxWidth().height(10.dp)
+                    .clip(CircleShape)
+                    .background(colors.surfaceContainerHighest),
+            ) {
+                Box(
+                    Modifier.fillMaxWidth(fill).height(10.dp)
+                        .clip(CircleShape)
+                        .background(
+                            when {
+                                used >= 0.9f -> colors.error
+                                used >= 0.75f -> colors.tertiary
+                                else -> colors.primary
+                            },
+                        ),
+                )
+            }
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text("استفاده‌شده", style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
+                Spacer(Modifier.weight(1f))
+                Text(
+                    if (total > 0L) Formatters.size((total - free).coerceAtLeast(0L)) else "—",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.onSurface,
+                )
+            }
         }
     }
 }
