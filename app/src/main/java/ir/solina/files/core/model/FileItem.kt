@@ -22,17 +22,20 @@ data class FileItem(
 
     companion object {
         fun of(file: File): FileItem {
+            val name = file.name
+            val isDirectory = file.isDirectory
+            val childCount = if (isDirectory) file.list()?.size ?: -1 else -1
             return FileItem(
-                name = file.name,
+                name = name,
                 path = file.absolutePath,
-                isDirectory = file.isDirectory,
-                size = if (file.isDirectory) 0L else file.length(),
+                isDirectory = isDirectory,
+                size = if (isDirectory) 0L else file.length(),
                 lastModified = file.lastModified(),
-                isHidden = file.isHidden || file.name.startsWith('.'),
+                isHidden = file.isHidden || name.startsWith('.'),
                 canRead = file.canRead(),
                 canWrite = file.canWrite(),
                 isSymlink = ir.solina.files.core.fs.FsUtil.isSymlink(file),
-                childCount = if (file.isDirectory) file.listFiles()?.size ?: -1 else -1,
+                childCount = childCount,
             )
         }
     }
