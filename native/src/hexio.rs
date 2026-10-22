@@ -132,7 +132,7 @@ mod tests {
         fn new(bytes: &[u8]) -> Self {
             let mut p = std::env::temp_dir();
             let id = COUNTER.fetch_add(1, Ordering::SeqCst);
-            p.push(format!("strata_hexio_{}_{}.bin", std::process::id(), id));
+            p.push(format!("solina_hexio_{}_{}.bin", std::process::id(), id));
             std::fs::write(&p, bytes).unwrap();
             TempFile(p)
         }

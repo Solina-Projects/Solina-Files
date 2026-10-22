@@ -109,8 +109,8 @@
     <string name="files_cipher_damaged">فایل رمزگذاری‌شده خراب یا ناقص است</string>
     <string name="files_cipher_failed">رمزگذاری ناموفق بود</string>
     <string name="files_cipher_too_large">فایل خیلی بزرگ است</string>
-    <string name="files_cipher_not_ours">\u200F\u2068%1$s\u2069 فایل رمزگذاری‌شده Strata نیست</string>
-    <string name="files_cipher_newer">این فایل با نسخه جدیدتری از Strata رمزگذاری شده است (قالب %1$d)</string>
+    <string name="files_cipher_not_ours">\u200F\u2068%1$s\u2069 فایل رمزگذاری‌شده Solina نیست</string>
+    <string name="files_cipher_newer">این فایل با نسخه جدیدتری از Solina رمزگذاری شده است (قالب %1$d)</string>
     <string name="files_cipher_unsupported">روش رمزگذاری پشتیبانی نمی‌شود</string>
     <string name="files_cipher_bad_params">پارامترهای کلید نامعتبرند</string>
     <string name="files_cipher_unavailable">رمزگذاری روی این دستگاه در دسترس نیست</string>

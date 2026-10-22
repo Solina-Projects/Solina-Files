@@ -38,7 +38,7 @@
     <string name="apk_reinstall">Reinstall</string>
     <string name="apk_clone_choose_different">Choose a different package</string>
     <string name="apk_clone_title">Clone APK</string>
-    <string name="apk_clone_body">Installs a copy alongside the original (two accounts, test build, …). It gets a new package name and is signed with Strata\'s key.</string>
+    <string name="apk_clone_body">Installs a copy alongside the original (two accounts, test build, …). It gets a new package name and is signed with Solina\'s key.</string>
     <string name="apk_clone_new_package">New package name</string>
     <string name="apk_clone_original_package">Original: %1$s</string>
     <string name="apk_clone_app_name">App name (optional)</string>
@@ -84,7 +84,7 @@
     <string name="apk_sign_saved">Saved key</string>
     <string name="apk_sign_custom">Custom key</string>
     <string name="apk_sign_keystore">Keystore file</string>
-    <string name="apk_sign_quick_body">Signs with a key Strata keeps, with no name or password. The same key is reused, so updates to the same app keep one signature.</string>
+    <string name="apk_sign_quick_body">Signs with a key Solina keeps, with no name or password. The same key is reused, so updates to the same app keep one signature.</string>
     <string name="apk_sign_no_saved">No saved keys yet. Tap a .jks / .keystore / .p12 / .bks (or .pk8) file to import one, or generate one in Signing keys.</string>
     <string name="apk_sign_save_jks">Also save %1$s.jks next to the APK</string>
     <string name="apk_sign_custom_body">A new key with your details is generated and kept in Signing keys, so you can re-sign updates with the same signature. The .jks (protected by this password) is yours to sign with on a computer too.</string>
@@ -99,7 +99,7 @@
     <string name="apk_split_title">Install split APKs</string>
     <string name="apk_split_version">Version %1$s</string>
     <string name="apk_split_version_installed">Version %1$s · installed %2$s (%3$s)</string>
-    <string name="apk_split_explain">This is one app split into parts. Strata ticked the ones your device needs (CPU, language, screen); they install together as a single app. Untick extras you don\'t want.</string>
+    <string name="apk_split_explain">This is one app split into parts. Solina ticked the ones your device needs (CPU, language, screen); they install together as a single app. Untick extras you don\'t want.</string>
     <string name="apk_split_count">%1$d of %2$d</string>
     <string name="apk_split_installed_apks">Installed %1$d APK(s).</string>
     <string name="apk_split_installed_apks_obb">Installed %1$d APK(s) and %2$d OBB file(s).</string>
@@ -182,7 +182,7 @@
     <string name="keys_title">Signing keys</string>
     <string name="keys_import_keystore">Import a keystore</string>
     <string name="keys_generate_key">Generate key</string>
-    <string name="keys_intro">Keys Strata signs with. Tap a .jks / .keystore / .bks / .p12 or a .pk8 file in the file list to import it. Exports go to the file list\'s current folder: %1$s</string>
+    <string name="keys_intro">Keys Solina signs with. Tap a .jks / .keystore / .bks / .p12 or a .pk8 file in the file list to import it. Exports go to the file list\'s current folder: %1$s</string>
     <string name="keys_until">until %1$s</string>
     <string name="keys_export_to">Export to %1$s</string>
     <string name="keys_pk8_warning">A .pk8 is the bare key: anyone who has it can sign as you. Keep exports private.</string>
@@ -236,7 +236,7 @@
     <string name="keys_error_key_no_cert">Key \"%1$s\" has no certificate</string>
     <string name="keys_error_not_keystore">Not a keystore</string>
     <string name="keys_error_jceks">JCEKS keystores aren\'t supported — convert it on a computer: keytool -importkeystore -deststoretype pkcs12</string>
-    <string name="keys_error_unknown_keystore">Not a keystore Strata knows (JKS, PKCS #12 or BKS)</string>
+    <string name="keys_error_unknown_keystore">Not a keystore Solina knows (JKS, PKCS #12 or BKS)</string>
     <string name="keys_error_not_pkcs8">Not a PKCS #8 key</string>
     <string name="keys_error_wrong_pk8_password">Wrong password for the .pk8 key</string>
     <string name="keys_error_no_cert_in_pem">No certificate in the .x509.pem file</string>

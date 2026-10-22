@@ -111,7 +111,7 @@
     <string name="remote_op_mkdir">Создание папки</string>
     <string name="remote_op_delete">Удаление</string>
     <string name="remote_op_rename">Переименование</string>
-    <string name="remote_saf_no_access">У Strata больше нет доступа к этой папке — добавьте её заново</string>
+    <string name="remote_saf_no_access">У Solina больше нет доступа к этой папке — добавьте её заново</string>
     <string name="remote_saf_unavailable">Приложение, предоставляющее эту папку, недоступно (%1$s)</string>
     <string name="remote_saf_unavailable_silent">Приложение, предоставляющее эту папку, недоступно (нет ответа)</string>
     <string name="remote_provider_no_answer">Поставщик не ответил</string>
@@ -137,7 +137,7 @@
     <string name="share_sharing">Общий доступ: %1$s</string>
     <string name="share_sharing_read_only">Общий доступ: %1$s (только чтение)</string>
     <string name="share_no_such_folder">Такой папки нет</string>
-    <string name="share_cant_read_folder">Strata не может прочитать эту папку</string>
+    <string name="share_cant_read_folder">Solina не может прочитать эту папку</string>
     <string name="share_browser_access">Доступ через браузер</string>
     <string name="share_web_how">Откройте адрес в браузере на компьютере в той же сети Wi-Fi и введите пароль.</string>
     <string name="share_web_description">Просматривайте, скачивайте и загружайте файлы из браузера на компьютере — ничего не нужно устанавливать.</string>
@@ -159,7 +159,7 @@
     <string name="share_set_password">Задайте пароль</string>
     <string name="plugin_title">Плагины</string>
     <string name="plugin_coming_soon">Скоро</string>
-    <string name="plugin_coming_soon_body">Плагины с новыми инструментами для ваших файлов появятся в одной из следующих версий Strata.</string>
+    <string name="plugin_coming_soon_body">Плагины с новыми инструментами для ваших файлов появятся в одной из следующих версий Solina.</string>
     <string name="plugin_plugin">Плагин</string>
     <string name="plugin_files_title">Плагины для файлов</string>
     <string name="plugin_files_body">Долгое нажатие на файл → «Плагины…». Каждый плагин — отдельное приложение: он получает копию файла только для чтения, а то, что он вернёт, сохраняется, только если вы этого захотите.</string>
@@ -170,12 +170,12 @@
     <string name="plugin_text_body">В редакторе кода выделите текст → меню → «Обработать текст с помощью…». Это умеют такие приложения (переводчики, смена регистра…); результат заменит выделение, и это можно отменить.</string>
     <string name="plugin_no_text_apps">Нет приложений с этой функцией.</string>
     <string name="plugin_writing_title">Как написать плагин</string>
-    <string name="plugin_writing_body">Обычное Android-приложение с activity для действия %1$s. Оно читает файл по content URI из Intent и возвращает текст, файл (content URI, к которому даёт доступ) или сообщение. Strata никогда не загружает код плагина. Протокол описан в docs/plugins.md в исходном коде Strata.</string>
+    <string name="plugin_writing_body">Обычное Android-приложение с activity для действия %1$s. Оно читает файл по content URI из Intent и возвращает текст, файл (content URI, к которому даёт доступ) или сообщение. Solina никогда не загружает код плагина. Протокол описан в docs/plugins.md в исходном коде Solina.</string>
     <string name="plugin_any_file">Любой файл</string>
-    <string name="plugin_newer_api">для более новой версии Strata (API %1$d)</string>
-    <string name="plugin_status_new">Ещё не запускался — Strata спросит перед первым запуском</string>
+    <string name="plugin_newer_api">для более новой версии Solina (API %1$d)</string>
+    <string name="plugin_status_new">Ещё не запускался — Solina спросит перед первым запуском</string>
     <string name="plugin_status_trusted">Доверенный</string>
-    <string name="plugin_status_changed">Подписан не тем, кто подписывал его, когда вы ему доверились, — Strata спросит снова</string>
+    <string name="plugin_status_changed">Подписан не тем, кто подписывал его, когда вы ему доверились, — Solina спросит снова</string>
     <string name="plugin_signed_by">Подписан (SHA-256)</string>
     <string name="plugin_forget_trust">Отозвать доверие</string>
     <string name="plugin_read_failed">Не удалось прочитать %1$s: %2$s</string>
@@ -184,7 +184,7 @@
     <string name="plugin_refused_scheme">Плагин вернул ссылку %1$s вместо файла, к которому даёт доступ</string>
     <string name="plugin_refused_no_scheme">Плагин вернул некорректную ссылку вместо файла, к которому даёт доступ</string>
     <string name="plugin_refused_malformed">Плагин вернул некорректную ссылку</string>
-    <string name="plugin_refused_own">Плагин указал на собственные файлы Strata</string>
+    <string name="plugin_refused_own">Плагин указал на собственные файлы Solina</string>
     <string name="plugin_refused_too_long">Текст плагина слишком длинный, чтобы принять его таким способом</string>
     <string name="plugin_file_too_large">Файл плагина больше %1$d МБ</string>
     <string name="plugin_no_folder">Нет папки для сохранения</string>
@@ -207,11 +207,11 @@
     <string name="plugin_replace_original">Заменить оригинал…</string>
     <string name="plugin_save_new">Сохранить как новый файл</string>
     <string name="termux_not_installed_title">Termux не установлен</string>
-    <string name="termux_not_installed_body">Strata запускает ваш код в Termux — бесплатной среде Linux для Android. Установите его и вернитесь сюда.</string>
+    <string name="termux_not_installed_body">Solina запускает ваш код в Termux — бесплатной среде Linux для Android. Установите его и вернитесь сюда.</string>
     <string name="termux_get_fdroid">Скачать в F-Droid</string>
     <string name="termux_github_releases">Релизы на GitHub</string>
-    <string name="termux_allow_title">Разрешите Strata использовать Termux</string>
-    <string name="termux_allow_body">Android один раз спросит, может ли Strata отправлять команды в Termux. Это разрешение можно отозвать в настройках в любой момент.</string>
+    <string name="termux_allow_title">Разрешите Solina использовать Termux</string>
+    <string name="termux_allow_body">Android один раз спросит, может ли Solina отправлять команды в Termux. Это разрешение можно отозвать в настройках в любой момент.</string>
     <string name="termux_open_settings">Открыть настройки</string>
     <string name="termux_allow">Разрешить</string>
     <string name="termux_setup_title">Однократная настройка в Termux</string>

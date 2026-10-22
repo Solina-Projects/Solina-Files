@@ -109,8 +109,8 @@
     <string name="files_cipher_damaged">Зашифрованный файл повреждён или неполон</string>
     <string name="files_cipher_failed">Не удалось зашифровать</string>
     <string name="files_cipher_too_large">Файл слишком большой</string>
-    <string name="files_cipher_not_ours">%1$s — не файл, зашифрованный Strata</string>
-    <string name="files_cipher_newer">Этот файл зашифрован более новой версией Strata (формат %1$d)</string>
+    <string name="files_cipher_not_ours">%1$s — не файл, зашифрованный Solina</string>
+    <string name="files_cipher_newer">Этот файл зашифрован более новой версией Solina (формат %1$d)</string>
     <string name="files_cipher_unsupported">Неподдерживаемый метод шифрования</string>
     <string name="files_cipher_bad_params">Недопустимые параметры ключа</string>
     <string name="files_cipher_unavailable">Шифрование недоступно на этом устройстве</string>

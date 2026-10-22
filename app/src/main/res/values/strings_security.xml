@@ -5,33 +5,33 @@
     <string name="security_screen_group">Screen</string>
     <string name="security_secure_ignored">This phone\'s system is set to ignore secure screens for every app, so it has no effect here.</string>
     <string name="security_secure_screen">Secure screen</string>
-    <string name="security_secure_screen_summary">Blocks screenshots and screen recording, and hides Strata in recent apps</string>
+    <string name="security_secure_screen_summary">Blocks screenshots and screen recording, and hides Solina in recent apps</string>
     <string name="lock_group">App lock</string>
-    <string name="lock_footer">While App lock is on, recent apps show Strata without its content.</string>
-    <string name="lock_switch">Lock Strata</string>
-    <string name="lock_switch_summary">Ask for your fingerprint or screen lock when Strata opens</string>
+    <string name="lock_footer">While App lock is on, recent apps show Solina without its content.</string>
+    <string name="lock_switch">Lock Solina</string>
+    <string name="lock_switch_summary">Ask for your fingerprint or screen lock when Solina opens</string>
     <string name="lock_after">Lock after leaving</string>
     <string name="lock_now">Lock now</string>
-    <string name="lock_title">Strata is locked</string>
+    <string name="lock_title">Solina is locked</string>
     <string name="lock_subtitle">Use your fingerprint or screen lock to continue</string>
-    <string name="lock_unavailable">This phone has no fingerprint or screen lock set up, so Strata can\'t ask for one. Set a screen lock in the system settings, or turn App lock off.</string>
+    <string name="lock_unavailable">This phone has no fingerprint or screen lock set up, so Solina can\'t ask for one. Set a screen lock in the system settings, or turn App lock off.</string>
     <string name="lock_unlock">Unlock</string>
     <string name="lock_turn_off">Turn off App lock</string>
-    <string name="lock_prompt_title">Unlock Strata</string>
+    <string name="lock_prompt_title">Unlock Solina</string>
     <string name="lock_prompt_subtitle">Confirm it\'s you</string>
     <string name="lock_enable_title">Turn on App lock</string>
     <string name="lock_failed">Couldn\'t confirm it\'s you</string>
     <string name="lock_need_screen_lock">Set a screen lock or fingerprint in the system settings first</string>
     <string name="lock_unavailable_device">This phone can\'t confirm your identity</string>
     <string name="vault_group">Vault</string>
-    <string name="vault_footer">Files in the vault are encrypted with your vault password. Strata can\'t recover them without it.</string>
+    <string name="vault_footer">Files in the vault are encrypted with your vault password. Solina can\'t recover them without it.</string>
     <string name="vault_drawer">Vault</string>
     <string name="vault_drawer_none">Encrypted, hidden from other apps</string>
     <string name="vault_setup_link">Set up the vault</string>
     <string name="vault_setup_summary">An encrypted folder only you can open</string>
     <string name="vault_setup_title">Set up your vault</string>
     <string name="vault_setup_body">Files you move into the vault are encrypted on this phone and hidden from other apps, the gallery and file browsers.</string>
-    <string name="vault_setup_warning">If you forget the password and your fingerprints change, the files can\'t be recovered — not even by Strata.</string>
+    <string name="vault_setup_warning">If you forget the password and your fingerprints change, the files can\'t be recovered — not even by Solina.</string>
     <string name="vault_password">Vault password</string>
     <string name="vault_password_again">Type it again</string>
     <string name="vault_password_current">Current password</string>
@@ -89,7 +89,7 @@
     <string name="vault_err_kept_original">%1$s: copied into the vault, but the original couldn\'t be removed</string>
     <string name="vault_err_read">Couldn\'t read %1$s</string>
     <string name="language_title">Language</string>
-    <string name="language_subtitle">Strata speaks English, Persian, Russian and Chinese</string>
+    <string name="language_subtitle">Solina speaks English, Persian, Russian and Chinese</string>
     <string name="language_group">App language</string>
     <string name="language_system">System default</string>
     <string name="language_english">English</string>
@@ -99,7 +99,7 @@
     <string name="language_system_note">This is the same setting as App languages in the phone\'s settings.</string>
     <string name="language_calendar_group">Calendar</string>
     <string name="language_persian_calendar">Solar Hijri dates in Persian</string>
-    <string name="language_persian_calendar_summary">When Strata is in Persian, dates read like %1$s</string>
+    <string name="language_persian_calendar_summary">When Solina is in Persian, dates read like %1$s</string>
     <string name="language_native_en" translatable="false">English</string>
     <string name="language_native_fa" translatable="false">فارسی</string>
     <string name="language_native_ru" translatable="false">Русский</string>

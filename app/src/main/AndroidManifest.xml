@@ -35,7 +35,7 @@
     <queries>
         <package android:name="com.termux" />
         <intent>
-            <action android:name="dev.cluvex.strata.plugin.action.FILE" />
+            <action android:name="ir.solina.files.plugin.action.FILE" />
             <data android:mimeType="*/*" />
         </intent>
         <intent>

@@ -4,10 +4,10 @@
 
 -keepattributes *Annotation*, InnerClasses
 -dontnote kotlinx.serialization.**
--keepclassmembers class dev.cluvex.strata.** {
+-keepclassmembers class ir.solina.files.** {
     *** Companion;
 }
--keepclasseswithmembers class dev.cluvex.strata.** {
+-keepclasseswithmembers class ir.solina.files.** {
     kotlinx.serialization.KSerializer serializer(...);
 }
 
@@ -63,8 +63,8 @@
 -dontwarn net.i2p.crypto.**
 -dontwarn org.slf4j.**
 
--keep interface dev.cluvex.strata.core.nativebridge.RarSink { *; }
--keepclassmembers class * implements dev.cluvex.strata.core.nativebridge.RarSink {
+-keep interface ir.solina.files.core.nativebridge.RarSink { *; }
+-keepclassmembers class * implements ir.solina.files.core.nativebridge.RarSink {
     boolean begin(java.lang.String, long, int);
     boolean write(byte[], int);
     void end(boolean);
@@ -81,7 +81,7 @@
 -dontwarn javax.security.sasl.**
 -dontwarn java.lang.management.**
 
--keep class dev.cluvex.strata.core.shizuku.** { *; }
+-keep class ir.solina.files.core.shizuku.** { *; }
 -keep class rikka.shizuku.** { *; }
 -keep interface rikka.shizuku.** { *; }
 -dontwarn rikka.shizuku.**

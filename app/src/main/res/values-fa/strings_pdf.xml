@@ -82,12 +82,12 @@
     <string name="pdf_error_file">فایل خوانده نمی‌شود</string>
     <string name="pdf_error_format">این فایل PDF نیست یا آسیب دیده است</string>
     <string name="pdf_error_password">این PDF با رمز عبور محافظت شده است</string>
-    <string name="pdf_error_security">این PDF رمزگذاری‌ای دارد که Strata نمی‌تواند باز کند</string>
+    <string name="pdf_error_security">این PDF رمزگذاری‌ای دارد که Solina نمی‌تواند باز کند</string>
     <string name="pdf_error_page">یکی از صفحه‌های این PDF آسیب دیده است</string>
     <string name="pdf_error_engine">موتور PDF روی این دستگاه در دسترس نیست</string>
     <string name="pdf_error_unknown">باز کردن PDF ممکن نشد</string>
     <string name="pdf_nothing_to_open">چیزی برای باز کردن نیست</string>
-    <string name="pdf_needs_root">‏Strata نمی‌تواند این فایل را بخواند. برای باز کردن آن، حالت روت را روشن کنید.</string>
+    <string name="pdf_needs_root">‏Solina نمی‌تواند این فایل را بخواند. برای باز کردن آن، حالت روت را روشن کنید.</string>
     <string name="pdf_root_unavailable">دسترسی روت در دسترس نیست</string>
     <string name="pdf_merge_need_two">دست‌کم دو فایل PDF انتخاب کنید</string>
     <string name="pdf_merge_not_file">‏\u2068%1$s\u2069 فایل نیست</string>
@@ -99,8 +99,8 @@
     <string name="pdf_error_no_catalog">سند کاتالوگ ندارد</string>
     <string name="pdf_error_no_pages">سند هیچ صفحه‌ای ندارد</string>
     <string name="pdf_error_encryption_dictionary">دیکشنری رمزگذاری آسیب دیده است</string>
-    <string name="pdf_error_unsupported_encryption">این PDF از رمزگذاری \u2068%1$s\u2069 استفاده می‌کند که Strata نمی‌تواند آن را باز کند</string>
-    <string name="pdf_error_unknown_encryption">این PDF از رمزگذاری ناشناخته‌ای استفاده می‌کند که Strata نمی‌تواند آن را باز کند</string>
+    <string name="pdf_error_unsupported_encryption">این PDF از رمزگذاری \u2068%1$s\u2069 استفاده می‌کند که Solina نمی‌تواند آن را باز کند</string>
+    <string name="pdf_error_unknown_encryption">این PDF از رمزگذاری ناشناخته‌ای استفاده می‌کند که Solina نمی‌تواند آن را باز کند</string>
     <string name="pdf_error_stream_length">طول یک جریان داده %1$d بایت شد، نه %2$d بایت</string>
     <string name="media_open_with">باز کردن با</string>
     <string name="media_image_info">اطلاعات تصویر</string>

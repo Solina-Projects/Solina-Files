@@ -11,7 +11,7 @@
     <string name="settings_page_access">روت و Shizuku</string>
     <string name="settings_page_opening">باز کردن فایل‌ها</string>
     <string name="settings_page_backup">پشتیبان‌گیری و بازگردانی</string>
-    <string name="settings_page_about">درباره Strata</string>
+    <string name="settings_page_about">درباره Solina</string>
     <string name="settings_home_look">ظاهر و نمایش</string>
     <string name="settings_home_files">کار با فایل‌ها</string>
     <string name="settings_home_system">سیستم</string>
@@ -137,7 +137,7 @@
     <string name="settings_contrast">کنتراست</string>
     <string name="settings_group_text_shapes">متن و شکل‌ها</string>
     <string name="settings_text_size">اندازه متن</string>
-    <string name="settings_text_size_sample">\u200FStrata فایل‌هایتان را مرتب نگه می‌دارد</string>
+    <string name="settings_text_size_sample">\u200FSolina فایل‌هایتان را مرتب نگه می‌دارد</string>
     <string name="settings_corners">گوشه‌ها</string>
     <string name="settings_corners_summary">میزان گردی کارت‌ها، برگه‌ها و دکمه‌ها</string>
     <string name="settings_group_file_icons">نماد فایل‌ها</string>
@@ -196,7 +196,7 @@
     <string name="settings_two_panes_summary">دو پوشه کنار هم</string>
     <string name="settings_group_gestures">حرکات اشاره‌ای</string>
     <string name="settings_double_back">خروج با دو بار زدن «بازگشت»</string>
-    <string name="settings_double_back_summary">تا یک بار زدن اتفاقی «بازگشت» Strata را نبندد</string>
+    <string name="settings_double_back_summary">تا یک بار زدن اتفاقی «بازگشت» Solina را نبندد</string>
     <string name="settings_icon_tap">انتخاب با لمس نماد</string>
     <string name="settings_icon_tap_summary">لمس نماد فایل آن را انتخاب می‌کند و لمس نامش آن را باز می‌کند</string>
     <string name="settings_group_working">هنگام کار</string>
@@ -217,13 +217,13 @@
     <string name="settings_trash_clean">خالی کردن موارد قدیمی‌تر از</string>
     <string name="settings_never">هرگز</string>
     <string name="settings_open_recycle_bin">باز کردن سطل بازیافت</string>
-    <string name="settings_reader_subtitle">خواندن PDF در Strata</string>
+    <string name="settings_reader_subtitle">خواندن PDF در Solina</string>
     <string name="settings_group_pages">صفحه‌ها</string>
     <string name="settings_page_color">رنگ صفحه</string>
     <string name="settings_page_color_summary">حالت شب رنگ تصاویر را حفظ می‌کند</string>
     <string name="settings_reader_screen_on">روشن ماندن صفحه هنگام خواندن</string>
     <string name="settings_group_memory">حافظه</string>
-    <string name="settings_memory_footer">\u200FStrata هر PDF را از همان جایی که رها کرده‌اید باز می‌کند. نشانک‌هایی که اضافه می‌کنید تا وقتی حذفشان نکنید می‌مانند.</string>
+    <string name="settings_memory_footer">\u200FSolina هر PDF را از همان جایی که رها کرده‌اید باز می‌کند. نشانک‌هایی که اضافه می‌کنید تا وقتی حذفشان نکنید می‌مانند.</string>
     <string name="settings_forget_spots">فراموش کردن جای خواندن</string>
     <string name="settings_forget_spots_done">انجام شد — فایل‌های PDF دوباره از صفحه اول باز می‌شوند</string>
     <string name="settings_forget_spots_summary">همه فایل‌های PDF دوباره از صفحه اول باز می‌شوند</string>
@@ -265,8 +265,8 @@
     <string name="settings_install_root_needs">اول دسترسی روت را روشن کنید</string>
     <string name="settings_group_extracting">استخراج</string>
     <string name="settings_apk_folder">پوشه فایل‌های APK استخراج‌شده</string>
-    <string name="settings_apk_folder_default">\u200FStrata/APKs در حافظه داخلی</string>
-    <string name="settings_apk_folder_hint">خالی: Strata/APKs در حافظه داخلی</string>
+    <string name="settings_apk_folder_default">\u200FSolina/APKs در حافظه داخلی</string>
+    <string name="settings_apk_folder_hint">خالی: Solina/APKs در حافظه داخلی</string>
     <string name="settings_name_pattern">الگوی نام</string>
     <string name="settings_name_pattern_legend">\u200F{A} نام، {P} بسته، {V} نسخه، {C} کد</string>
     <string name="settings_name_pattern_summary">"\u200F\u2068%1$s\u2069   (\u2068%2$s\u2069)"</string>
@@ -281,7 +281,7 @@
     <string name="settings_shizuku_off">به برنامه Shizuku نیاز دارد. گزینه روت در بالا از قبل به این پوشه‌ها دسترسی می‌دهد.</string>
     <string name="settings_shizuku_install">برنامه Shizuku را نصب کنید، سپس آن را با اشکال‌زدایی بی‌سیم یا USB راه‌اندازی کنید</string>
     <string name="settings_shizuku_start">برنامه Shizuku را باز کنید و سرویس را راه‌اندازی کنید</string>
-    <string name="settings_shizuku_allow">در Shizuku به Strata اجازه دهید (برای درخواست دوباره بزنید)</string>
+    <string name="settings_shizuku_allow">در Shizuku به Solina اجازه دهید (برای درخواست دوباره بزنید)</string>
     <string name="settings_shizuku_on">روشن: Android/data و Android/obb با Shizuku باز می‌شوند</string>
     <string name="settings_opening_subtitle">برنامه‌های پیش‌فرض برای انواع فایل</string>
     <string name="settings_opening_none">هنوز پیش‌فرضی تعیین نشده. در «باز کردن با…» روی یک برنامه یا ابزار لمس طولانی کنید تا پیش‌فرض آن نوع فایل شود.</string>
@@ -304,7 +304,7 @@
     <string name="settings_choose_file_summary">یک فایل تنظیمات از هر جایی</string>
     <string name="settings_group_reset">بازنشانی</string>
     <string name="settings_reset_all">بازنشانی همه تنظیمات</string>
-    <string name="settings_reset_all_summary">بازگشت به حالتی که Strata هنگام نصب داشت. نشانک‌ها، حافظه‌ها و کلیدها باقی می‌مانند.</string>
+    <string name="settings_reset_all_summary">بازگشت به حالتی که Solina هنگام نصب داشت. نشانک‌ها، حافظه‌ها و کلیدها باقی می‌مانند.</string>
     <string name="settings_restore_title">تنظیمات بازگردانی شود؟</string>
     <string name="settings_restore_body">تنظیمات «\u2068%1$s\u2069» جایگزین تنظیمات فعلی شما می‌شود.</string>
     <string name="settings_restore_body_unnamed">تنظیمات این فایل جایگزین تنظیمات فعلی شما می‌شود.</string>
@@ -313,13 +313,13 @@
     <string name="settings_reset_body">پوسته، فهرست، ویرایشگر و همه تنظیمات دیگر به حالت پیش‌فرض برمی‌گردند.</string>
     <string name="settings_reset">بازنشانی</string>
     <string name="settings_reset_done">تنظیمات بازنشانی شد</string>
-    <string name="settings_backup_not_strata">این یک فایل تنظیمات Strata نیست</string>
-    <string name="settings_backup_newer">این فایل تنظیمات از نسخه جدیدتری از Strata است (قالب %1$d)</string>
+    <string name="settings_backup_not_solina">این یک فایل تنظیمات Solina نیست</string>
+    <string name="settings_backup_newer">این فایل تنظیمات از نسخه جدیدتری از Solina است (قالب %1$d)</string>
     <string name="settings_backup_empty">این فایل هیچ تنظیمی ندارد</string>
     <string name="settings_about_version">نسخه \u2068%1$s\u2069 (%2$d)</string>
     <string name="settings_about_tagline">یک مدیر فایل رایگان و متن‌باز</string>
     <string name="settings_group_license">مجوز</string>
-    <string name="settings_license_summary">می‌توانید Strata را به کار ببرید، بررسی کنید، به اشتراک بگذارید و تغییر دهید. نسخه تغییریافته‌ای که از راه شبکه به دیگران خدمت می‌دهد باید کد منبعش را در اختیارشان بگذارد.</string>
+    <string name="settings_license_summary">می‌توانید Solina را به کار ببرید، بررسی کنید، به اشتراک بگذارید و تغییر دهید. نسخه تغییریافته‌ای که از راه شبکه به دیگران خدمت می‌دهد باید کد منبعش را در اختیارشان بگذارد.</string>
     <string name="settings_group_device">این دستگاه</string>
     <string name="settings_device_android">اندروید \u2068%1$s\u2069 (API %2$d)</string>
     <string name="settings_group_components">اجزای متن‌باز</string>
@@ -389,7 +389,7 @@
     <string name="ui_default_no_extension">به‌عنوان پیش‌فرض فایل‌های بدون پسوند تنظیم شد</string>
     <string name="ui_default_for_ext">به‌عنوان پیش‌فرض فایل‌های \u2068.\u200E%1$s\u2069 تنظیم شد</string>
     <string name="ui_storage_title">دسترسی به حافظه لازم است</string>
-    <string name="ui_storage_body">\u200FStrata برای مرور، ویرایش و مدیریت حافظه دستگاه به دسترسی به همه فایل‌ها نیاز دارد.</string>
+    <string name="ui_storage_body">\u200FSolina برای مرور، ویرایش و مدیریت حافظه دستگاه به دسترسی به همه فایل‌ها نیاز دارد.</string>
     <string name="ui_storage_grant">اعطای دسترسی</string>
     <plurals name="settings_summary_bar_buttons">
         <item quantity="one">\u200F%d دکمه در نوار</item>

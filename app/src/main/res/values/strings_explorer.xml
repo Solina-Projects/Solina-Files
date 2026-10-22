@@ -154,7 +154,7 @@
     <string name="explorer_encrypt_file">Encrypt file</string>
     <string name="explorer_confirm_password">Confirm</string>
     <string name="explorer_passwords_mismatch">Passwords do not match</string>
-    <string name="explorer_encrypt_warning">Strata does not store this password. If you forget it, the file cannot be recovered. The original file is kept.</string>
+    <string name="explorer_encrypt_warning">Solina does not store this password. If you forget it, the file cannot be recovered. The original file is kept.</string>
     <string name="explorer_encrypt">Encrypt</string>
     <string name="explorer_create_link">Create soft link</string>
     <plurals name="explorer_links_named">
@@ -241,7 +241,7 @@
     <string name="explorer_drop_on_folder">Drop on a folder</string>
     <string name="explorer_up_one_folder">Up one folder</string>
     <string name="explorer_drop_into">Into %1$s</string>
-    <string name="explorer_incoming_hidden">Strata can\'t see where %1$s is stored</string>
+    <string name="explorer_incoming_hidden">Solina can\'t see where %1$s is stored</string>
     <string name="explorer_incoming_save">Save to Download</string>
-    <string name="explorer_incoming_unreadable">The other app didn\'t let Strata read this file</string>
+    <string name="explorer_incoming_unreadable">The other app didn\'t let Solina read this file</string>
 </resources>

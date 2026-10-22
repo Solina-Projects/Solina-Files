@@ -38,7 +38,7 @@
     <string name="apk_reinstall">重新安装</string>
     <string name="apk_clone_choose_different">请使用其他包名</string>
     <string name="apk_clone_title">克隆 APK</string>
-    <string name="apk_clone_body">在原应用旁再安装一个副本（双开账号、测试版等）。副本会使用新的包名，并用 Strata 的密钥签名。</string>
+    <string name="apk_clone_body">在原应用旁再安装一个副本（双开账号、测试版等）。副本会使用新的包名，并用 Solina 的密钥签名。</string>
     <string name="apk_clone_new_package">新包名</string>
     <string name="apk_clone_original_package">原包名：%1$s</string>
     <string name="apk_clone_app_name">应用名称（可选）</string>
@@ -84,7 +84,7 @@
     <string name="apk_sign_saved">已保存的密钥</string>
     <string name="apk_sign_custom">自定义密钥</string>
     <string name="apk_sign_keystore">密钥库文件</string>
-    <string name="apk_sign_quick_body">使用 Strata 保存的密钥签名，无需填写名称或密码。每次都使用同一个密钥，因此同一应用的更新会保持相同的签名。</string>
+    <string name="apk_sign_quick_body">使用 Solina 保存的密钥签名，无需填写名称或密码。每次都使用同一个密钥，因此同一应用的更新会保持相同的签名。</string>
     <string name="apk_sign_no_saved">还没有已保存的密钥。点按 .jks / .keystore / .p12 / .bks（或 .pk8）文件即可导入，也可以在“签名密钥”中生成。</string>
     <string name="apk_sign_save_jks">同时在 APK 旁保存 %1$s.jks</string>
     <string name="apk_sign_custom_body">将使用你的信息生成一个新密钥并保存在“签名密钥”中，以便用相同的签名为更新重新签名。.jks 文件（受此密码保护）归你所有，也可以在电脑上用它签名。</string>
@@ -99,7 +99,7 @@
     <string name="apk_split_title">安装拆分 APK</string>
     <string name="apk_split_version">版本 %1$s</string>
     <string name="apk_split_version_installed">版本 %1$s · 已安装 %2$s（%3$s）</string>
-    <string name="apk_split_explain">这是一个拆分成多个部分的应用。Strata 已勾选你的设备所需的部分（CPU、语言、屏幕），它们会作为一个应用一起安装。可以取消勾选不需要的额外部分。</string>
+    <string name="apk_split_explain">这是一个拆分成多个部分的应用。Solina 已勾选你的设备所需的部分（CPU、语言、屏幕），它们会作为一个应用一起安装。可以取消勾选不需要的额外部分。</string>
     <string name="apk_split_count">已选 %1$d/%2$d</string>
     <string name="apk_split_installed_apks">已安装 %1$d 个 APK。</string>
     <string name="apk_split_installed_apks_obb">已安装 %1$d 个 APK，并复制了 %2$d 个 OBB 文件。</string>
@@ -182,7 +182,7 @@
     <string name="keys_title">签名密钥</string>
     <string name="keys_import_keystore">导入密钥库</string>
     <string name="keys_generate_key">生成密钥</string>
-    <string name="keys_intro">Strata 用于签名的密钥。在文件列表中点按 .jks / .keystore / .bks / .p12 或 .pk8 文件即可导入。导出的文件会保存到文件列表的当前文件夹：%1$s</string>
+    <string name="keys_intro">Solina 用于签名的密钥。在文件列表中点按 .jks / .keystore / .bks / .p12 或 .pk8 文件即可导入。导出的文件会保存到文件列表的当前文件夹：%1$s</string>
     <string name="keys_until">有效期至 %1$s</string>
     <string name="keys_export_to">导出到 %1$s</string>
     <string name="keys_pk8_warning">.pk8 是未加保护的密钥：任何拿到它的人都能以你的身份签名。请妥善保管导出的文件。</string>
@@ -236,7 +236,7 @@
     <string name="keys_error_key_no_cert">密钥“%1$s”没有证书</string>
     <string name="keys_error_not_keystore">不是密钥库</string>
     <string name="keys_error_jceks">不支持 JCEKS 密钥库 — 请在电脑上转换：keytool -importkeystore -deststoretype pkcs12</string>
-    <string name="keys_error_unknown_keystore">不是 Strata 支持的密钥库（JKS、PKCS #12 或 BKS）</string>
+    <string name="keys_error_unknown_keystore">不是 Solina 支持的密钥库（JKS、PKCS #12 或 BKS）</string>
     <string name="keys_error_not_pkcs8">不是 PKCS #8 密钥</string>
     <string name="keys_error_wrong_pk8_password">.pk8 密钥的密码错误</string>
     <string name="keys_error_no_cert_in_pem">.x509.pem 文件中没有证书</string>

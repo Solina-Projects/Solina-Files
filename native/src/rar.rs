@@ -363,7 +363,7 @@ mod tests {
 
     #[test]
     fn not_a_rar_is_reported() {
-        let p = std::env::temp_dir().join("strata-not-a-rar.rar");
+        let p = std::env::temp_dir().join("solina-not-a-rar.rar");
         std::fs::write(&p, b"definitely not RAR").unwrap();
         assert!(list(&p.to_string_lossy(), None).is_err());
         assert_eq!(dos_time_ms(0), 0);
