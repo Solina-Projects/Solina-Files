@@ -131,6 +131,8 @@ fun ExplorerBottomBar(
     browse: Zoned<BrowseAction> = ir.solina.files.core.model.ActionLayout.DEFAULT_BROWSE,
     selection: Zoned<SelectionAction> = ir.solina.files.core.model.ActionLayout.DEFAULT_SELECTION,
     showHidden: Boolean = false,
+    horizontalSplit: Boolean = false,
+    onToggleOrientation: () -> Unit = {},
 ) {
     val motion = MaterialTheme.motionScheme
     val threshold = with(LocalDensity.current) { 48.dp.toPx() }
@@ -163,7 +165,7 @@ fun ExplorerBottomBar(
                 SelectionActions(selectionCount, context, activeIsLeft, selection, actions)
             } else {
                 val context = BrowseContext(clipboard = clipboardCount > 0, termux = !remote, project = projectLabel != null)
-                BrowseActions(canBack, canForward, clipboardCount, clipboardIsMove, context, projectLabel, browse, showHidden, dual, actions)
+                BrowseActions(canBack, canForward, clipboardCount, clipboardIsMove, context, projectLabel, browse, showHidden, dual, horizontalSplit, onToggleOrientation, actions)
             }
         }
     }
@@ -219,6 +221,8 @@ private fun BrowseActions(
     browse: Zoned<BrowseAction>,
     showHidden: Boolean,
     dual: Boolean,
+    horizontalSplit: Boolean,
+    onToggleOrientation: () -> Unit,
     a: BottomBarActions,
 ) {
     val motion = MaterialTheme.motionScheme
@@ -228,6 +232,23 @@ private fun BrowseActions(
         BrowseAction.BACK -> canBack
         BrowseAction.FORWARD -> canForward
         else -> true
+    }
+    fun actionText(action: BrowseAction): String =
+        if (action == BrowseAction.SWAP && dual) {
+            if (horizontalSplit) "چیدن پنل‌ها کنار هم" else "چیدن پنل‌ها روی هم"
+        } else {
+            action.text(clipboardIsMove, showHidden, projectLabel)
+        }
+    fun actionIcon(action: BrowseAction): ImageVector =
+        if (action == BrowseAction.SWAP && dual) {
+            if (horizontalSplit) Icons.Rounded.SwapHoriz else Icons.Rounded.SwapVert
+        } else if (action == BrowseAction.HIDDEN_FILES && showHidden) {
+            Icons.Rounded.VisibilityOff
+        } else {
+            action.icon
+        }
+    fun runAction(action: BrowseAction) {
+        if (action == BrowseAction.SWAP && dual) onToggleOrientation() else action.run(a)
     }
     val newEntries = buildList {
         add(MenuEntry(stringResource(R.string.common_new_folder), Icons.Rounded.CreateNewFolder) { newMenu = false; more = false; a.onNewFolder() })
@@ -253,12 +274,17 @@ private fun BrowseActions(
                     BarButton(action.icon, stringResource(action.label)) { newMenu = true }
                     ExpressiveMenu(expanded = newMenu, onDismiss = { newMenu = false }, groups = listOf(newEntries))
                 }
+                BrowseAction.SWAP -> BarButton(
+                    icon = actionIcon(action),
+                    description = actionText(action),
+                    enabled = enabled(action),
+                ) { runAction(action) }
                 else -> if (action.available(context)) {
                     BarButton(
-                        icon = if (action == BrowseAction.HIDDEN_FILES && showHidden) Icons.Rounded.VisibilityOff else action.icon,
-                        description = action.text(clipboardIsMove, showHidden, projectLabel),
+                        icon = actionIcon(action),
+                        description = actionText(action),
                         enabled = enabled(action),
-                    ) { action.run(a) }
+                    ) { runAction(action) }
                 }
             }
         }
@@ -272,10 +298,10 @@ private fun BrowseActions(
                     } else {
                         add(
                             MenuEntry(
-                                text = action.text(clipboardIsMove, showHidden, projectLabel),
-                                icon = if (action == BrowseAction.HIDDEN_FILES && showHidden) Icons.Rounded.VisibilityOff else action.icon,
+                                text = actionText(action),
+                                icon = actionIcon(action),
                                 enabled = enabled(action),
-                            ) { more = false; action.run(a) },
+                            ) { more = false; runAction(action) },
                         )
                     }
                 }
