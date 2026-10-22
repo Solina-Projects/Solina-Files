@@ -256,15 +256,15 @@ fun Modifier.fileGestures(
                     return@awaitEachGesture
                 }
                 haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                // Open the item actions as soon as the long-press timeout is reached,
+                // while the finger is still down (rather than waiting for pointer-up).
+                longClick()
                 while (true) {
                     val event = awaitPointerEvent()
                     val c = event.changes.firstOrNull { it.id == down.id } ?: break
                     if (c.changedToUpIgnoreConsumed()) {
                         interaction.tryEmit(PressInteraction.Release(press))
-                        if (!c.isConsumed) {
-                            c.consume()
-                            longClick()
-                        }
+                        if (!c.isConsumed) c.consume()
                         break
                     }
                     if ((c.position - down.position).getDistance() > slop) {
