@@ -609,6 +609,7 @@ fun ExplorerScreen(
     }
     DragLayer(drag) { host[0]?.positionInRoot() ?: Offset.Zero }
     }
+    }
 
     when (val d = dialog) {
         Dialog.None -> Unit
