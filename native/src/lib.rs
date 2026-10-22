@@ -19,16 +19,25 @@ const ALGO_SHA1: i32 = 2;
 const ALGO_SHA256: i32 = 3;
 
 fn hex(bytes: &[u8]) -> String {
-    let mut s = String::with_capacity(bytes.len() * 2);
-    for b in bytes {
-        s.push_str(&format!("{:02x}", b));
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut out = String::with_capacity(bytes.len() * 2);
+    for &byte in bytes {
+        out.push(HEX[(byte >> 4) as usize] as char);
+        out.push(HEX[(byte & 0x0f) as usize] as char);
     }
-    s
+    out
 }
 
-fn digest_file<D: Digest + Write>(file: &mut File) -> io::Result<String> {
+fn digest_file<D: Digest>(file: &mut File) -> io::Result<String> {
     let mut hasher = D::new();
-    io::copy(file, &mut hasher)?;
+    let mut buffer = [0u8; 64 * 1024];
+    loop {
+        let read = file.read(&mut buffer)?;
+        if read == 0 {
+            break;
+        }
+        hasher.update(&buffer[..read]);
+    }
     Ok(hex(&hasher.finalize()))
 }
 
@@ -65,18 +74,18 @@ fn null_bytes() -> jbyteArray {
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_version<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_version<'local>(
     env: JNIEnv<'local>,
     _this: JObject<'local>,
 ) -> jstring {
-    let v = format!("strata-native {}", env!("CARGO_PKG_VERSION"));
+    let v = format!("solina-native {}", env!("CARGO_PKG_VERSION"));
     env.new_string(v)
         .map(|s| s.into_raw())
         .unwrap_or(std::ptr::null_mut())
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_hashFile<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_hashFile<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -92,7 +101,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_has
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_fileSize<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_fileSize<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -104,7 +113,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_fil
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_readRange<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_readRange<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -127,7 +136,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_rea
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_indexOf<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_indexOf<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -145,7 +154,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_ind
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_lastIndexOf<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_lastIndexOf<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -165,7 +174,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_las
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_writeBytes<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_writeBytes<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -204,7 +213,7 @@ fn to_java(env: &mut JNIEnv, bytes: &[u8]) -> jbyteArray {
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_encDeriveKey<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_encDeriveKey<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     password: JByteArray<'local>,
@@ -233,7 +242,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_enc
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_encSeal<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_encSeal<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     key: JByteArray<'local>,
@@ -259,7 +268,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_enc
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_encOpen<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_encOpen<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     key: JByteArray<'local>,
@@ -288,7 +297,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_enc
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_rarList<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_rarList<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -319,7 +328,7 @@ pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_rar
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_cluvex_strata_core_nativebridge_NativeBridge_rarExtract<'local>(
+pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_rarExtract<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -424,7 +433,7 @@ mod tests {
     fn tmp_file(bytes: &[u8]) -> std::path::PathBuf {
         let mut p = std::env::temp_dir();
         let id = COUNTER.fetch_add(1, Ordering::SeqCst);
-        p.push(format!("strata_native_test_{}_{}.bin", std::process::id(), id));
+        p.push(format!("solina_native_test_{}_{}.bin", std::process::id(), id));
         let mut f = File::create(&p).unwrap();
         f.write_all(bytes).unwrap();
         p

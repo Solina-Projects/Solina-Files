@@ -24,4 +24,4 @@ cargo ndk \
   build --release
 
 echo "Done. Native libraries:"
-find ../app/src/main/jniLibs -name 'libstrata_native.so' -print
+find ../app/src/main/jniLibs -name 'libsolina_native.so' -print

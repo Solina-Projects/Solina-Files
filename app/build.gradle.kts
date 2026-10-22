@@ -14,18 +14,18 @@ val keystoreProperties = Properties().apply {
 val hasReleaseKeystore = keystorePropertiesFile.exists()
 
 android {
-    namespace = "dev.cluvex.strata"
+    namespace = "ir.solina.files"
 
     compileSdk {
         version = release(37)
     }
 
     defaultConfig {
-        applicationId = "dev.cluvex.strata"
+        applicationId = "ir.solina.files"
         minSdk = 24
         targetSdk = 36
-        versionCode = (project.property("strata.versionCode") as String).toInt()
-        versionName = project.property("strata.versionName") as String
+        versionCode = (project.property("solina.versionCode") as String).toInt()
+        versionName = project.property("solina.versionName") as String
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
@@ -68,11 +68,11 @@ android {
             matchingFallbacks += "release"
         }
     }
-    testBuildType = (findProperty("strata.testBuildType") as String?) ?: "debug"
+    testBuildType = (findProperty("solina.testBuildType") as String?) ?: "debug"
 
     splits {
         abi {
-            isEnable = providers.gradleProperty("strata.splitApks").map { it.toBoolean() }.getOrElse(false)
+            isEnable = providers.gradleProperty("solina.splitApks").map { it.toBoolean() }.getOrElse(false)
             reset()
             include("arm64-v8a", "armeabi-v7a", "x86_64")
             isUniversalApk = true
@@ -98,7 +98,6 @@ android {
     packaging {
         jniLibs {
             useLegacyPackaging = true
-            keepDebugSymbols += "**/*.so"
         }
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
@@ -138,12 +137,12 @@ val cargoHostBuild = tasks.register<Exec>("cargoHostBuild") {
     inputs.dir(nativeDir.resolve("src"))
     inputs.file(nativeDir.resolve("Cargo.toml"))
     inputs.file(nativeDir.resolve("build.rs"))
-    outputs.file(nativeDir.resolve("target/release/libstrata_native.so"))
+    outputs.file(nativeDir.resolve("target/release/libsolina_native.so"))
 }
 tasks.withType<Test>().configureEach {
     dependsOn(cargoHostBuild)
     systemProperty("java.library.path", nativeDir.resolve("target/release").absolutePath)
-    systemProperty("strata.pdfium", nativeDir.resolve("third_party/pdfium/linux-x64/libpdfium.so").absolutePath)
+    systemProperty("solina.pdfium", nativeDir.resolve("third_party/pdfium/linux-x64/libpdfium.so").absolutePath)
     maxHeapSize = "2g"
 }
 

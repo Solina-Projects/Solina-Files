@@ -107,7 +107,7 @@
     <string name="remote_op_mkdir">Creating the folder</string>
     <string name="remote_op_delete">Deleting</string>
     <string name="remote_op_rename">Renaming</string>
-    <string name="remote_saf_no_access">Strata no longer has access to this folder — add it again</string>
+    <string name="remote_saf_no_access">Solina no longer has access to this folder — add it again</string>
     <string name="remote_saf_unavailable">The app that provides this folder isn\'t available (%1$s)</string>
     <string name="remote_saf_unavailable_silent">The app that provides this folder isn\'t available (no answer)</string>
     <string name="remote_provider_no_answer">The provider gave no answer</string>
@@ -133,7 +133,7 @@
     <string name="share_sharing">Sharing %1$s</string>
     <string name="share_sharing_read_only">Sharing %1$s (read-only)</string>
     <string name="share_no_such_folder">No such folder</string>
-    <string name="share_cant_read_folder">Strata can\'t read that folder</string>
+    <string name="share_cant_read_folder">Solina can\'t read that folder</string>
     <string name="share_browser_access">Browser access</string>
     <string name="share_web_how">Open the address in a browser on a computer on the same Wi-Fi, and enter the password.</string>
     <string name="share_web_description">Browse, download and upload files from a computer\'s browser — nothing to install.</string>
@@ -155,7 +155,7 @@
     <string name="share_set_password">Set a password</string>
     <string name="plugin_title">Plugins</string>
     <string name="plugin_coming_soon">Coming soon</string>
-    <string name="plugin_coming_soon_body">Plugins that bring new tools for your files will arrive in a future version of Strata.</string>
+    <string name="plugin_coming_soon_body">Plugins that bring new tools for your files will arrive in a future version of Solina.</string>
     <string name="plugin_plugin">Plugin</string>
     <string name="plugin_files_title">File plugins</string>
     <string name="plugin_files_body">Long-press a file → Plugins… Each plugin is a separate app: it gets a read-only copy of the file, and what it hands back is only saved if you choose to.</string>
@@ -166,12 +166,12 @@
     <string name="plugin_text_body">In the code editor, select text → menu → Process text with… These apps can do it (translators, case tools…); the result replaces the selection and can be undone.</string>
     <string name="plugin_no_text_apps">No app offers this.</string>
     <string name="plugin_writing_title">Writing a plugin</string>
-    <string name="plugin_writing_body">An ordinary Android app with an activity for the action %1$s. It reads the file from the Intent\'s content URI and returns text, a file (a content URI it grants) or a message. Strata never loads a plugin\'s code. The protocol is in docs/plugins.md of Strata\'s source.</string>
+    <string name="plugin_writing_body">An ordinary Android app with an activity for the action %1$s. It reads the file from the Intent\'s content URI and returns text, a file (a content URI it grants) or a message. Solina never loads a plugin\'s code. The protocol is in docs/plugins.md of Solina\'s source.</string>
     <string name="plugin_any_file">Any file</string>
-    <string name="plugin_newer_api">made for a newer Strata (API %1$d)</string>
-    <string name="plugin_status_new">Not run yet — Strata asks before the first run</string>
+    <string name="plugin_newer_api">made for a newer Solina (API %1$d)</string>
+    <string name="plugin_status_new">Not run yet — Solina asks before the first run</string>
     <string name="plugin_status_trusted">Trusted</string>
-    <string name="plugin_status_changed">Signed by someone else than when you trusted it — Strata asks again</string>
+    <string name="plugin_status_changed">Signed by someone else than when you trusted it — Solina asks again</string>
     <string name="plugin_signed_by">Signed by (SHA-256)</string>
     <string name="plugin_forget_trust">Forget trust</string>
     <string name="plugin_read_failed">Couldn\'t read %1$s: %2$s</string>
@@ -180,7 +180,7 @@
     <string name="plugin_refused_scheme">The plugin sent back a %1$s link instead of a file it shares</string>
     <string name="plugin_refused_no_scheme">The plugin sent back a malformed link instead of a file it shares</string>
     <string name="plugin_refused_malformed">The plugin sent back a malformed link</string>
-    <string name="plugin_refused_own">The plugin pointed back at Strata\'s own files</string>
+    <string name="plugin_refused_own">The plugin pointed back at Solina\'s own files</string>
     <string name="plugin_refused_too_long">The plugin\'s text is too long to take this way</string>
     <string name="plugin_file_too_large">The plugin\'s file is larger than %1$d MB</string>
     <string name="plugin_no_folder">No folder to save in</string>
@@ -203,11 +203,11 @@
     <string name="plugin_replace_original">Replace original…</string>
     <string name="plugin_save_new">Save as new file</string>
     <string name="termux_not_installed_title">Termux isn\'t installed</string>
-    <string name="termux_not_installed_body">Strata runs your code with Termux, a free Linux environment for Android. Install it, then come back here.</string>
+    <string name="termux_not_installed_body">Solina runs your code with Termux, a free Linux environment for Android. Install it, then come back here.</string>
     <string name="termux_get_fdroid">Get it on F-Droid</string>
     <string name="termux_github_releases">GitHub releases</string>
-    <string name="termux_allow_title">Allow Strata to use Termux</string>
-    <string name="termux_allow_body">Android asks once whether Strata may send commands to Termux. You can take it back in Settings any time.</string>
+    <string name="termux_allow_title">Allow Solina to use Termux</string>
+    <string name="termux_allow_body">Android asks once whether Solina may send commands to Termux. You can take it back in Settings any time.</string>
     <string name="termux_open_settings">Open settings</string>
     <string name="termux_allow">Allow</string>
     <string name="termux_setup_title">One-time setup in Termux</string>

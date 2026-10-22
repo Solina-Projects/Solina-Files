@@ -109,8 +109,8 @@
     <string name="files_cipher_damaged">The encrypted file is damaged or incomplete</string>
     <string name="files_cipher_failed">Encryption failed</string>
     <string name="files_cipher_too_large">The file is too large</string>
-    <string name="files_cipher_not_ours">%1$s is not a Strata encrypted file</string>
-    <string name="files_cipher_newer">This file was encrypted by a newer version of Strata (format %1$d)</string>
+    <string name="files_cipher_not_ours">%1$s is not a Solina encrypted file</string>
+    <string name="files_cipher_newer">This file was encrypted by a newer version of Solina (format %1$d)</string>
     <string name="files_cipher_unsupported">Unsupported encryption method</string>
     <string name="files_cipher_bad_params">Invalid key parameters</string>
     <string name="files_cipher_unavailable">Encryption is unavailable on this device</string>

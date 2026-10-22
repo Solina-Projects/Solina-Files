@@ -38,7 +38,7 @@
     <string name="apk_reinstall">Переустановить</string>
     <string name="apk_clone_choose_different">Нужно другое имя пакета</string>
     <string name="apk_clone_title">Клонировать APK</string>
-    <string name="apk_clone_body">Устанавливает копию рядом с оригиналом (два аккаунта, тестовая сборка, …). Копия получает новое имя пакета и подписывается ключом Strata.</string>
+    <string name="apk_clone_body">Устанавливает копию рядом с оригиналом (два аккаунта, тестовая сборка, …). Копия получает новое имя пакета и подписывается ключом Solina.</string>
     <string name="apk_clone_new_package">Новое имя пакета</string>
     <string name="apk_clone_original_package">Исходное: %1$s</string>
     <string name="apk_clone_app_name">Название приложения (необязательно)</string>
@@ -84,7 +84,7 @@
     <string name="apk_sign_saved">Сохранённый ключ</string>
     <string name="apk_sign_custom">Свой ключ</string>
     <string name="apk_sign_keystore">Файл хранилища ключей</string>
-    <string name="apk_sign_quick_body">Подписывает ключом, который хранит Strata, — без имени и пароля. Каждый раз используется один и тот же ключ, поэтому обновления одного приложения сохраняют одну подпись.</string>
+    <string name="apk_sign_quick_body">Подписывает ключом, который хранит Solina, — без имени и пароля. Каждый раз используется один и тот же ключ, поэтому обновления одного приложения сохраняют одну подпись.</string>
     <string name="apk_sign_no_saved">Сохранённых ключей пока нет. Нажмите на файл .jks / .keystore / .p12 / .bks (или .pk8), чтобы импортировать ключ, или создайте ключ в разделе «Ключи подписи».</string>
     <string name="apk_sign_save_jks">Также сохранить %1$s.jks рядом с APK</string>
     <string name="apk_sign_custom_body">Будет создан новый ключ с вашими данными. Он сохранится в разделе «Ключи подписи», чтобы обновления можно было подписывать той же подписью. Файл .jks (защищённый этим паролем) остаётся у вас — им можно подписывать и на компьютере.</string>
@@ -182,7 +182,7 @@
     <string name="keys_title">Ключи подписи</string>
     <string name="keys_import_keystore">Импортировать хранилище ключей</string>
     <string name="keys_generate_key">Создать ключ</string>
-    <string name="keys_intro">Ключи, которыми подписывает Strata. Чтобы импортировать ключ, нажмите на файл .jks / .keystore / .bks / .p12 или .pk8 в списке файлов. Экспорт сохраняется в текущую папку списка файлов: %1$s</string>
+    <string name="keys_intro">Ключи, которыми подписывает Solina. Чтобы импортировать ключ, нажмите на файл .jks / .keystore / .bks / .p12 или .pk8 в списке файлов. Экспорт сохраняется в текущую папку списка файлов: %1$s</string>
     <string name="keys_until">до %1$s</string>
     <string name="keys_export_to">Экспорт в %1$s</string>
     <string name="keys_pk8_warning">Файл .pk8 — это ключ без защиты: любой, у кого он есть, сможет подписывать от вашего имени. Не передавайте экспортированные файлы другим.</string>
@@ -236,7 +236,7 @@
     <string name="keys_error_key_no_cert">У ключа «%1$s» нет сертификата</string>
     <string name="keys_error_not_keystore">Это не хранилище ключей</string>
     <string name="keys_error_jceks">Хранилища JCEKS не поддерживаются — преобразуйте его на компьютере: keytool -importkeystore -deststoretype pkcs12</string>
-    <string name="keys_error_unknown_keystore">Strata не знает такого хранилища ключей (поддерживаются JKS, PKCS #12 и BKS)</string>
+    <string name="keys_error_unknown_keystore">Solina не знает такого хранилища ключей (поддерживаются JKS, PKCS #12 и BKS)</string>
     <string name="keys_error_not_pkcs8">Это не ключ PKCS #8</string>
     <string name="keys_error_wrong_pk8_password">Неверный пароль ключа .pk8</string>
     <string name="keys_error_no_cert_in_pem">В файле .x509.pem нет сертификата</string>

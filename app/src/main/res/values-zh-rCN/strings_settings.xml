@@ -11,7 +11,7 @@
     <string name="settings_page_access">Root 和 Shizuku</string>
     <string name="settings_page_opening">打开文件</string>
     <string name="settings_page_backup">备份和恢复</string>
-    <string name="settings_page_about">关于 Strata</string>
+    <string name="settings_page_about">关于 Solina</string>
     <string name="settings_home_look">外观与风格</string>
     <string name="settings_home_files">文件处理</string>
     <string name="settings_home_system">系统</string>
@@ -137,7 +137,7 @@
     <string name="settings_contrast">对比度</string>
     <string name="settings_group_text_shapes">文字和形状</string>
     <string name="settings_text_size">文字大小</string>
-    <string name="settings_text_size_sample">Strata 让您的文件井井有条</string>
+    <string name="settings_text_size_sample">Solina 让您的文件井井有条</string>
     <string name="settings_corners">圆角</string>
     <string name="settings_corners_summary">卡片、面板和按钮的圆润程度</string>
     <string name="settings_group_file_icons">文件图标</string>
@@ -196,7 +196,7 @@
     <string name="settings_two_panes_summary">两个文件夹并排显示</string>
     <string name="settings_group_gestures">手势</string>
     <string name="settings_double_back">按两次返回键退出</string>
-    <string name="settings_double_back_summary">避免误按一次返回键就关闭 Strata</string>
+    <string name="settings_double_back_summary">避免误按一次返回键就关闭 Solina</string>
     <string name="settings_icon_tap">点按图标进行选择</string>
     <string name="settings_icon_tap_summary">点按文件图标会选中它；点按名称会打开它</string>
     <string name="settings_group_working">工作时</string>
@@ -217,13 +217,13 @@
     <string name="settings_trash_clean">清空存放超过以下时长的项目</string>
     <string name="settings_never">从不</string>
     <string name="settings_open_recycle_bin">打开回收站</string>
-    <string name="settings_reader_subtitle">在 Strata 中阅读 PDF</string>
+    <string name="settings_reader_subtitle">在 Solina 中阅读 PDF</string>
     <string name="settings_group_pages">页面</string>
     <string name="settings_page_color">页面颜色</string>
     <string name="settings_page_color_summary">夜间模式下图片保持原有颜色</string>
     <string name="settings_reader_screen_on">阅读时保持屏幕常亮</string>
     <string name="settings_group_memory">阅读记录</string>
-    <string name="settings_memory_footer">Strata 会在您上次离开的位置重新打开每个 PDF。您添加的书签会一直保留，直到您将其移除。</string>
+    <string name="settings_memory_footer">Solina 会在您上次离开的位置重新打开每个 PDF。您添加的书签会一直保留，直到您将其移除。</string>
     <string name="settings_forget_spots">清除阅读位置</string>
     <string name="settings_forget_spots_done">已清除——PDF 将重新从第一页打开</string>
     <string name="settings_forget_spots_summary">所有 PDF 将重新从第一页打开</string>
@@ -265,8 +265,8 @@
     <string name="settings_install_root_needs">请先开启 Root 权限</string>
     <string name="settings_group_extracting">提取</string>
     <string name="settings_apk_folder">提取 APK 的文件夹</string>
-    <string name="settings_apk_folder_default">内部存储中的 Strata/APKs</string>
-    <string name="settings_apk_folder_hint">留空：内部存储中的 Strata/APKs</string>
+    <string name="settings_apk_folder_default">内部存储中的 Solina/APKs</string>
+    <string name="settings_apk_folder_hint">留空：内部存储中的 Solina/APKs</string>
     <string name="settings_name_pattern">命名格式</string>
     <string name="settings_name_pattern_legend">{A} 名称，{P} 包名，{V} 版本，{C} 版本号</string>
     <string name="settings_name_pattern_summary">"%1$s   （%2$s）"</string>
@@ -281,7 +281,7 @@
     <string name="settings_shizuku_off">需要 Shizuku 应用。上方的 Root 已涵盖这些文件夹。</string>
     <string name="settings_shizuku_install">安装 Shizuku 应用，然后通过无线调试或 USB 调试启动它</string>
     <string name="settings_shizuku_start">打开 Shizuku 应用并启动服务</string>
-    <string name="settings_shizuku_allow">在 Shizuku 中允许 Strata（点按可再次请求）</string>
+    <string name="settings_shizuku_allow">在 Shizuku 中允许 Solina（点按可再次请求）</string>
     <string name="settings_shizuku_on">已开启：Android/data 和 Android/obb 通过 Shizuku 打开</string>
     <string name="settings_opening_subtitle">各文件类型的默认应用</string>
     <string name="settings_opening_none">尚无默认应用。在“打开方式…”中长按某个应用或工具，即可将其设为该文件类型的默认打开方式。</string>
@@ -304,7 +304,7 @@
     <string name="settings_choose_file_summary">任意位置的设置文件</string>
     <string name="settings_group_reset">重置</string>
     <string name="settings_reset_all">重置所有设置</string>
-    <string name="settings_reset_all_summary">恢复到 Strata 刚安装时的状态。书签、存储和密钥会保留。</string>
+    <string name="settings_reset_all_summary">恢复到 Solina 刚安装时的状态。书签、存储和密钥会保留。</string>
     <string name="settings_restore_title">恢复设置？</string>
     <string name="settings_restore_body">来自 %1$s 的设置将替换您当前的设置。</string>
     <string name="settings_restore_body_unnamed">文件中的设置将替换您当前的设置。</string>
@@ -313,13 +313,13 @@
     <string name="settings_reset_body">主题、列表、编辑器及其他所有设置都将恢复为默认值。</string>
     <string name="settings_reset">重置</string>
     <string name="settings_reset_done">设置已重置</string>
-    <string name="settings_backup_not_strata">这不是 Strata 设置文件</string>
-    <string name="settings_backup_newer">此设置文件来自更新版本的 Strata（格式 %1$d）</string>
+    <string name="settings_backup_not_solina">这不是 Solina 设置文件</string>
+    <string name="settings_backup_newer">此设置文件来自更新版本的 Solina（格式 %1$d）</string>
     <string name="settings_backup_empty">文件中没有设置</string>
     <string name="settings_about_version">版本 %1$s（%2$d）</string>
     <string name="settings_about_tagline">一款免费、开源的文件管理器</string>
     <string name="settings_group_license">许可证</string>
-    <string name="settings_license_summary">您可以使用、研究、分享和修改 Strata。通过网络为他人提供服务的修改版必须向他们提供源代码。</string>
+    <string name="settings_license_summary">您可以使用、研究、分享和修改 Solina。通过网络为他人提供服务的修改版必须向他们提供源代码。</string>
     <string name="settings_group_device">本设备</string>
     <string name="settings_device_android">Android %1$s（API %2$d）</string>
     <string name="settings_group_components">开源组件</string>
@@ -389,7 +389,7 @@
     <string name="ui_default_no_extension">已设为无扩展名文件的默认打开方式</string>
     <string name="ui_default_for_ext">已设为 .%1$s 文件的默认打开方式</string>
     <string name="ui_storage_title">需要存储权限</string>
-    <string name="ui_storage_body">Strata 需要访问所有文件的权限，才能浏览、编辑和管理设备存储。</string>
+    <string name="ui_storage_body">Solina 需要访问所有文件的权限，才能浏览、编辑和管理设备存储。</string>
     <string name="ui_storage_grant">授予权限</string>
     <plurals name="settings_summary_bar_buttons">
         <item quantity="other">栏中 %d 个按钮</item>
@@ -419,8 +419,8 @@
         <item quantity="other">快捷按钮最多 %1$d 个，因此 %2$s 已移到菜单</item>
     </plurals>
     <string name="settings_support_title">支持开发者</string>
-    <string name="settings_support_summary">Strata 免费且开源，您的支持能帮助它持续成长。</string>
-    <string name="settings_support_body">Strata 免费、开源，没有广告，也不做任何跟踪。如果它对您有帮助，并且您愿意支持它的发展，可以向以下任一地址捐助。感谢每一份支持！</string>
+    <string name="settings_support_summary">Solina 免费且开源，您的支持能帮助它持续成长。</string>
+    <string name="settings_support_body">Solina 免费、开源，没有广告，也不做任何跟踪。如果它对您有帮助，并且您愿意支持它的发展，可以向以下任一地址捐助。感谢每一份支持！</string>
     <string name="settings_support_wallets">钱包地址</string>
     <string name="settings_support_network_hint">请务必通过地址上方注明的网络发送对应币种，通过其他网络发送的资产将无法找回。</string>
     <string name="settings_support_copy">复制 %1$s 地址</string>

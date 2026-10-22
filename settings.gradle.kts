@@ -27,5 +27,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Strata"
+rootProject.name = "Solina Files"
 include(":app")

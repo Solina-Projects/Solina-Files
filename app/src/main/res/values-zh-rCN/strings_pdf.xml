@@ -79,12 +79,12 @@
     <string name="pdf_error_file">无法读取文件</string>
     <string name="pdf_error_format">这不是 PDF 文件，或者文件已损坏</string>
     <string name="pdf_error_password">此 PDF 受密码保护</string>
-    <string name="pdf_error_security">此 PDF 使用了 Strata 无法打开的加密方式</string>
+    <string name="pdf_error_security">此 PDF 使用了 Solina 无法打开的加密方式</string>
     <string name="pdf_error_page">此 PDF 中有页面已损坏</string>
     <string name="pdf_error_engine">此设备上无法使用 PDF 引擎</string>
     <string name="pdf_error_unknown">无法打开 PDF</string>
     <string name="pdf_nothing_to_open">没有可打开的内容</string>
-    <string name="pdf_needs_root">Strata 无法读取此文件。请开启 Root 模式后再打开。</string>
+    <string name="pdf_needs_root">Solina 无法读取此文件。请开启 Root 模式后再打开。</string>
     <string name="pdf_root_unavailable">Root 权限不可用</string>
     <string name="pdf_merge_need_two">请至少选择两个 PDF 文件</string>
     <string name="pdf_merge_not_file">%1$s 不是文件</string>
@@ -96,8 +96,8 @@
     <string name="pdf_error_no_catalog">文档缺少 Catalog 对象</string>
     <string name="pdf_error_no_pages">文档没有页面</string>
     <string name="pdf_error_encryption_dictionary">加密字典已损坏</string>
-    <string name="pdf_error_unsupported_encryption">此 PDF 使用 %1$s 加密，Strata 无法打开</string>
-    <string name="pdf_error_unknown_encryption">此 PDF 使用未知的加密方式，Strata 无法打开</string>
+    <string name="pdf_error_unsupported_encryption">此 PDF 使用 %1$s 加密，Solina 无法打开</string>
+    <string name="pdf_error_unknown_encryption">此 PDF 使用未知的加密方式，Solina 无法打开</string>
     <string name="pdf_error_stream_length">数据流长度为 %1$d 字节，而不是 %2$d 字节</string>
     <string name="media_open_with">打开方式</string>
     <string name="media_image_info">图片信息</string>

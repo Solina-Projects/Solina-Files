@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="settings_tab_floating_bar">Floating bar</string>
+    <string name="settings_floating_bar_note">Choose which floating actions are visible, available in the overflow menu, or hidden. These settings are separate for single-pane and dual-pane modes.</string>
     <string name="settings_shizuku" translatable="false">Shizuku</string>
     <string name="settings_page_appearance">Appearance</string>
     <string name="settings_page_file_list">File list</string>
@@ -12,7 +14,7 @@
     <string name="settings_page_access">Root and Shizuku</string>
     <string name="settings_page_opening">Opening files</string>
     <string name="settings_page_backup">Backup and restore</string>
-    <string name="settings_page_about">About Strata</string>
+    <string name="settings_page_about">About Solina Files</string>
     <string name="settings_home_look">Look and feel</string>
     <string name="settings_home_files">Working with files</string>
     <string name="settings_home_system">System</string>
@@ -138,7 +140,7 @@
     <string name="settings_contrast">Contrast</string>
     <string name="settings_group_text_shapes">Text and shapes</string>
     <string name="settings_text_size">Text size</string>
-    <string name="settings_text_size_sample">Strata keeps your files in order</string>
+    <string name="settings_text_size_sample">Solina Files keeps your files in order</string>
     <string name="settings_corners">Corners</string>
     <string name="settings_corners_summary">How round cards, sheets and buttons are</string>
     <string name="settings_group_file_icons">File icons</string>
@@ -197,7 +199,7 @@
     <string name="settings_two_panes_summary">Two folders side by side</string>
     <string name="settings_group_gestures">Gestures</string>
     <string name="settings_double_back">Press back twice to exit</string>
-    <string name="settings_double_back_summary">So one stray back press doesn\'t close Strata</string>
+    <string name="settings_double_back_summary">So one stray back press doesn\'t close Solina Files</string>
     <string name="settings_icon_tap">Tap the icon to select</string>
     <string name="settings_icon_tap_summary">Tapping a file\'s icon selects it; tapping its name opens it</string>
     <string name="settings_group_working">While working</string>
@@ -218,13 +220,13 @@
     <string name="settings_trash_clean">Empty items older than</string>
     <string name="settings_never">Never</string>
     <string name="settings_open_recycle_bin">Open recycle bin</string>
-    <string name="settings_reader_subtitle">Reading PDFs inside Strata</string>
+    <string name="settings_reader_subtitle">Reading PDFs inside Solina Files</string>
     <string name="settings_group_pages">Pages</string>
     <string name="settings_page_color">Page color</string>
     <string name="settings_page_color_summary">Night keeps pictures in their colors</string>
     <string name="settings_reader_screen_on">Keep the screen on while reading</string>
     <string name="settings_group_memory">Memory</string>
-    <string name="settings_memory_footer">Strata reopens every PDF where you left it. Bookmarks you add stay until you remove them.</string>
+    <string name="settings_memory_footer">Solina Files reopens every PDF where you left it. Bookmarks you add stay until you remove them.</string>
     <string name="settings_forget_spots">Forget where I stopped reading</string>
     <string name="settings_forget_spots_done">Done — PDFs open at the first page again</string>
     <string name="settings_forget_spots_summary">Every PDF opens at the first page again</string>
@@ -266,8 +268,8 @@
     <string name="settings_install_root_needs">Turn on root access first</string>
     <string name="settings_group_extracting">Extracting</string>
     <string name="settings_apk_folder">Folder for extracted APKs</string>
-    <string name="settings_apk_folder_default">Strata/APKs on internal storage</string>
-    <string name="settings_apk_folder_hint">Empty: Strata/APKs on internal storage</string>
+    <string name="settings_apk_folder_default">Solina Files/APKs on internal storage</string>
+    <string name="settings_apk_folder_hint">Empty: Solina Files/APKs on internal storage</string>
     <string name="settings_name_pattern">Name pattern</string>
     <string name="settings_name_pattern_legend">{A} name, {P} package, {V} version, {C} code</string>
     <string name="settings_name_pattern_summary">"%1$s   (%2$s)"</string>
@@ -282,7 +284,7 @@
     <string name="settings_shizuku_off">Needs the Shizuku app. Root above already covers these folders.</string>
     <string name="settings_shizuku_install">Install the Shizuku app, then start it with wireless or USB debugging</string>
     <string name="settings_shizuku_start">Open the Shizuku app and start the service</string>
-    <string name="settings_shizuku_allow">Allow Strata in Shizuku (tap to ask again)</string>
+    <string name="settings_shizuku_allow">Allow Solina Files in Shizuku (tap to ask again)</string>
     <string name="settings_shizuku_on">On: Android/data and Android/obb open through Shizuku</string>
     <string name="settings_opening_subtitle">Default apps for file types</string>
     <string name="settings_opening_none">No defaults yet. In \"Open with…\", long-press an app or tool to make it the default for that file type.</string>
@@ -305,7 +307,7 @@
     <string name="settings_choose_file_summary">A settings file from anywhere</string>
     <string name="settings_group_reset">Reset</string>
     <string name="settings_reset_all">Reset all settings</string>
-    <string name="settings_reset_all_summary">Back to how Strata was when installed. Bookmarks, storages and keys stay.</string>
+    <string name="settings_reset_all_summary">Back to how Solina Files was when installed. Bookmarks, storages and keys stay.</string>
     <string name="settings_restore_title">Restore settings?</string>
     <string name="settings_restore_body">Settings from %1$s replace the ones you have now.</string>
     <string name="settings_restore_body_unnamed">Settings from the file replace the ones you have now.</string>
@@ -314,13 +316,13 @@
     <string name="settings_reset_body">Theme, list, editor and every other setting go back to the defaults.</string>
     <string name="settings_reset">Reset</string>
     <string name="settings_reset_done">Settings reset</string>
-    <string name="settings_backup_not_strata">This isn\'t a Strata settings file</string>
-    <string name="settings_backup_newer">This settings file is from a newer Strata (format %1$d)</string>
+    <string name="settings_backup_not_strata">This isn\'t a Solina Files settings file</string>
+    <string name="settings_backup_newer">This settings file is from a newer Solina Files (format %1$d)</string>
     <string name="settings_backup_empty">The file has no settings</string>
     <string name="settings_about_version">Version %1$s (%2$d)</string>
     <string name="settings_about_tagline">A free, open-source file manager</string>
     <string name="settings_group_license">License</string>
-    <string name="settings_license_summary">You may use, study, share and change Strata. A changed version that serves people over a network must offer them its source.</string>
+    <string name="settings_license_summary">You may use, study, share and change Solina Files. A changed version that serves people over a network must offer them its source.</string>
     <string name="settings_group_device">This device</string>
     <string name="settings_device_android">Android %1$s (API %2$d)</string>
     <string name="settings_group_components">Open-source components</string>
@@ -390,7 +392,7 @@
     <string name="ui_default_no_extension">Set as the default for files without an extension</string>
     <string name="ui_default_for_ext">Set as the default for .%1$s files</string>
     <string name="ui_storage_title">Storage access required</string>
-    <string name="ui_storage_body">Strata needs access to all files to browse, edit, and manage your device storage.</string>
+    <string name="ui_storage_body">Solina Files needs access to all files to browse, edit, and manage your device storage.</string>
     <string name="ui_storage_grant">Grant access</string>
     <plurals name="settings_summary_bar_buttons">
         <item quantity="one">%d button in the bar</item>
@@ -429,11 +431,12 @@
         <item quantity="other">Quick buttons hold %1$d, so %2$s moved to the menu</item>
     </plurals>
     <string name="settings_support_title">Support the developer</string>
-    <string name="settings_support_summary">Strata is free and open source. Your support helps it keep growing.</string>
-    <string name="settings_support_body">Strata is free, open source and has no ads or tracking. If it makes your work easier and you\'d like to help it grow, you can send a donation to one of these addresses. Every bit of support is appreciated — thank you!</string>
+    <string name="settings_support_summary">Solina Files is free and open source. Your support helps it keep growing.</string>
+    <string name="settings_support_body">Solina Files is free, open source and has no ads or tracking. If it makes your work easier and you\'d like to help it grow, you can send a donation to one of these addresses. Every bit of support is appreciated — thank you!</string>
     <string name="settings_support_wallets">Wallets</string>
     <string name="settings_support_network_hint">Send each coin only on the network named above its address. Coins sent on another network can\'t be recovered.</string>
     <string name="settings_support_copy">Copy the %1$s address</string>
     <string name="settings_support_copied">Address copied</string>
     <string name="settings_kw_support">donate donation support sponsor tip crypto wallet usdt trx tron bnb ton gram</string>
+    <string name="settings_backup_not_solina">This is not a valid Solina Files settings backup.</string>
 </resources>
