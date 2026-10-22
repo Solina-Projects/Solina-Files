@@ -175,7 +175,7 @@ fun ToolbarPage(settings: StrataSettings, act: SettingsActions, onBack: () -> Un
                     }
                     ToolbarTab.FLOATING -> {
                         var preview by remember { mutableStateOf(layout.floating) }
-                        BarPreview(preview.zones[0].map { PreviewButton(floatingActionIcon(it), tr(it.label), false) }, selecting = false)
+                        BarPreview(preview.zones[0].map { PreviewButton(floatingActionIcon(it), stringResource(it.label), false) }, selecting = false)
                         SettingNote(stringResource(R.string.settings_floating_bar_note))
                         ZoneEditor(
                             zoned = layout.floating,
