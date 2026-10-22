@@ -9,12 +9,20 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Code
+import androidx.compose.material.icons.rounded.CreateNewFolder
+import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.ViewList
+import androidx.compose.material.icons.rounded.SwapVert
 import androidx.compose.material.icons.automirrored.rounded.ManageSearch
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material.icons.rounded.MoreVert
@@ -27,6 +35,7 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -50,6 +59,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -123,7 +133,7 @@ import kotlinx.coroutines.withContext
 private sealed interface Dialog {
     data object None : Dialog
     data class NewFolder(val pane: Pane) : Dialog
-    data class NewFile(val pane: Pane) : Dialog
+    data class NewFile(val pane: Pane, val initial: String = "") : Dialog
     data object Delete : Dialog
     data object Sort : Dialog
     data object Bookmarks : Dialog
@@ -168,6 +178,9 @@ fun ExplorerScreen(
     var lastBackPress by remember { mutableLongStateOf(0L) }
     val rootPath = vm.rootPath
     val dual = ui.settings.dualPanePreferred
+    var horizontalSplit by rememberSaveable { mutableStateOf(false) }
+    var quickCreateExpanded by rememberSaveable { mutableStateOf(false) }
+    var layoutMenuExpanded by remember { mutableStateOf(false) }
     val termux = viewModel<TermuxViewModel>().session
     val sshHere = RemoteUri.parse(ui.activePane.path)?.let { (id, dir) ->
         ui.storages.firstOrNull { it.id == id && it.protocol == RemoteProtocol.SFTP }?.let { it to dir }
@@ -397,49 +410,124 @@ fun ExplorerScreen(
             )
         },
     ) { padding ->
-        Row(
-            Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(horizontal = 4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-        ) {
-            val panes = if (dual) listOf(Pane.LEFT, Pane.RIGHT) else listOf(ui.active)
-            for (pane in panes) {
-                val state = ui.pane(pane)
-                val visible = remember(state.items, ui.settings, ui.query) { visibleItems(state, ui.settings, ui.query) }
-                PaneColumn(
-                    state = state,
-                    visible = visible,
-                    isActive = ui.active == pane,
-                    showActive = dual,
-                    rootPath = rootPath,
-                    onActivate = { vm.setActive(pane) },
-                    onUp = { vm.setActive(pane); vm.navigateUp(pane) },
-                    onOpen = { handleOpen(pane, it) },
-                    onToggleSelect = { vm.toggleSelect(pane, it) },
-                    onItemMenu = { dialog = Dialog.ItemSheet(pane, it) },
-                    onJumpTo = { dialog = Dialog.JumpTo(pane) },
-                    onRefresh = { vm.setActive(pane); vm.refresh(pane) },
-                    modifier = Modifier.weight(1f).fillMaxSize(),
-                    displayPath = if (RemoteUri.isRemote(state.path)) ui.displayPath(state.path) else null,
-                    pane = pane,
-                )
+        val panes = if (dual) listOf(Pane.LEFT, Pane.RIGHT) else listOf(ui.active)
+        @Composable
+        fun PaneContent(pane: Pane, modifier: Modifier) {
+            val state = ui.pane(pane)
+            val visible = remember(state.items, ui.settings, ui.query) { visibleItems(state, ui.settings, ui.query) }
+            PaneColumn(
+                state = state,
+                visible = visible,
+                isActive = ui.active == pane,
+                showActive = dual,
+                rootPath = rootPath,
+                onActivate = { vm.setActive(pane) },
+                onUp = { vm.setActive(pane); vm.navigateUp(pane) },
+                onOpen = { handleOpen(pane, it) },
+                onToggleSelect = { vm.toggleSelect(pane, it) },
+                onItemMenu = { dialog = Dialog.ItemSheet(pane, it) },
+                onJumpTo = { dialog = Dialog.JumpTo(pane) },
+                onRefresh = { vm.setActive(pane); vm.refresh(pane) },
+                modifier = modifier,
+                displayPath = if (RemoteUri.isRemote(state.path)) ui.displayPath(state.path) else null,
+                pane = pane,
+                horizontalItems = dual && horizontalSplit,
+            )
+        }
+        if (dual && horizontalSplit) {
+            Column(
+                Modifier.fillMaxSize().padding(padding).padding(horizontal = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                PaneContent(Pane.LEFT, Modifier.weight(1f).fillMaxWidth())
+                PaneContent(Pane.RIGHT, Modifier.weight(1f).fillMaxWidth())
+            }
+        } else {
+            Row(
+                Modifier.fillMaxSize().padding(padding).padding(horizontal = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                panes.forEach { pane -> PaneContent(pane, Modifier.weight(1f).fillMaxSize()) }
             }
         }
     }
     }
     if (!ui.searchActive) {
-        FloatingActionButton(
-            onClick = { vm.setDualPanePreferred(!dual) },
+        Column(
             modifier = Modifier.align(androidx.compose.ui.Alignment.BottomEnd).padding(end = 16.dp, bottom = 84.dp),
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            horizontalAlignment = androidx.compose.ui.Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            Icon(
-                imageVector = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
-                contentDescription = if (dual) "Switch to single pane" else "Switch to dual pane",
-            )
+            AnimatedVisibility(
+                visible = quickCreateExpanded,
+                enter = fadeIn() + scaleIn(),
+                exit = fadeOut() + scaleOut(),
+            ) {
+                Column(horizontalAlignment = androidx.compose.ui.Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    ExtendedFloatingActionButton(
+                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFolder(ui.active) },
+                        icon = { Icon(Icons.Rounded.CreateNewFolder, contentDescription = null) },
+                        text = { Text("پوشه جدید") },
+                    )
+                    ExtendedFloatingActionButton(
+                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "untitled.txt") },
+                        icon = { Icon(Icons.Rounded.Description, contentDescription = null) },
+                        text = { Text("فایل متنی") },
+                    )
+                    ExtendedFloatingActionButton(
+                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "index.html") },
+                        icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
+                        text = { Text("فایل HTML") },
+                    )
+                }
+            }
+            Box {
+                FloatingActionButton(
+                    onClick = { layoutMenuExpanded = true },
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                ) {
+                    Icon(
+                        imageVector = if (dual) Icons.Rounded.SwapVert else if (ui.settings.list.viewMode == dev.cluvex.strata.core.model.ViewMode.GRID) Icons.Rounded.GridView else Icons.Rounded.ViewList,
+                        contentDescription = "تنظیم چیدمان و اندازه",
+                    )
+                }
+                DropdownMenu(expanded = layoutMenuExpanded, onDismissRequest = { layoutMenuExpanded = false }) {
+                    if (dual) {
+                        DropdownMenuItem(
+                            text = { Text(if (horizontalSplit) "پنل‌های کنار هم (عمودی)" else "پنل‌های روی هم (افقی)") },
+                            leadingIcon = { Icon(Icons.Rounded.SwapVert, contentDescription = null) },
+                            onClick = { horizontalSplit = !horizontalSplit; layoutMenuExpanded = false },
+                        )
+                    } else {
+                        DropdownMenuItem(
+                            text = { Text(if (ui.settings.list.viewMode == dev.cluvex.strata.core.model.ViewMode.LIST) "چیدمان شبکه‌ای" else "چیدمان فهرستی") },
+                            leadingIcon = { Icon(if (ui.settings.list.viewMode == dev.cluvex.strata.core.model.ViewMode.LIST) Icons.Rounded.GridView else Icons.Rounded.ViewList, contentDescription = null) },
+                            onClick = { vm.toggleViewMode(); layoutMenuExpanded = false },
+                        )
+                        DropdownMenuItem(text = { Text("اندازه فشرده") }, onClick = { vm.setItemDensity(dev.cluvex.strata.core.model.UiDensity.COMPACT); layoutMenuExpanded = false })
+                        DropdownMenuItem(text = { Text("اندازه معمولی") }, onClick = { vm.setItemDensity(dev.cluvex.strata.core.model.UiDensity.COMFORTABLE); layoutMenuExpanded = false })
+                        DropdownMenuItem(text = { Text("اندازه بزرگ") }, onClick = { vm.setItemDensity(dev.cluvex.strata.core.model.UiDensity.LARGE); layoutMenuExpanded = false })
+                    }
+                }
+            }
+            FloatingActionButton(
+                onClick = { vm.setDualPanePreferred(!dual); quickCreateExpanded = false },
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+            ) {
+                Icon(
+                    imageVector = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
+                    contentDescription = if (dual) "Switch to single pane" else "Switch to dual pane",
+                )
+            }
+            FloatingActionButton(
+                onClick = { quickCreateExpanded = !quickCreateExpanded },
+                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+            ) {
+                Icon(Icons.Rounded.Add, contentDescription = if (quickCreateExpanded) "بستن ایجاد سریع" else "ایجاد فایل یا پوشه")
+            }
         }
     }
     DragLayer(drag) { host[0]?.positionInRoot() ?: Offset.Zero }
@@ -453,7 +541,7 @@ fun ExplorerScreen(
             onDismiss = { dialog = Dialog.None },
         )
         is Dialog.NewFile -> InputDialog(
-            title = stringResource(R.string.common_new_file), label = stringResource(R.string.explorer_file_name),
+            title = stringResource(R.string.common_new_file), label = stringResource(R.string.explorer_file_name), initial = d.initial,
             onConfirm = { vm.newFile(d.pane, it); dialog = Dialog.None },
             onDismiss = { dialog = Dialog.None },
         )
