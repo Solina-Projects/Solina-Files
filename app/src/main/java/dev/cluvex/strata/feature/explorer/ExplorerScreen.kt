@@ -512,6 +512,7 @@ fun ExplorerScreen(
                     }
                 }
             }
+            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.CREATE)) {
             FloatingActionButton(
                 onClick = { quickCreateExpanded = !quickCreateExpanded; layoutMenuExpanded = false },
                 containerColor = MaterialTheme.colorScheme.tertiaryContainer,
