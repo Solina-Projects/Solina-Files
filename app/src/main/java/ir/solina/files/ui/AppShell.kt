@@ -504,11 +504,11 @@ private fun Screen(
                 onOpenFolder = { path -> actions.locate(path, null) },
                 onSearch = { actions.push(Route.Search(vm.state.value.activePane.path)) },
                 onSettings = { actions.push(Route.Settings) },
-                isDarkTheme = settings.themeMode == ThemeMode.DARK,
+                isDarkTheme = settings.appearance.themeMode == ThemeMode.DARK,
                 onToggleTheme = {
                     scope.launch {
                         settingsRepo.editAppearance {
-                            it.copy(themeMode = if (settings.themeMode == ThemeMode.DARK) ThemeMode.LIGHT else ThemeMode.DARK)
+                            it.copy(themeMode = if (settings.appearance.themeMode == ThemeMode.DARK) ThemeMode.LIGHT else ThemeMode.DARK)
                         }
                     }
                 },

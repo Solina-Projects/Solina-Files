@@ -437,4 +437,5 @@
     <string name="settings_support_copy">کپی آدرس \u2068%1$s\u2069</string>
     <string name="settings_support_copied">آدرس کپی شد</string>
     <string name="settings_kw_support">حمایت کمک مالی دونیت اهدا کیف پول رمزارز ارز دیجیتال تتر ترون</string>
+    <string name="settings_backup_not_solina">این فایل، پشتیبان معتبر تنظیمات سولینا فایلز نیست.</string>
 </resources>

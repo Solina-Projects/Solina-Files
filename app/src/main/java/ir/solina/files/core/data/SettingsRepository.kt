@@ -407,7 +407,7 @@ class SettingsRepository(private val context: Context) {
         internal fun readAppearance(p: Preferences) = AppearancePrefs(
             themeMode = enumOf(p[Keys.THEME_MODE], ThemeMode.SYSTEM),
             wallpaperColors = p[Keys.DYNAMIC] ?: true,
-            seed = p[Keys.SEED] ?: ThemeSeeds.STRATA,
+            seed = p[Keys.SEED] ?: ThemeSeeds.SOLINA,
             style = enumOf(p[Keys.THEME_STYLE], ThemeStyle.TONAL_SPOT),
             contrast = enumOf(p[Keys.CONTRAST], ContrastLevel.STANDARD),
             pureBlack = p[Keys.PURE_BLACK] ?: false,
