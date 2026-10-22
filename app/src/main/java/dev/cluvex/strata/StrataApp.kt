@@ -22,7 +22,7 @@ import dev.cluvex.strata.core.vault.Vault
 import dev.cluvex.strata.ui.i18n.AppLocales
 import dev.cluvex.strata.ui.security.AppLock
 
-class StrataApp : Application(), SingletonImageLoader.Factory {
+class SolinaFilesApp : Application(), SingletonImageLoader.Factory {
 
     override fun onCreate() {
         super.onCreate()
