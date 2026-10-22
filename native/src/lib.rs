@@ -19,16 +19,25 @@ const ALGO_SHA1: i32 = 2;
 const ALGO_SHA256: i32 = 3;
 
 fn hex(bytes: &[u8]) -> String {
-    let mut s = String::with_capacity(bytes.len() * 2);
-    for b in bytes {
-        s.push_str(&format!("{:02x}", b));
+    const HEX: &[u8; 16] = b"0123456789abcdef";
+    let mut out = String::with_capacity(bytes.len() * 2);
+    for &byte in bytes {
+        out.push(HEX[(byte >> 4) as usize] as char);
+        out.push(HEX[(byte & 0x0f) as usize] as char);
     }
-    s
+    out
 }
 
-fn digest_file<D: Digest + Write>(file: &mut File) -> io::Result<String> {
+fn digest_file<D: Digest>(file: &mut File) -> io::Result<String> {
     let mut hasher = D::new();
-    io::copy(file, &mut hasher)?;
+    let mut buffer = [0u8; 64 * 1024];
+    loop {
+        let read = file.read(&mut buffer)?;
+        if read == 0 {
+            break;
+        }
+        hasher.update(&buffer[..read]);
+    }
     Ok(hex(&hasher.finalize()))
 }
 
