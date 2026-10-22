@@ -124,7 +124,7 @@ class ExplorerViewModel(
 
     private val lister = DirectoryLister(
         storageRoot = rootPath,
-        local = { p -> withContext(Dispatchers.IO) { val calculateChildCount = !settingsRepo.settings.first().dualPanePreferred; File(p).takeIf { it.isDirectory }?.listFiles()?.map { FileItem.of(it, calculateChildCount) } } },
+        local = { p -> withContext(Dispatchers.IO) { val currentSettings = settingsRepo.settings.first(); val calculateChildCount = !currentSettings.dualPanePreferred && currentSettings.list.viewMode == ViewMode.LIST; File(p).takeIf { it.isDirectory }?.listFiles()?.map { FileItem.of(it, calculateChildCount) } } },
         root = { p -> privilegedAccess()?.let { a -> withContext(Dispatchers.IO) { a.list(p) } } },
         missing = { p -> isMissing(p) },
         fallback = { p -> if (p == "/") withContext(Dispatchers.IO) { TopLevel.probe() } else null },
