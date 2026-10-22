@@ -379,6 +379,8 @@ fun ExplorerScreen(
                 browse = ui.settings.actions.browse,
                 selection = ui.settings.actions.selection,
                 showHidden = ui.settings.showHidden,
+                horizontalSplit = horizontalSplit,
+                onToggleOrientation = { horizontalSplit = !horizontalSplit },
                 actions = BottomBarActions(
                     onBack = { vm.goBack(ui.active) },
                     onForward = { vm.goForward(ui.active) },
