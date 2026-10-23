@@ -319,8 +319,8 @@ data class ActionLayout(
 
         val DEFAULT_FLOATING = Zoned<FloatingAction>(
             listOf(
-                emptyList(),
-                emptyList(),
+                listOf(FloatingAction.CREATE, FloatingAction.VIEW_LAYOUT, FloatingAction.HOME, FloatingAction.REFRESH),
+                listOf(FloatingAction.PANE_MODE, FloatingAction.ORIENTATION, FloatingAction.SWAP_PANES),
                 emptyList(),
             ),
         )
