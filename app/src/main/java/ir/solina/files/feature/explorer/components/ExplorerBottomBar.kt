@@ -178,7 +178,7 @@ fun ExplorerBottomBar(
                 SelectionActions(selectionCount, context, activeIsLeft, selection, actions)
             } else {
                 val context = BrowseContext(clipboard = clipboardCount > 0, termux = !remote, project = projectLabel != null)
-                BrowseActions(canBack, canForward, clipboardCount, clipboardIsMove, context, projectLabel, browse, showHidden, dual, horizontalSplit, onToggleOrientation, actions)
+                BrowseActions(canBack, canForward, clipboardCount, clipboardIsMove, context, projectLabel, browse, showHidden, dual, horizontalSplit, onToggleOrientation, activeIsLeft, gridView, onToggleViewLayout, onTogglePaneMode, onSwapPane, actions)
             }
         }
     }
@@ -236,6 +236,11 @@ private fun BrowseActions(
     dual: Boolean,
     horizontalSplit: Boolean,
     onToggleOrientation: () -> Unit,
+    activeIsLeft: Boolean,
+    gridView: Boolean,
+    onToggleViewLayout: () -> Unit,
+    onTogglePaneMode: () -> Unit,
+    onSwapPane: () -> Unit,
     a: BottomBarActions,
 ) {
     val motion = MaterialTheme.motionScheme
