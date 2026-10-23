@@ -409,20 +409,16 @@ private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape) {
     val settings = LocalSettings.current
     val kind = FileKinds.of(item)
     val tile = KindPalette.colors(kind, settings.appearance.colorfulIcons, colors, colors.background.luminance() < 0.5f)
+    // Show the file-type symbol by itself: no colored tile/background or inset.
     Box(
-        Modifier
-            .size(iconSize)
-            .clip(shape)
-            .background(tile.container),
+        Modifier.size(iconSize),
         contentAlignment = Alignment.Center,
     ) {
         Icon(
             kind.icon,
             contentDescription = stringResource(kind.label),
             tint = tile.content,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(iconSize * 0.10f),
+            modifier = Modifier.fillMaxSize(),
         )
     }
 }
