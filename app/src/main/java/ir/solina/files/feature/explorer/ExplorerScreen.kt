@@ -636,7 +636,7 @@ fun ExplorerScreen(
                                             ir.solina.files.core.model.UiDensity.COMFORTABLE to "معمولی",
                                             ir.solina.files.core.model.UiDensity.LARGE to "بزرگ",
                                         ).forEach { (densityOption, label) ->
-                                            val selectedDensity = ui.settings.list.density == densityOption
+                                            val selectedDensity = ui.settings.uiDensity == densityOption
                                             Column(
                                                 horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
                                                 verticalArrangement = Arrangement.spacedBy(5.dp),
