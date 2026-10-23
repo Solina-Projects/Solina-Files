@@ -22,6 +22,10 @@ enum class BrowseAction(@StringRes val label: Int) {
     SORT(R.string.model_browse_sort),
     JUMP(R.string.model_browse_jump),
     HIDDEN_FILES(R.string.model_browse_hidden_files),
+    VIEW_LAYOUT(R.string.settings_entry_view_mode),
+    PANE_MODE(R.string.settings_two_panes),
+    ORIENTATION(R.string.model_browse_swap),
+    SWAP_PANES(R.string.model_browse_swap),
 }
 
 enum class SelectionAction(@StringRes val label: Int, val asks: Boolean = false) {
