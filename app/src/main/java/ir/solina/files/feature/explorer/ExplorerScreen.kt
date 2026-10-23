@@ -730,7 +730,7 @@ fun ExplorerScreen(
                         Icon(Icons.Rounded.MoreVert, contentDescription = "گزینه‌های نوار شناور")
                     }
                     DropdownMenu(expanded = floatingMoreExpanded, onDismissRequest = { floatingMoreExpanded = false }) {
-                        floatingMenuActions.forEach { action ->
+                        floatingMenuActions.filterNot { !dual && (it == FloatingAction.ORIENTATION || it == FloatingAction.SWAP_PANES) }.forEach { action ->
                             val title = when (action) {
                                 FloatingAction.CREATE -> "ایجاد فایل یا پوشه"
                                 FloatingAction.PANE_MODE -> if (dual) "تک‌پنجره" else "دوپنجره"
