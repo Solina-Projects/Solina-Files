@@ -24,8 +24,8 @@ enum class BrowseAction(@StringRes val label: Int) {
     HIDDEN_FILES(R.string.model_browse_hidden_files),
     VIEW_LAYOUT(R.string.settings_entry_view_mode),
     PANE_MODE(R.string.settings_two_panes),
-    ORIENTATION(R.string.model_browse_swap),
-    SWAP_PANES(R.string.model_browse_swap),
+    ORIENTATION(R.string.model_browse_orientation),
+    SWAP_PANES(R.string.model_browse_swap_panes),
 }
 
 enum class SelectionAction(@StringRes val label: Int, val asks: Boolean = false) {
@@ -267,11 +267,11 @@ data class Zoned<T : Enum<T>>(val zones: List<List<T>>) {
 enum class FloatingAction(@StringRes val label: Int) {
     CREATE(R.string.model_browse_new),
     PANE_MODE(R.string.settings_two_panes),
-    ORIENTATION(R.string.model_browse_swap),
+    ORIENTATION(R.string.model_browse_orientation),
     VIEW_LAYOUT(R.string.settings_entry_view_mode),
     HOME(R.string.model_browse_home),
     REFRESH(R.string.model_browse_refresh),
-    SWAP_PANES(R.string.model_browse_swap),
+    SWAP_PANES(R.string.model_browse_swap_panes),
 }
 
 data class ActionLayout(
