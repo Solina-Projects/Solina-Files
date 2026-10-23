@@ -28,6 +28,13 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material.icons.rounded.West
 import androidx.compose.material.icons.rounded.LayersClear
+import androidx.compose.material.icons.rounded.Layers
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.ViewList
+import androidx.compose.material.icons.rounded.ViewAgenda
+import androidx.compose.material.icons.rounded.ViewColumn
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.rounded.SwapVert
 import androidx.compose.material3.Badge
@@ -135,6 +142,10 @@ fun ExplorerBottomBar(
     showHidden: Boolean = false,
     horizontalSplit: Boolean = false,
     onToggleOrientation: () -> Unit = {},
+    gridView: Boolean = false,
+    onToggleViewLayout: () -> Unit = {},
+    onTogglePaneMode: () -> Unit = {},
+    onSwapPane: () -> Unit = {},
 ) {
     val motion = MaterialTheme.motionScheme
     val threshold = with(LocalDensity.current) { 48.dp.toPx() }
@@ -289,6 +300,26 @@ private fun BrowseActions(
                         enabled = enabled(action),
                     ) { runAction(action) }
                 }
+            }
+        }
+        if (!selecting) {
+            BarButton(
+                icon = if (gridView) Icons.Rounded.ViewList else Icons.Rounded.GridView,
+                description = if (gridView) "تغییر به نمای فهرستی" else "تغییر به نمای شبکه‌ای",
+            ) { onToggleViewLayout() }
+            BarButton(
+                icon = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
+                description = if (dual) "تبدیل به تک‌پنجره" else "تبدیل به دوپنجره",
+            ) { onTogglePaneMode() }
+            if (dual) {
+                BarButton(
+                    icon = Icons.Rounded.Layers,
+                    description = if (activeIsLeft) "فعال‌کردن پنل راست" else "فعال‌کردن پنل چپ",
+                ) { onSwapPane() }
+                BarButton(
+                    icon = if (horizontalSplit) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda,
+                    description = if (horizontalSplit) "چیدن پنل‌ها کنار هم" else "چیدن پنل‌ها روی هم",
+                ) { onToggleOrientation() }
             }
         }
         Box {
