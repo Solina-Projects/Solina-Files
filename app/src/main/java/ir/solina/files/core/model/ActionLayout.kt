@@ -265,6 +265,8 @@ enum class FloatingAction(@StringRes val label: Int) {
     PANE_MODE(R.string.settings_two_panes),
     ORIENTATION(R.string.model_browse_swap),
     VIEW_LAYOUT(R.string.settings_entry_view_mode),
+    HOME(R.string.model_browse_home),
+    REFRESH(R.string.model_browse_refresh),
 }
 
 data class ActionLayout(
@@ -312,7 +314,7 @@ data class ActionLayout(
 
         val DEFAULT_FLOATING = Zoned(
             listOf(
-                listOf(FloatingAction.CREATE, FloatingAction.PANE_MODE, FloatingAction.ORIENTATION, FloatingAction.VIEW_LAYOUT),
+                emptyList(),
                 emptyList(),
                 emptyList(),
             ),
