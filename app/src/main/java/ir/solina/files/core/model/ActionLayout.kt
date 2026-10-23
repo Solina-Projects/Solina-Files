@@ -313,7 +313,7 @@ data class ActionLayout(
             ),
         )
 
-        val DEFAULT_FLOATING = Zoned(
+        val DEFAULT_FLOATING = Zoned<FloatingAction>(
             listOf(
                 emptyList(),
                 emptyList(),
@@ -344,7 +344,7 @@ data class ActionLayout(
                 browse = Zoned.decode(parts["b"], BrowseAction.entries, DEFAULT_BROWSE, BROWSE_CAPS),
                 selection = Zoned.decode(parts["s"], SelectionAction.entries, DEFAULT_SELECTION, SELECTION_CAPS),
                 sheet = Zoned.decode(parts["q"], SheetAction.entries, DEFAULT_SHEET, SHEET_CAPS),
-                floating = Zoned.decode(parts["f"], FloatingAction.entries, DEFAULT_FLOATING, FLOATING_CAPS),
+                floating = Zoned.decode<FloatingAction>(parts["f"], FloatingAction.entries, DEFAULT_FLOATING, FLOATING_CAPS),
             )
         }
     }
