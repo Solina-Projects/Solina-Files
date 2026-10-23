@@ -45,7 +45,6 @@ import androidx.compose.material.icons.rounded.SwapVert
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.automirrored.rounded.ManageSearch
 import androidx.compose.material.icons.rounded.Menu
-import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SortByAlpha
 import androidx.compose.material.icons.rounded.ViewAgenda
@@ -205,7 +204,6 @@ fun ExplorerScreen(
     val dual = ui.settings.dualPanePreferred
     var horizontalSplit by rememberSaveable { mutableStateOf(false) }
     var quickCreateExpanded by rememberSaveable { mutableStateOf(false) }
-    var floatingMoreExpanded by rememberSaveable { mutableStateOf(false) }
     var layoutMenuExpanded by remember { mutableStateOf(false) }
     val createIconRotation by animateFloatAsState(if (quickCreateExpanded) 45f else 0f, label = "createFabRotation")
     val layoutIconScale by animateFloatAsState(if (layoutMenuExpanded) 0.88f else 1f, label = "layoutFabScale")
@@ -521,7 +519,9 @@ fun ExplorerScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             val floatingZones = ui.settings.actions.floating.zones
-            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.HOME)) {
+            val floatingVisibleActions = (floatingZones.getOrNull(0).orEmpty() + floatingZones.getOrNull(1).orEmpty())
+                .filterNot { !dual && (it == FloatingAction.ORIENTATION || it == FloatingAction.SWAP_PANES) }
+            if (FloatingAction.HOME in floatingVisibleActions) {
                 FloatingActionButton(
                     onClick = { vm.goHome(ui.active); quickCreateExpanded = false; layoutMenuExpanded = false },
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -530,7 +530,7 @@ fun ExplorerScreen(
                     Icon(Icons.Rounded.Home, contentDescription = "خانه")
                 }
             }
-            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.REFRESH)) {
+            if (FloatingAction.REFRESH in floatingVisibleActions) {
                 FloatingActionButton(
                     onClick = { vm.refresh(ui.active); quickCreateExpanded = false; layoutMenuExpanded = false },
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -539,7 +539,7 @@ fun ExplorerScreen(
                     Icon(Icons.Rounded.Refresh, contentDescription = "تازه‌سازی")
                 }
             }
-            if (dual && floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.SWAP_PANES)) {
+            if (dual && FloatingAction.SWAP_PANES in floatingVisibleActions) {
                 FloatingActionButton(
                     onClick = { vm.swapPanes() },
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -548,7 +548,7 @@ fun ExplorerScreen(
                     Icon(Icons.Rounded.SwapHoriz, contentDescription = "تعویض محتوای دو پنل")
                 }
             }
-            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.CREATE)) {
+            if (FloatingAction.CREATE in floatingVisibleActions) {
             AnimatedVisibility(
                 visible = quickCreateExpanded,
                 enter = fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.7f),
@@ -579,7 +579,7 @@ fun ExplorerScreen(
                     }
                 }
             }
-            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.CREATE)) {
+            if (FloatingAction.CREATE in floatingVisibleActions) {
                 FloatingActionButton(
                     onClick = { quickCreateExpanded = !quickCreateExpanded; layoutMenuExpanded = false },
                     containerColor = MaterialTheme.colorScheme.tertiaryContainer,
@@ -592,7 +592,7 @@ fun ExplorerScreen(
                     )
                 }
             }
-            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.ORIENTATION) && dual) {
+            if (FloatingAction.ORIENTATION in floatingVisibleActions && dual) {
                 FloatingActionButton(
                     onClick = { horizontalSplit = !horizontalSplit },
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -604,7 +604,7 @@ fun ExplorerScreen(
                     )
                 }
             }
-            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.VIEW_LAYOUT)) {
+            if (FloatingAction.VIEW_LAYOUT in floatingVisibleActions) {
                 Box {
                     Column(
                         horizontalAlignment = androidx.compose.ui.Alignment.End,
@@ -712,7 +712,7 @@ fun ExplorerScreen(
                     }
                 }
             }
-            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.PANE_MODE)) {
+            if (FloatingAction.PANE_MODE in floatingVisibleActions) {
                 FloatingActionButton(
                     onClick = { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false },
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -724,52 +724,7 @@ fun ExplorerScreen(
                     )
                 }
             }
-            val floatingMenuActions = floatingZones.getOrNull(1).orEmpty()
-            if (floatingMenuActions.isNotEmpty()) {
-                Box {
-                    FloatingActionButton(onClick = { floatingMoreExpanded = true }) {
-                        Icon(Icons.Rounded.MoreVert, contentDescription = "گزینه‌های نوار شناور")
-                    }
-                    DropdownMenu(expanded = floatingMoreExpanded, onDismissRequest = { floatingMoreExpanded = false }) {
-                        floatingMenuActions.filterNot { !dual && (it == FloatingAction.ORIENTATION || it == FloatingAction.SWAP_PANES) }.forEach { action ->
-                            val title = when (action) {
-                                FloatingAction.CREATE -> "ایجاد فایل یا پوشه"
-                                FloatingAction.PANE_MODE -> if (dual) "تک‌پنجره" else "دوپنجره"
-                                FloatingAction.ORIENTATION -> if (horizontalSplit) "پنل‌ها روی هم" else "پنل‌ها کنار هم"
-                                FloatingAction.VIEW_LAYOUT -> "تنظیم چیدمان و اندازه"
-                                FloatingAction.HOME -> "خانه"
-                                FloatingAction.REFRESH -> "تازه‌سازی"
-                                FloatingAction.SWAP_PANES -> "جابه‌جایی پنل‌ها"
-                            }
-                            val actionIcon = when (action) {
-                                FloatingAction.CREATE -> Icons.Rounded.Add
-                                FloatingAction.PANE_MODE -> if (dual) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda
-                                FloatingAction.ORIENTATION -> if (horizontalSplit) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn
-                                FloatingAction.VIEW_LAYOUT -> if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) Icons.Rounded.GridView else Icons.Rounded.ViewList
-                                FloatingAction.HOME -> Icons.Rounded.Home
-                                FloatingAction.REFRESH -> Icons.Rounded.Refresh
-                                FloatingAction.SWAP_PANES -> Icons.Rounded.SwapHoriz
-                            }
-                            DropdownMenuItem(
-                                text = { Text(title) },
-                                leadingIcon = { Icon(actionIcon, contentDescription = null) },
-                                onClick = {
-                                    floatingMoreExpanded = false
-                                    when (action) {
-                                        FloatingAction.CREATE -> quickCreateExpanded = !quickCreateExpanded
-                                        FloatingAction.PANE_MODE -> { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false }
-                                        FloatingAction.ORIENTATION -> if (dual) horizontalSplit = !horizontalSplit else layoutMenuExpanded = true
-                                        FloatingAction.VIEW_LAYOUT -> layoutMenuExpanded = true
-                                        FloatingAction.HOME -> vm.goHome(ui.active)
-                                        FloatingAction.REFRESH -> vm.refresh(ui.active)
-                                        FloatingAction.SWAP_PANES -> if (dual) vm.swapPanes()
-                                    }
-                                },
-                            )
-                        }
-                    }
-                }
-            }
+
         }
     }
     DragLayer(drag) { host[0]?.positionInRoot() ?: Offset.Zero }
