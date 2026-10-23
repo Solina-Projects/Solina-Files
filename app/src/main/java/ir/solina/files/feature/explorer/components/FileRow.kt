@@ -133,7 +133,7 @@ fun FileRow(
             value = withContext(Dispatchers.IO) {
                 runCatching {
                     File(item.path).walkTopDown()
-                        .filter { it.isFile && !it.isSymbolicLink() }
+                        .filter { it.isFile && !ir.solina.files.core.fs.FsUtil.isSymlink(it) }
                         .sumOf { it.length() }
                 }.getOrNull()
             }
