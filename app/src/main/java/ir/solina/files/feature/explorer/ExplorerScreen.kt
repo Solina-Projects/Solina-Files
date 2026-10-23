@@ -521,27 +521,31 @@ fun ExplorerScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             val floatingZones = ui.settings.actions.floating.zones
-            FloatingActionButton(
-                onClick = { vm.goHome(ui.active); quickCreateExpanded = false; layoutMenuExpanded = false },
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-            ) {
-                Icon(Icons.Rounded.Home, contentDescription = "خانه")
+            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.HOME)) {
+                FloatingActionButton(
+                    onClick = { vm.goHome(ui.active); quickCreateExpanded = false; layoutMenuExpanded = false },
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ) {
+                    Icon(Icons.Rounded.Home, contentDescription = "خانه")
+                }
             }
-            FloatingActionButton(
-                onClick = { vm.refresh(ui.active); quickCreateExpanded = false; layoutMenuExpanded = false },
-                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
-                contentColor = MaterialTheme.colorScheme.onSurface,
-            ) {
-                Icon(Icons.Rounded.Refresh, contentDescription = "تازه‌سازی")
+            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.REFRESH)) {
+                FloatingActionButton(
+                    onClick = { vm.refresh(ui.active); quickCreateExpanded = false; layoutMenuExpanded = false },
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ) {
+                    Icon(Icons.Rounded.Refresh, contentDescription = "تازه‌سازی")
+                }
             }
-            if (dual) {
+            if (dual && floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.SWAP_PANES)) {
                 FloatingActionButton(
                     onClick = { vm.swapPanes() },
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     contentColor = MaterialTheme.colorScheme.onSurface,
                 ) {
-                    Icon(Icons.Rounded.Layers, contentDescription = "تعویض محتوای دو پنل")
+                    Icon(Icons.Rounded.SwapHoriz, contentDescription = "تعویض محتوای دو پنل")
                 }
             }
             if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.CREATE)) {
@@ -732,12 +736,18 @@ fun ExplorerScreen(
                                 FloatingAction.PANE_MODE -> if (dual) "تک‌پنجره" else "دوپنجره"
                                 FloatingAction.ORIENTATION -> if (horizontalSplit) "پنل‌ها روی هم" else "پنل‌ها کنار هم"
                                 FloatingAction.VIEW_LAYOUT -> "تنظیم چیدمان و اندازه"
+                                FloatingAction.HOME -> "خانه"
+                                FloatingAction.REFRESH -> "تازه‌سازی"
+                                FloatingAction.SWAP_PANES -> "جابه‌جایی پنل‌ها"
                             }
                             val actionIcon = when (action) {
                                 FloatingAction.CREATE -> Icons.Rounded.Add
                                 FloatingAction.PANE_MODE -> if (dual) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda
                                 FloatingAction.ORIENTATION -> if (horizontalSplit) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn
                                 FloatingAction.VIEW_LAYOUT -> if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) Icons.Rounded.GridView else Icons.Rounded.ViewList
+                                FloatingAction.HOME -> Icons.Rounded.Home
+                                FloatingAction.REFRESH -> Icons.Rounded.Refresh
+                                FloatingAction.SWAP_PANES -> Icons.Rounded.SwapHoriz
                             }
                             DropdownMenuItem(
                                 text = { Text(title) },
@@ -749,6 +759,9 @@ fun ExplorerScreen(
                                         FloatingAction.PANE_MODE -> { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false }
                                         FloatingAction.ORIENTATION -> if (dual) horizontalSplit = !horizontalSplit else layoutMenuExpanded = true
                                         FloatingAction.VIEW_LAYOUT -> layoutMenuExpanded = true
+                                        FloatingAction.HOME -> vm.goHome(ui.active)
+                                        FloatingAction.REFRESH -> vm.refresh(ui.active)
+                                        FloatingAction.SWAP_PANES -> if (dual) vm.swapPanes()
                                     }
                                 },
                             )
