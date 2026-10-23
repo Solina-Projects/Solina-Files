@@ -4,7 +4,8 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
+    <!-- Android-compatible launcher rendering of the S in the root icon.svg -->
     <path
         android:fillColor="#FFFFFFFF"
-        android:pathData="M73,31 C67,25 59,22 49,22 C35,22 27,30 27,42 C27,54 35,59 49,63 C59,66 63,69 63,76 C63,83 58,87 49,87 C40,87 33,83 27,77 L19,87 C27,95 37,99 49,99 C65,99 75,90 75,76 C75,63 67,57 53,52 C42,48 39,45 39,40 C39,35 43,32 49,32 C56,32 61,35 66,40 Z" />
+        android:pathData="M70,33 C65,28 59,26 52,26 C41,26 34,32 34,42 C34,51 40,56 52,60 C60,63 63,66 63,71 C63,77 59,81 52,81 C45,81 40,78 35,73 L30,80 C36,85 43,88 52,88 C65,88 73,81 73,70 C73,60 67,55 56,51 C47,48 44,45 44,41 C44,37 47,34 52,34 C57,34 62,36 66,40 Z" />
 </vector>
