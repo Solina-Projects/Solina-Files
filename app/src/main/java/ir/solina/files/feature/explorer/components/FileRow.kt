@@ -126,13 +126,6 @@ fun FileRow(
     val ghostAlpha by animateFloatAsState(if (drop.ghosted) 0.36f else 1f, motion.defaultEffectsSpec(), label = "rowGhost")
     val flash = rememberFlash(flashKey, flashPulses)
     val flashColor = colors.primary.copy(alpha = 0.32f)
-    val folderSize by produceState<Long?>(initialValue = null, item.path, item.isDirectory, singlePane) {
-        if (!singlePane || !item.isDirectory || "://" in item.path || !item.canRead) {
-            value = null
-        } else {
-            value = calculateFolderSize(item.path)
-        }
-    }
 
     Row(
         modifier
@@ -307,21 +300,6 @@ fun FileTile(
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 6.dp),
         )
-        val info: String? = when {
-            !singlePane -> null
-            item.isDirectory -> folderSize?.let { Formatters.size(it, list.sizeUnits) }
-            else -> Formatters.size(item.size, list.sizeUnits)
-        }
-        if (info != null) {
-            Text(
-                info,
-                style = MaterialTheme.typography.labelSmall,
-                color = colors.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                textAlign = TextAlign.Center,
-            )
-        }
     }
 }
 
