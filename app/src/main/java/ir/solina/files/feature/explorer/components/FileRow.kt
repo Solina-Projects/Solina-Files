@@ -420,7 +420,13 @@ private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape) {
             kind.icon,
             contentDescription = stringResource(kind.label),
             tint = tile.content,
-            modifier = Modifier.padding(iconSize * 0.22f),
+            modifier = if (item.isDirectory) {
+                Modifier
+                    .fillMaxSize()
+                    .padding(iconSize * 0.10f)
+            } else {
+                Modifier.padding(iconSize * 0.22f)
+            },
         )
     }
 }
