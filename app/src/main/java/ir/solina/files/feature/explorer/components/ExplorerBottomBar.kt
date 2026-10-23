@@ -302,25 +302,23 @@ private fun BrowseActions(
                 }
             }
         }
-        if (!selecting) {
+        BarButton(
+            icon = if (gridView) Icons.Rounded.ViewList else Icons.Rounded.GridView,
+            description = if (gridView) "تغییر به نمای فهرستی" else "تغییر به نمای شبکه‌ای",
+        ) { onToggleViewLayout() }
+        BarButton(
+            icon = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
+            description = if (dual) "تبدیل به تک‌پنجره" else "تبدیل به دوپنجره",
+        ) { onTogglePaneMode() }
+        if (dual) {
             BarButton(
-                icon = if (gridView) Icons.Rounded.ViewList else Icons.Rounded.GridView,
-                description = if (gridView) "تغییر به نمای فهرستی" else "تغییر به نمای شبکه‌ای",
-            ) { onToggleViewLayout() }
+                icon = Icons.Rounded.Layers,
+                description = if (activeIsLeft) "فعال‌کردن پنل راست" else "فعال‌کردن پنل چپ",
+            ) { onSwapPane() }
             BarButton(
-                icon = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
-                description = if (dual) "تبدیل به تک‌پنجره" else "تبدیل به دوپنجره",
-            ) { onTogglePaneMode() }
-            if (dual) {
-                BarButton(
-                    icon = Icons.Rounded.Layers,
-                    description = if (activeIsLeft) "فعال‌کردن پنل راست" else "فعال‌کردن پنل چپ",
-                ) { onSwapPane() }
-                BarButton(
-                    icon = if (horizontalSplit) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda,
-                    description = if (horizontalSplit) "چیدن پنل‌ها کنار هم" else "چیدن پنل‌ها روی هم",
-                ) { onToggleOrientation() }
-            }
+                icon = if (horizontalSplit) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda,
+                description = if (horizontalSplit) "چیدن پنل‌ها کنار هم" else "چیدن پنل‌ها روی هم",
+            ) { onToggleOrientation() }
         }
         Box {
             BarButton(Icons.Rounded.MoreVert, stringResource(R.string.common_more)) { more = true }
