@@ -220,6 +220,7 @@ private fun BrowseAction.run(a: BottomBarActions) = when (this) {
     BrowseAction.SORT -> a.onSort()
     BrowseAction.JUMP -> a.onJump()
     BrowseAction.HIDDEN_FILES -> a.onToggleHidden()
+    BrowseAction.VIEW_LAYOUT, BrowseAction.PANE_MODE, BrowseAction.ORIENTATION, BrowseAction.SWAP_PANES -> Unit
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -249,13 +250,14 @@ private fun BrowseActions(
     fun enabled(action: BrowseAction) = when (action) {
         BrowseAction.BACK -> canBack
         BrowseAction.FORWARD -> canForward
+        BrowseAction.ORIENTATION, BrowseAction.SWAP_PANES -> dual
         else -> true
     }
     @Composable
     fun actionText(action: BrowseAction): String =
         action.text(clipboardIsMove, showHidden, projectLabel)
     fun actionIcon(action: BrowseAction): ImageVector = when {
-        action == BrowseAction.SWAP -> Icons.Rounded.SwapHoriz
+        action == BrowseAction.SWAP || action == BrowseAction.SWAP_PANES -> Icons.Rounded.SwapHoriz
         action == BrowseAction.HIDDEN_FILES && showHidden -> Icons.Rounded.VisibilityOff
         else -> action.icon
     }
@@ -284,6 +286,19 @@ private fun BrowseActions(
                     BarButton(action.icon, stringResource(action.label)) { newMenu = true }
                     ExpressiveMenu(expanded = newMenu, onDismiss = { newMenu = false }, groups = listOf(newEntries))
                 }
+                BrowseAction.VIEW_LAYOUT -> BarButton(actionIcon(action), actionText(action)) { onToggleViewLayout() }
+                BrowseAction.PANE_MODE -> BarButton(
+                    icon = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
+                    description = if (dual) "تبدیل به تک‌پنجره" else "تبدیل به دوپنجره",
+                ) { onTogglePaneMode() }
+                BrowseAction.ORIENTATION -> if (dual) BarButton(
+                    icon = if (horizontalSplit) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda,
+                    description = if (horizontalSplit) "چیدن پنل‌ها کنار هم" else "چیدن پنل‌ها روی هم",
+                ) { onToggleOrientation() }
+                BrowseAction.SWAP_PANES -> if (dual) BarButton(
+                    icon = Icons.Rounded.SwapHoriz,
+                    description = if (activeIsLeft) "فعال‌کردن پنل راست" else "فعال‌کردن پنل چپ",
+                ) { onSwapPane() }
                 BrowseAction.SWAP -> BarButton(
                     icon = actionIcon(action),
                     description = actionText(action),
@@ -297,24 +312,6 @@ private fun BrowseActions(
                     ) { runAction(action) }
                 }
             }
-        }
-        BarButton(
-            icon = if (gridView) Icons.Rounded.ViewList else Icons.Rounded.GridView,
-            description = if (gridView) "تغییر به نمای فهرستی" else "تغییر به نمای شبکه‌ای",
-        ) { onToggleViewLayout() }
-        BarButton(
-            icon = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
-            description = if (dual) "تبدیل به تک‌پنجره" else "تبدیل به دوپنجره",
-        ) { onTogglePaneMode() }
-        if (dual) {
-            BarButton(
-                icon = Icons.Rounded.Layers,
-                description = if (activeIsLeft) "فعال‌کردن پنل راست" else "فعال‌کردن پنل چپ",
-            ) { onSwapPane() }
-            BarButton(
-                icon = if (horizontalSplit) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda,
-                description = if (horizontalSplit) "چیدن پنل‌ها کنار هم" else "چیدن پنل‌ها روی هم",
-            ) { onToggleOrientation() }
         }
         Box {
             BarButton(Icons.Rounded.MoreVert, stringResource(R.string.common_more)) { more = true }
