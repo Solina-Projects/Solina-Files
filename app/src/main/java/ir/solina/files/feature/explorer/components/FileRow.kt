@@ -438,11 +438,20 @@ private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape) {
         Modifier.size(iconSize),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            kind.icon,
-            contentDescription = stringResource(kind.label),
-            tint = tile.content,
-            modifier = Modifier.fillMaxSize(),
-        )
+        if (item.isDirectory) {
+            AsyncImage(
+                model = R.raw.solina_folder_dualpane,
+                contentDescription = stringResource(kind.label),
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            Icon(
+                kind.icon,
+                contentDescription = stringResource(kind.label),
+                tint = tile.content,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
     }
 }
