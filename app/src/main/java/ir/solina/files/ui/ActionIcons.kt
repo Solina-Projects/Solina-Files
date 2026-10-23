@@ -37,6 +37,7 @@ import androidx.compose.material.icons.rounded.FormatListNumbered
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Key
+import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.Memory
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
@@ -78,7 +79,7 @@ val BrowseAction.icon: ImageVector
         BrowseAction.JUMP -> Icons.Rounded.Explore
         BrowseAction.HIDDEN_FILES -> Icons.Rounded.Visibility
         BrowseAction.VIEW_LAYOUT -> Icons.Rounded.GridView
-        BrowseAction.PANE_MODE -> Icons.Rounded.ViewColumn
+        BrowseAction.PANE_MODE -> Icons.Rounded.Layers
         BrowseAction.ORIENTATION -> Icons.Rounded.ViewAgenda
         BrowseAction.SWAP_PANES -> Icons.Rounded.SwapHoriz
     }
