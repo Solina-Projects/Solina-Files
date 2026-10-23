@@ -38,6 +38,9 @@ import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialShapes
@@ -422,4 +425,7 @@ private fun floatingActionIcon(action: FloatingAction): ImageVector = when (acti
     FloatingAction.PANE_MODE -> Icons.Rounded.ViewColumn
     FloatingAction.ORIENTATION -> Icons.Rounded.ViewAgenda
     FloatingAction.VIEW_LAYOUT -> Icons.Rounded.GridView
+    FloatingAction.HOME -> Icons.Rounded.Home
+    FloatingAction.REFRESH -> Icons.Rounded.Refresh
+    FloatingAction.SWAP_PANES -> Icons.Rounded.SwapHoriz
 }
