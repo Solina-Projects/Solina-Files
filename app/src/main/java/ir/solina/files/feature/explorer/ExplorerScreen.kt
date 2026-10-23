@@ -35,6 +35,9 @@ import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.CreateNewFolder
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.Storage
 import androidx.compose.material.icons.rounded.ViewList
@@ -394,6 +397,10 @@ fun ExplorerScreen(
                 showHidden = ui.settings.showHidden,
                 horizontalSplit = horizontalSplit,
                 onToggleOrientation = { horizontalSplit = !horizontalSplit },
+                gridView = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID,
+                onToggleViewLayout = { vm.toggleViewMode() },
+                onTogglePaneMode = { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false },
+                onSwapPane = vm::swapPanes,
                 actions = BottomBarActions(
                     onBack = { vm.goBack(ui.active) },
                     onForward = { vm.goForward(ui.active) },
@@ -514,6 +521,29 @@ fun ExplorerScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             val floatingZones = ui.settings.actions.floating.zones
+            FloatingActionButton(
+                onClick = { vm.goHome(ui.active); quickCreateExpanded = false; layoutMenuExpanded = false },
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+            ) {
+                Icon(Icons.Rounded.Home, contentDescription = "خانه")
+            }
+            FloatingActionButton(
+                onClick = { vm.refresh(ui.active); quickCreateExpanded = false; layoutMenuExpanded = false },
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                contentColor = MaterialTheme.colorScheme.onSurface,
+            ) {
+                Icon(Icons.Rounded.Refresh, contentDescription = "تازه‌سازی")
+            }
+            if (dual) {
+                FloatingActionButton(
+                    onClick = { vm.swapPanes() },
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    contentColor = MaterialTheme.colorScheme.onSurface,
+                ) {
+                    Icon(Icons.Rounded.Layers, contentDescription = "تعویض محتوای دو پنل")
+                }
+            }
             if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.CREATE)) {
             AnimatedVisibility(
                 visible = quickCreateExpanded,
@@ -565,9 +595,8 @@ fun ExplorerScreen(
                     contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                 ) {
                     Icon(
-                        imageVector = if (horizontalSplit) Icons.Rounded.SwapVert else Icons.Rounded.SwapHoriz,
+                        imageVector = if (horizontalSplit) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
                         contentDescription = if (horizontalSplit) "چیدن پنل‌ها روی هم" else "چیدن پنل‌ها کنار هم",
-                        modifier = Modifier.graphicsLayer { rotationZ = if (horizontalSplit) 90f else 0f },
                     )
                 }
             } else if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.VIEW_LAYOUT) && !dual) {
@@ -685,9 +714,8 @@ fun ExplorerScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 ) {
                     Icon(
-                        imageVector = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
-                        contentDescription = if (dual) "Switch to single pane" else "Switch to dual pane",
-                        modifier = Modifier.graphicsLayer { rotationZ = paneIconRotation },
+                        imageVector = if (dual) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda,
+                        contentDescription = if (dual) "تبدیل به تک‌پنجره" else "تبدیل به دوپنجره",
                     )
                 }
             }
@@ -702,13 +730,13 @@ fun ExplorerScreen(
                             val title = when (action) {
                                 FloatingAction.CREATE -> "ایجاد فایل یا پوشه"
                                 FloatingAction.PANE_MODE -> if (dual) "تک‌پنجره" else "دوپنجره"
-                                FloatingAction.ORIENTATION -> if (horizontalSplit) "پنل‌ها کنار هم" else "پنل‌ها روی هم"
+                                FloatingAction.ORIENTATION -> if (horizontalSplit) "پنل‌ها روی هم" else "پنل‌ها کنار هم"
                                 FloatingAction.VIEW_LAYOUT -> "تنظیم چیدمان و اندازه"
                             }
                             val actionIcon = when (action) {
                                 FloatingAction.CREATE -> Icons.Rounded.Add
-                                FloatingAction.PANE_MODE -> if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn
-                                FloatingAction.ORIENTATION -> if (horizontalSplit) Icons.Rounded.SwapVert else Icons.Rounded.SwapHoriz
+                                FloatingAction.PANE_MODE -> if (dual) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda
+                                FloatingAction.ORIENTATION -> if (horizontalSplit) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn
                                 FloatingAction.VIEW_LAYOUT -> if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) Icons.Rounded.GridView else Icons.Rounded.ViewList
                             }
                             DropdownMenuItem(
