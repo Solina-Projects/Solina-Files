@@ -255,7 +255,7 @@ private fun BrowseActions(
     fun actionText(action: BrowseAction): String =
         action.text(clipboardIsMove, showHidden, projectLabel)
     fun actionIcon(action: BrowseAction): ImageVector = when {
-        action == BrowseAction.SWAP -> Icons.Rounded.Layers
+        action == BrowseAction.SWAP -> Icons.Rounded.SwapHoriz
         action == BrowseAction.HIDDEN_FILES && showHidden -> Icons.Rounded.VisibilityOff
         else -> action.icon
     }
