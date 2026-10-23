@@ -5,6 +5,8 @@
     <string name="model_browse_new">New</string>
     <string name="model_browse_paste">Paste</string>
     <string name="model_browse_swap">Swap panes</string>
+    <string name="model_browse_orientation">Change pane orientation</string>
+    <string name="model_browse_swap_panes">Swap pane positions</string>
     <string name="model_browse_up">Parent folder</string>
     <string name="model_browse_home">Home</string>
     <string name="model_browse_refresh">Refresh</string>
