@@ -719,7 +719,7 @@ fun ExplorerScreen(
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 ) {
                     Icon(
-                        imageVector = if (dual) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda,
+                        imageVector = Icons.Rounded.Layers,
                         contentDescription = if (dual) "تبدیل به تک‌پنجره" else "تبدیل به دوپنجره",
                     )
                 }
