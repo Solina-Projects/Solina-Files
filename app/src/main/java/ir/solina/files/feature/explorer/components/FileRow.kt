@@ -115,8 +115,10 @@ fun FileRow(
         }
     }
     val layoutScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.5f; UiDensity.COMFORTABLE -> 2.5f; UiDensity.LARGE -> 3.5f }
+    val listIconScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 1f }
+    val listSpacingScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 0.5f }
     val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
-    val iconSize = density.iconDp.dp * layoutScale
+    val iconSize = density.iconDp.dp * layoutScale * listIconScale
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.96f else 1f, motion.fastSpatialSpec(), label = "press")
@@ -156,7 +158,7 @@ fun FileRow(
         DropHalo(look, drop.anchor) {
             Leading(item, selected, showThumbnail, iconSize, if (settings.behavior.iconTapSelects) onIconClick else null)
         }
-        Spacer(Modifier.width(if (density.iconDp <= 30) 8.dp else 10.dp))
+        Spacer(Modifier.width((if (density.iconDp <= 30) 8.dp else 10.dp) * listSpacingScale))
         Column(Modifier.weight(1f)) {
             Text(
                 isolated(Formatters.displayName(item.name, item.isDirectory, list.showExtensions)),
@@ -218,7 +220,8 @@ fun FileTile(
     val list = settings.list
     val density = LocalUiDensity.current
     val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
-    val tileIconSize = density.iconDp.dp * if (horizontalPane) 1.125f else 1.75f
+    val tileDensityScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.2f; UiDensity.LARGE -> 1.4f }
+    val tileIconSize = density.iconDp.dp * (if (horizontalPane) 1.125f else 1.75f) * tileDensityScale
     val folderSize by produceState<Long?>(initialValue = null, item.path, item.isDirectory, singlePane) {
         if (!singlePane || !item.isDirectory || "://" in item.path || !item.canRead) {
             value = null
@@ -278,7 +281,7 @@ fun FileTile(
                     )
                 }
                 apk -> ApkIconOrKind(item, tileIconSize, shape)
-                else -> KindIcon(item, tileIconSize, shape, contentPaddingFraction = if (singlePane) 0.07f else 0.22f)
+                else -> KindIcon(item, tileIconSize, shape, contentPaddingFraction = if (!singlePane) 0.22f else when (density) { UiDensity.COMPACT -> 0.07f; UiDensity.COMFORTABLE -> 0.07f; UiDensity.LARGE -> 0.02f })
             }
             Box(
                 Modifier
@@ -305,7 +308,7 @@ fun FileTile(
             maxLines = if (list.wrapNames) 3 else 2,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = 6.dp),
+            modifier = Modifier.padding(top = if (singlePane) 3.dp else 6.dp),
         )
     }
 }
