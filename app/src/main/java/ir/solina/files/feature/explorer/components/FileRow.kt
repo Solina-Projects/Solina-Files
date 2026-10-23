@@ -207,7 +207,7 @@ fun FileTile(
     val list = settings.list
     val density = LocalUiDensity.current
     val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
-    val tileIconSize = if (horizontalPane) 36.dp else 56.dp
+    val tileIconSize = density.iconDp.dp * if (horizontalPane) 1.125f else 1.75f
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.95f else 1f, motion.fastSpatialSpec(), label = "press")
@@ -420,13 +420,9 @@ private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape) {
             kind.icon,
             contentDescription = stringResource(kind.label),
             tint = tile.content,
-            modifier = if (item.isDirectory) {
-                Modifier
-                    .fillMaxSize()
-                    .padding(iconSize * 0.10f)
-            } else {
-                Modifier.padding(iconSize * 0.22f)
-            },
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(iconSize * 0.10f),
         )
     }
 }
