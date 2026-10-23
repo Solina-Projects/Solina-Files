@@ -48,6 +48,10 @@ import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.rounded.Terminal
 import androidx.compose.material.icons.rounded.Unarchive
 import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.ViewList
+import androidx.compose.material.icons.rounded.ViewAgenda
+import androidx.compose.material.icons.rounded.ViewColumn
 import androidx.compose.ui.graphics.vector.ImageVector
 import ir.solina.files.core.model.BrowseAction
 import ir.solina.files.core.model.SelectionAction
@@ -73,6 +77,10 @@ val BrowseAction.icon: ImageVector
         BrowseAction.SORT -> Icons.Rounded.SortByAlpha
         BrowseAction.JUMP -> Icons.Rounded.Explore
         BrowseAction.HIDDEN_FILES -> Icons.Rounded.Visibility
+        BrowseAction.VIEW_LAYOUT -> Icons.Rounded.GridView
+        BrowseAction.PANE_MODE -> Icons.Rounded.ViewColumn
+        BrowseAction.ORIENTATION -> Icons.Rounded.ViewAgenda
+        BrowseAction.SWAP_PANES -> Icons.Rounded.SwapHoriz
     }
 
 val SelectionAction.icon: ImageVector
