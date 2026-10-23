@@ -283,7 +283,7 @@ fun <T> ConnectedChoice(
                 if (icon != null && option == selected) {
                     Icon(icon(option), contentDescription = null, modifier = Modifier.size(18.dp).padding(end = 2.dp))
                 }
-                Text(label(option), maxLines = 1, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.labelLarge)
+                Text(label(option), maxLines = 2, minLines = 1, overflow = TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center, style = MaterialTheme.typography.labelLarge)
             }
         }
     }

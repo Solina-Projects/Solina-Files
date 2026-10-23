@@ -32,6 +32,7 @@ import androidx.compose.material.icons.rounded.ViewAgenda
 import androidx.compose.material.icons.rounded.ViewColumn
 import androidx.compose.material.icons.rounded.SwapVert
 import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.material.icons.rounded.Restore
@@ -137,7 +138,7 @@ fun ToolbarPage(settings: SolinaSettings, act: SettingsActions, onBack: () -> Un
                 when (current) {
                     ToolbarTab.BROWSE -> {
                         var preview by remember { mutableStateOf(layout.browse) }
-                        BarPreview(preview.zones[0].map { PreviewButton(it.icon, stringResource(it.label), it.hint != null) }, selecting = false)
+                        BarPreview(preview.zones[0].map { PreviewButton(if (it == BrowseAction.SWAP) Icons.Rounded.Layers else it.icon, stringResource(it.label), it.hint != null) }, selecting = false)
                         SettingNote(pluralStringResource(R.plurals.settings_toolbar_bar_note, ActionLayout.BROWSE_SLOTS, ActionLayout.BROWSE_SLOTS))
                         ZoneEditor(
                             zoned = layout.browse,
@@ -419,6 +420,6 @@ private fun PreviewChip(label: String, count: Int) {
 private fun floatingActionIcon(action: FloatingAction): ImageVector = when (action) {
     FloatingAction.CREATE -> Icons.Rounded.Add
     FloatingAction.PANE_MODE -> Icons.Rounded.ViewColumn
-    FloatingAction.ORIENTATION -> Icons.Rounded.SwapVert
+    FloatingAction.ORIENTATION -> Icons.Rounded.ViewAgenda
     FloatingAction.VIEW_LAYOUT -> Icons.Rounded.GridView
 }

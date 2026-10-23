@@ -38,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -60,6 +61,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
 import coil3.compose.AsyncImage
 import coil3.decode.BitmapFactoryDecoder
 import coil3.request.ImageRequest
@@ -103,6 +107,13 @@ fun FileRow(
     val density = LocalUiDensity.current
     val settings = LocalSettings.current
     val list = settings.list
+    val folderSize by produceState<Long?>(initialValue = null, item.path, item.isDirectory, singlePane) {
+        if (!singlePane || !item.isDirectory || "://" in item.path || !item.canRead) {
+            value = null
+        } else {
+            value = calculateFolderSize(item.path)
+        }
+    }
     val layoutScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.5f; UiDensity.COMFORTABLE -> 2.5f; UiDensity.LARGE -> 3.5f }
     val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
     val iconSize = density.iconDp.dp * layoutScale
@@ -155,7 +166,7 @@ fun FileRow(
                 overflow = TextOverflow.Ellipsis,
             )
             val date = if (list.showDate) Formatters.listDate(item.lastModified, list.dateStyle, list.use24Hour) else null
-            val info = trailingInfo(item, list, singlePane)
+            val info = trailingInfo(item, list, singlePane, folderSize)
             if (date != null || info != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -207,7 +218,14 @@ fun FileTile(
     val list = settings.list
     val density = LocalUiDensity.current
     val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
-    val tileIconSize = if (horizontalPane) 36.dp else 56.dp
+    val tileIconSize = density.iconDp.dp * if (horizontalPane) 1.125f else 1.75f
+    val folderSize by produceState<Long?>(initialValue = null, item.path, item.isDirectory, singlePane) {
+        if (!singlePane || !item.isDirectory || "://" in item.path || !item.canRead) {
+            value = null
+        } else {
+            value = calculateFolderSize(item.path)
+        }
+    }
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.95f else 1f, motion.fastSpatialSpec(), label = "press")
@@ -289,10 +307,6 @@ fun FileTile(
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 6.dp),
         )
-        val info: String? = null
-        if (info != null) {
-            Text(info, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
-        }
     }
 }
 
@@ -320,10 +334,20 @@ private const val FLASH_FADE_MS = 520
 
 fun flashDurationMs(pulses: Int): Long = (pulses * (FLASH_IN_MS + FLASH_OUT_MS) + FLASH_FADE_MS).toLong()
 
+private suspend fun calculateFolderSize(path: String): Long? = withContext(Dispatchers.IO) {
+    runCatching {
+        File(path).walkTopDown()
+            .filter { it.isFile && !ir.solina.files.core.fs.FsUtil.isSymlink(it) }
+            .sumOf { it.length() }
+    }.getOrNull()
+}
+
 @Composable
-private fun trailingInfo(item: FileItem, list: ListPrefs, singlePane: Boolean): String? = when {
+private fun trailingInfo(item: FileItem, list: ListPrefs, singlePane: Boolean, folderSize: Long?): String? = when {
     item.isSymlink -> stringResource(R.string.explorer_link)
-    item.isDirectory -> if (singlePane && item.childCount >= 0) "${Formatters.number(item.childCount.toLong())} مورد" else null
+    singlePane && item.isDirectory -> folderSize?.let { Formatters.size(it, list.sizeUnits) }
+    singlePane -> Formatters.size(item.size, list.sizeUnits)
+    item.isDirectory -> null
     !list.showSize -> null
     else -> Formatters.size(item.size, list.sizeUnits)
 }
@@ -409,18 +433,25 @@ private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape) {
     val settings = LocalSettings.current
     val kind = FileKinds.of(item)
     val tile = KindPalette.colors(kind, settings.appearance.colorfulIcons, colors, colors.background.luminance() < 0.5f)
+    // Show the file-type symbol by itself: no colored tile/background or inset.
     Box(
-        Modifier
-            .size(iconSize)
-            .clip(shape)
-            .background(tile.container),
+        Modifier.size(iconSize),
         contentAlignment = Alignment.Center,
     ) {
-        Icon(
-            kind.icon,
-            contentDescription = stringResource(kind.label),
-            tint = tile.content,
-            modifier = Modifier.padding(iconSize * 0.22f),
-        )
+        if (item.isDirectory) {
+            AsyncImage(
+                model = R.raw.solina_folder_dualpane,
+                contentDescription = stringResource(kind.label),
+                contentScale = ContentScale.Fit,
+                modifier = Modifier.fillMaxSize(),
+            )
+        } else {
+            Icon(
+                kind.icon,
+                contentDescription = stringResource(kind.label),
+                tint = tile.content,
+                modifier = Modifier.fillMaxSize(),
+            )
+        }
     }
 }

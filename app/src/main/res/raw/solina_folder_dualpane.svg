@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+<defs>
+  <linearGradient id="back" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#1b8cf0"/><stop offset="1" stop-color="#0a6bcf"/>
+  </linearGradient>
+  <linearGradient id="front" x1="0" y1="0" x2="1" y2="0.35">
+    <stop offset="0" stop-color="#2f93f5"/><stop offset="0.55" stop-color="#22b2e4"/><stop offset="1" stop-color="#2fd0c6"/>
+  </linearGradient>
+  <linearGradient id="edge" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0" stop-color="#7fd6ff"/><stop offset="1" stop-color="#8ff3d8"/>
+  </linearGradient>
+  <linearGradient id="paper" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#cfe9ff" stop-opacity="0.85"/><stop offset="1" stop-color="#9fd0f5" stop-opacity="0.55"/>
+  </linearGradient>
+  <linearGradient id="badge" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#0f4a8f"/><stop offset="1" stop-color="#0a2f66"/>
+  </linearGradient>
+  <filter id="glow" x="-20%" y="-20%" width="140%" height="150%">
+    <feGaussianBlur in="SourceAlpha" stdDeviation="22" result="b"/>
+    <feFlood flood-color="#1fa0ff" flood-opacity="0.45"/>
+    <feComposite in2="b" operator="in" result="g"/>
+    <feMerge><feMergeNode in="g"/><feMergeNode in="SourceGraphic"/></feMerge>
+  </filter>
+</defs>
+<g filter="url(#glow)">
+  <!-- back panel with tab -->
+  <path d="M96 292 Q96 250 138 250 L336 250 Q356 250 371 263 L404 292 Q416 302 432 302 L868 302 Q912 302 912 346 L912 740 Q912 800 852 800 L156 800 Q96 800 96 740 Z" fill="url(#back)"/>
+  <!-- paper -->
+  <rect x="210" y="372" width="640" height="150" rx="26" fill="url(#paper)" transform="rotate(-3 530 447)"/>
+  <!-- front panel -->
+  <path d="M168 448 Q128 452 128 494 L128 758 Q128 806 176 806 L880 806 Q932 806 932 754 L932 436 Q932 392 886 398 Z" fill="url(#front)"/>
+  <path d="M168 448 L886 398" stroke="url(#edge)" stroke-width="7" stroke-linecap="round" fill="none" opacity="0.9"/>
+</g><rect x="375.0" y="540.0" width="136.4" height="200.0" rx="27.9" fill="#d6f3ff"/><rect x="396.8" y="568.0" width="92.8" height="20.0" rx="10.0" fill="#1f86d6"/><rect x="396.8" y="612.0" width="92.8" height="18.0" rx="9.0" fill="#1f86d6" opacity="0.55"/><rect x="396.8" y="650.0" width="92.8" height="18.0" rx="9.0" fill="#1f86d6" opacity="0.55"/><rect x="396.8" y="688.0" width="92.8" height="18.0" rx="9.0" fill="#1f86d6" opacity="0.55"/><rect x="548.6" y="540.0" width="136.4" height="200.0" rx="27.9" fill="#d6f3ff"/><rect x="570.4" y="568.0" width="92.8" height="20.0" rx="10.0" fill="#1f86d6"/><rect x="570.4" y="612.0" width="92.8" height="18.0" rx="9.0" fill="#1f86d6" opacity="0.55"/><rect x="570.4" y="650.0" width="92.8" height="18.0" rx="9.0" fill="#1f86d6" opacity="0.55"/><rect x="570.4" y="688.0" width="92.8" height="18.0" rx="9.0" fill="#1f86d6" opacity="0.55"/></svg>

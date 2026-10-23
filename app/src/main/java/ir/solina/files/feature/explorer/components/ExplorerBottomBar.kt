@@ -28,6 +28,13 @@ import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material.icons.rounded.West
 import androidx.compose.material.icons.rounded.LayersClear
+import androidx.compose.material.icons.rounded.Layers
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.ViewList
+import androidx.compose.material.icons.rounded.ViewAgenda
+import androidx.compose.material.icons.rounded.ViewColumn
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.rounded.SwapVert
 import androidx.compose.material3.Badge
@@ -135,6 +142,10 @@ fun ExplorerBottomBar(
     showHidden: Boolean = false,
     horizontalSplit: Boolean = false,
     onToggleOrientation: () -> Unit = {},
+    gridView: Boolean = false,
+    onToggleViewLayout: () -> Unit = {},
+    onTogglePaneMode: () -> Unit = {},
+    onSwapPane: () -> Unit = {},
 ) {
     val motion = MaterialTheme.motionScheme
     val threshold = with(LocalDensity.current) { 48.dp.toPx() }
@@ -167,7 +178,7 @@ fun ExplorerBottomBar(
                 SelectionActions(selectionCount, context, activeIsLeft, selection, actions)
             } else {
                 val context = BrowseContext(clipboard = clipboardCount > 0, termux = !remote, project = projectLabel != null)
-                BrowseActions(canBack, canForward, clipboardCount, clipboardIsMove, context, projectLabel, browse, showHidden, dual, horizontalSplit, onToggleOrientation, actions)
+                BrowseActions(canBack, canForward, clipboardCount, clipboardIsMove, context, projectLabel, browse, showHidden, dual, horizontalSplit, onToggleOrientation, activeIsLeft, gridView, onToggleViewLayout, onTogglePaneMode, onSwapPane, actions)
             }
         }
     }
@@ -225,6 +236,11 @@ private fun BrowseActions(
     dual: Boolean,
     horizontalSplit: Boolean,
     onToggleOrientation: () -> Unit,
+    activeIsLeft: Boolean,
+    gridView: Boolean,
+    onToggleViewLayout: () -> Unit,
+    onTogglePaneMode: () -> Unit,
+    onSwapPane: () -> Unit,
     a: BottomBarActions,
 ) {
     val motion = MaterialTheme.motionScheme
@@ -237,22 +253,13 @@ private fun BrowseActions(
     }
     @Composable
     fun actionText(action: BrowseAction): String =
-        if (action == BrowseAction.SWAP && dual) {
-            if (horizontalSplit) "چیدن پنل‌ها کنار هم" else "چیدن پنل‌ها روی هم"
-        } else {
-            action.text(clipboardIsMove, showHidden, projectLabel)
-        }
-    fun actionIcon(action: BrowseAction): ImageVector =
-        if (action == BrowseAction.SWAP && dual) {
-            if (horizontalSplit) Icons.Rounded.SwapVert else Icons.Rounded.SwapHoriz
-        } else if (action == BrowseAction.HIDDEN_FILES && showHidden) {
-            Icons.Rounded.VisibilityOff
-        } else {
-            action.icon
-        }
-    fun runAction(action: BrowseAction) {
-        if (action == BrowseAction.SWAP && dual) onToggleOrientation() else action.run(a)
+        action.text(clipboardIsMove, showHidden, projectLabel)
+    fun actionIcon(action: BrowseAction): ImageVector = when {
+        action == BrowseAction.SWAP -> Icons.Rounded.Layers
+        action == BrowseAction.HIDDEN_FILES && showHidden -> Icons.Rounded.VisibilityOff
+        else -> action.icon
     }
+    fun runAction(action: BrowseAction) = action.run(a)
     val newEntries = buildList {
         add(MenuEntry(stringResource(R.string.common_new_folder), Icons.Rounded.CreateNewFolder) { newMenu = false; more = false; a.onNewFolder() })
         add(MenuEntry(stringResource(R.string.common_new_file), Icons.AutoMirrored.Rounded.NoteAdd) { newMenu = false; more = false; a.onNewFile() })
@@ -290,6 +297,24 @@ private fun BrowseActions(
                     ) { runAction(action) }
                 }
             }
+        }
+        BarButton(
+            icon = if (gridView) Icons.Rounded.ViewList else Icons.Rounded.GridView,
+            description = if (gridView) "تغییر به نمای فهرستی" else "تغییر به نمای شبکه‌ای",
+        ) { onToggleViewLayout() }
+        BarButton(
+            icon = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
+            description = if (dual) "تبدیل به تک‌پنجره" else "تبدیل به دوپنجره",
+        ) { onTogglePaneMode() }
+        if (dual) {
+            BarButton(
+                icon = Icons.Rounded.Layers,
+                description = if (activeIsLeft) "فعال‌کردن پنل راست" else "فعال‌کردن پنل چپ",
+            ) { onSwapPane() }
+            BarButton(
+                icon = if (horizontalSplit) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda,
+                description = if (horizontalSplit) "چیدن پنل‌ها کنار هم" else "چیدن پنل‌ها روی هم",
+            ) { onToggleOrientation() }
         }
         Box {
             BarButton(Icons.Rounded.MoreVert, stringResource(R.string.common_more)) { more = true }
