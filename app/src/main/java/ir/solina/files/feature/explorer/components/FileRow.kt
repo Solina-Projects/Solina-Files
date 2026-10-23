@@ -130,13 +130,7 @@ fun FileRow(
         if (!singlePane || !item.isDirectory || "://" in item.path || !item.canRead) {
             value = null
         } else {
-            value = withContext(Dispatchers.IO) {
-                runCatching {
-                    File(item.path).walkTopDown()
-                        .filter { it.isFile && !ir.solina.files.core.fs.FsUtil.isSymlink(it) }
-                        .sumOf { it.length() }
-                }.getOrNull()
-            }
+            value = calculateFolderSize(item.path)
         }
     }
 
@@ -225,6 +219,13 @@ fun FileTile(
     val density = LocalUiDensity.current
     val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
     val tileIconSize = density.iconDp.dp * if (horizontalPane) 1.125f else 1.75f
+    val folderSize by produceState<Long?>(initialValue = null, item.path, item.isDirectory, singlePane) {
+        if (!singlePane || !item.isDirectory || "://" in item.path || !item.canRead) {
+            value = null
+        } else {
+            value = calculateFolderSize(item.path)
+        }
+    }
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.95f else 1f, motion.fastSpatialSpec(), label = "press")
@@ -306,9 +307,20 @@ fun FileTile(
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = 6.dp),
         )
-        val info: String? = null
+        val info: String? = when {
+            !singlePane -> null
+            item.isDirectory -> folderSize?.let { Formatters.size(it, list.sizeUnits) }
+            else -> Formatters.size(item.size, list.sizeUnits)
+        }
         if (info != null) {
-            Text(info, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(
+                info,
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                textAlign = TextAlign.Center,
+            )
         }
     }
 }
@@ -336,6 +348,14 @@ private const val FLASH_OUT_MS = 280
 private const val FLASH_FADE_MS = 520
 
 fun flashDurationMs(pulses: Int): Long = (pulses * (FLASH_IN_MS + FLASH_OUT_MS) + FLASH_FADE_MS).toLong()
+
+private suspend fun calculateFolderSize(path: String): Long? = withContext(Dispatchers.IO) {
+    runCatching {
+        File(path).walkTopDown()
+            .filter { it.isFile && !ir.solina.files.core.fs.FsUtil.isSymlink(it) }
+            .sumOf { it.length() }
+    }.getOrNull()
+}
 
 @Composable
 private fun trailingInfo(item: FileItem, list: ListPrefs, singlePane: Boolean, folderSize: Long?): String? = when {
