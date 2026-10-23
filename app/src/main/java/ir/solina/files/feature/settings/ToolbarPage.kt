@@ -53,6 +53,7 @@ import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -133,12 +134,9 @@ fun ToolbarPage(settings: SolinaSettings, act: SettingsActions, onBack: () -> Un
             onSelect = { tab = it },
             modifier = Modifier.padding(top = 8.dp).testTag("toolbar-tabs"),
         )
-        AnimatedContent(
-            targetState = tab,
-            transitionSpec = { (fadeIn() + scaleIn(initialScale = 0.96f)).togetherWith(fadeOut() + scaleOut(targetScale = 0.96f)) },
-        ) { current ->
+        key(tab) {
             Column {
-                when (current) {
+                when (tab) {
                     ToolbarTab.BROWSE -> {
                         var preview by remember { mutableStateOf(layout.browse) }
                         BarPreview(preview.zones[0].map { PreviewButton(if (it == BrowseAction.SWAP) Icons.Rounded.Layers else it.icon, stringResource(it.label), it.hint != null) }, selecting = false)
@@ -430,7 +428,7 @@ private fun PreviewChip(label: String, count: Int) {
 
 private fun floatingActionIcon(action: FloatingAction): ImageVector = when (action) {
     FloatingAction.CREATE -> Icons.Rounded.Add
-    FloatingAction.PANE_MODE -> Icons.Rounded.ViewColumn
+    FloatingAction.PANE_MODE -> Icons.Rounded.Layers
     FloatingAction.ORIENTATION -> Icons.Rounded.ViewAgenda
     FloatingAction.VIEW_LAYOUT -> Icons.Rounded.GridView
     FloatingAction.HOME -> Icons.Rounded.Home
