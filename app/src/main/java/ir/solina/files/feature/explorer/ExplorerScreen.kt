@@ -603,7 +603,8 @@ fun ExplorerScreen(
                         contentDescription = if (horizontalSplit) "چیدن پنل‌ها روی هم" else "چیدن پنل‌ها کنار هم",
                     )
                 }
-            } else if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.VIEW_LAYOUT) && !dual) {
+            }
+            if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.VIEW_LAYOUT)) {
                 Box {
                     Column(
                         horizontalAlignment = androidx.compose.ui.Alignment.End,
