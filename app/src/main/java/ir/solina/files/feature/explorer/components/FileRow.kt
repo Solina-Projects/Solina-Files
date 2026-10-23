@@ -278,7 +278,7 @@ fun FileTile(
                     )
                 }
                 apk -> ApkIconOrKind(item, tileIconSize, shape)
-                else -> KindIcon(item, tileIconSize, shape)
+                else -> KindIcon(item, tileIconSize, shape, contentPaddingFraction = if (singlePane) 0.07f else 0.22f)
             }
             Box(
                 Modifier
@@ -428,7 +428,7 @@ private fun ApkIconOrKind(item: FileItem, size: Dp, shape: Shape) {
 }
 
 @Composable
-private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape) {
+private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape, contentPaddingFraction: Float = 0.22f) {
     val colors = MaterialTheme.colorScheme
     val settings = LocalSettings.current
     val kind = FileKinds.of(item)
@@ -450,7 +450,7 @@ private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape) {
                 kind.icon,
                 contentDescription = stringResource(kind.label),
                 tint = tile.content,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.padding(iconSize * contentPaddingFraction),
             )
         }
     }
