@@ -344,11 +344,17 @@ data class ActionLayout(
                 val eq = part.indexOf('=')
                 if (eq <= 0) null else part.substring(0, eq) to part.substring(eq + 1)
             }.toMap()
+            val floatingText = parts["f"]
+            val floating = if (floatingText.isNullOrBlank() || floatingText.split(';').all { it.isBlank() }) {
+                DEFAULT_FLOATING
+            } else {
+                Zoned.decode<FloatingAction>(floatingText, FloatingAction.entries, DEFAULT_FLOATING, FLOATING_CAPS)
+            }
             return ActionLayout(
                 browse = Zoned.decode(parts["b"], BrowseAction.entries, DEFAULT_BROWSE, BROWSE_CAPS),
                 selection = Zoned.decode(parts["s"], SelectionAction.entries, DEFAULT_SELECTION, SELECTION_CAPS),
                 sheet = Zoned.decode(parts["q"], SheetAction.entries, DEFAULT_SHEET, SHEET_CAPS),
-                floating = Zoned.decode<FloatingAction>(parts["f"], FloatingAction.entries, DEFAULT_FLOATING, FLOATING_CAPS),
+                floating = floating,
             )
         }
     }
