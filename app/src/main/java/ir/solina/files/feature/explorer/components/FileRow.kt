@@ -225,13 +225,6 @@ fun FileTile(
     val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
     val tileDensityScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.2f; UiDensity.LARGE -> 1.4f }
     val tileIconSize = density.iconDp.dp * (if (horizontalPane) 1.125f else 1.75f) * tileDensityScale
-    val folderSize by produceState<Long?>(initialValue = null, item.path, item.isDirectory, singlePane) {
-        if (!singlePane || !item.isDirectory || "://" in item.path || !item.canRead) {
-            value = null
-        } else {
-            value = calculateFolderSize(item.path)
-        }
-    }
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.95f else 1f, motion.fastSpatialSpec(), label = "press")
