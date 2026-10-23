@@ -248,22 +248,13 @@ private fun BrowseActions(
     }
     @Composable
     fun actionText(action: BrowseAction): String =
-        if (action == BrowseAction.SWAP && dual) {
-            if (horizontalSplit) "چیدن پنل‌ها کنار هم" else "چیدن پنل‌ها روی هم"
-        } else {
-            action.text(clipboardIsMove, showHidden, projectLabel)
-        }
-    fun actionIcon(action: BrowseAction): ImageVector =
-        if (action == BrowseAction.SWAP && dual) {
-            if (horizontalSplit) Icons.Rounded.SwapVert else Icons.Rounded.SwapHoriz
-        } else if (action == BrowseAction.HIDDEN_FILES && showHidden) {
-            Icons.Rounded.VisibilityOff
-        } else {
-            action.icon
-        }
-    fun runAction(action: BrowseAction) {
-        if (action == BrowseAction.SWAP && dual) onToggleOrientation() else action.run(a)
+        action.text(clipboardIsMove, showHidden, projectLabel)
+    fun actionIcon(action: BrowseAction): ImageVector = when {
+        action == BrowseAction.SWAP -> Icons.Rounded.Layers
+        action == BrowseAction.HIDDEN_FILES && showHidden -> Icons.Rounded.VisibilityOff
+        else -> action.icon
     }
+    fun runAction(action: BrowseAction) = action.run(a)
     val newEntries = buildList {
         add(MenuEntry(stringResource(R.string.common_new_folder), Icons.Rounded.CreateNewFolder) { newMenu = false; more = false; a.onNewFolder() })
         add(MenuEntry(stringResource(R.string.common_new_file), Icons.AutoMirrored.Rounded.NoteAdd) { newMenu = false; more = false; a.onNewFile() })
