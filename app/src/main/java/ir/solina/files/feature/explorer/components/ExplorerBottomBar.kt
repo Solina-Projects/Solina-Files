@@ -286,7 +286,19 @@ private fun BrowseActions(
                     BarButton(action.icon, stringResource(action.label)) { newMenu = true }
                     ExpressiveMenu(expanded = newMenu, onDismiss = { newMenu = false }, groups = listOf(newEntries))
                 }
-                BrowseAction.VIEW_LAYOUT -> BarButton(actionIcon(action), actionText(action)) { onToggleViewLayout() }
+                BrowseAction.VIEW_LAYOUT -> Box {
+                    var layoutMenu by remember { mutableStateOf(false) }
+                    BarButton(actionIcon(action), actionText(action)) { layoutMenu = true }
+                    ExpressiveMenu(
+                        expanded = layoutMenu,
+                        onDismiss = { layoutMenu = false },
+                        groups = listOf(listOf(
+                            MenuEntry("نمای شبکه‌ای", Icons.Rounded.GridView) { layoutMenu = false; if (!gridView) onToggleViewLayout() },
+                            MenuEntry("نمای فهرستی", Icons.Rounded.ViewList) { layoutMenu = false; if (gridView) onToggleViewLayout() },
+                            MenuEntry("تنظیم نوار", Icons.Rounded.DashboardCustomize) { layoutMenu = false; a.onCustomize(ToolbarTab.BROWSE) },
+                        )),
+                    )
+                }
                 BrowseAction.PANE_MODE -> BarButton(
                     icon = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
                     description = if (dual) "تبدیل به تک‌پنجره" else "تبدیل به دوپنجره",
