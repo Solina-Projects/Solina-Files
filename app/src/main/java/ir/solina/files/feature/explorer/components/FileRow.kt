@@ -31,6 +31,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.DataUsage
+import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -107,11 +109,11 @@ fun FileRow(
     val density = LocalUiDensity.current
     val settings = LocalSettings.current
     val list = settings.list
-    val folderSize by produceState<Long?>(initialValue = null, item.path, item.isDirectory, singlePane) {
+    val folderStats by produceState<Pair<Long, Int>?>(initialValue = null, item.path, item.isDirectory, singlePane) {
         if (!singlePane || !item.isDirectory || "://" in item.path || !item.canRead) {
             value = null
         } else {
-            value = calculateFolderSize(item.path)
+            value = calculateFolderStats(item.path)
         }
     }
     val layoutScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.5f; UiDensity.COMFORTABLE -> 2.5f; UiDensity.LARGE -> 3.5f }
@@ -168,7 +170,7 @@ fun FileRow(
                 overflow = TextOverflow.Ellipsis,
             )
             val date = if (list.showDate) Formatters.listDate(item.lastModified, list.dateStyle, list.use24Hour) else null
-            val info = trailingInfo(item, list, singlePane, folderSize)
+            val info = trailingInfo(item, list, singlePane, folderStats)
             if (date != null || info != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -181,14 +183,15 @@ fun FileRow(
                         modifier = Modifier.weight(1f),
                     )
                     if (info != null) {
-                        Text(
-                            info,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontSize = (density.metaSp * fontScale).sp,
-                            color = colors.onSurfaceVariant,
-                            maxLines = 1,
-                            modifier = Modifier.padding(start = 6.dp),
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 6.dp)) {
+                            Icon(Icons.Rounded.DataUsage, contentDescription = "حجم", modifier = Modifier.size(12.dp), tint = colors.onSurfaceVariant)
+                            Text(info.first, style = MaterialTheme.typography.labelSmall, fontSize = (density.metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
+                            info.second?.let { count ->
+                                Spacer(Modifier.width(6.dp))
+                                Icon(Icons.Rounded.FolderOpen, contentDescription = "تعداد فایل‌های پوشه", modifier = Modifier.size(12.dp), tint = colors.onSurfaceVariant)
+                                Text(count, style = MaterialTheme.typography.labelSmall, fontSize = (density.metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
+                            }
+                        }
                     }
                 }
             }
@@ -337,22 +340,23 @@ private const val FLASH_FADE_MS = 520
 
 fun flashDurationMs(pulses: Int): Long = (pulses * (FLASH_IN_MS + FLASH_OUT_MS) + FLASH_FADE_MS).toLong()
 
-private suspend fun calculateFolderSize(path: String): Long? = withContext(Dispatchers.IO) {
+private suspend fun calculateFolderStats(path: String): Pair<Long, Int>? = withContext(Dispatchers.IO) {
     runCatching {
-        File(path).walkTopDown()
+        val files = File(path).walkTopDown()
             .filter { it.isFile && !ir.solina.files.core.fs.FsUtil.isSymlink(it) }
-            .sumOf { it.length() }
+            .toList()
+        files.sumOf { it.length() } to files.size
     }.getOrNull()
 }
 
 @Composable
-private fun trailingInfo(item: FileItem, list: ListPrefs, singlePane: Boolean, folderSize: Long?): String? = when {
-    item.isSymlink -> stringResource(R.string.explorer_link)
-    singlePane && item.isDirectory -> folderSize?.let { Formatters.size(it, list.sizeUnits) }
-    singlePane -> Formatters.size(item.size, list.sizeUnits)
+private fun trailingInfo(item: FileItem, list: ListPrefs, singlePane: Boolean, folderStats: Pair<Long, Int>?): Pair<String, String?>? = when {
+    item.isSymlink -> stringResource(R.string.explorer_link) to null
+    singlePane && item.isDirectory -> folderStats?.let { Formatters.size(it.first, list.sizeUnits) to Formatters.number(it.second.toLong()) }
+    singlePane -> Formatters.size(item.size, list.sizeUnits) to null
     item.isDirectory -> null
     !list.showSize -> null
-    else -> Formatters.size(item.size, list.sizeUnits)
+    else -> Formatters.size(item.size, list.sizeUnits) to null
 }
 
 @Composable
