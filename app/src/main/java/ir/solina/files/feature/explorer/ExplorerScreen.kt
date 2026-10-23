@@ -13,18 +13,23 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.CreateNewFolder
@@ -62,6 +67,7 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -75,6 +81,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -196,6 +204,9 @@ fun ExplorerScreen(
     var quickCreateExpanded by rememberSaveable { mutableStateOf(false) }
     var floatingMoreExpanded by rememberSaveable { mutableStateOf(false) }
     var layoutMenuExpanded by remember { mutableStateOf(false) }
+    val createIconRotation by animateFloatAsState(if (quickCreateExpanded) 45f else 0f, label = "createFabRotation")
+    val layoutIconScale by animateFloatAsState(if (layoutMenuExpanded) 0.88f else 1f, label = "layoutFabScale")
+    val paneIconRotation by animateFloatAsState(if (dual) 180f else 0f, label = "paneFabRotation")
     val termux = viewModel<TermuxViewModel>().session
     val sshHere = RemoteUri.parse(ui.activePane.path)?.let { (id, dir) ->
         ui.storages.firstOrNull { it.id == id && it.protocol == RemoteProtocol.SFTP }?.let { it to dir }
@@ -535,13 +546,17 @@ fun ExplorerScreen(
                 }
             }
             if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.CREATE)) {
-            FloatingActionButton(
-                onClick = { quickCreateExpanded = !quickCreateExpanded; layoutMenuExpanded = false },
-                containerColor = MaterialTheme.colorScheme.tertiaryContainer,
-                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-            ) {
-                Icon(Icons.Rounded.Add, contentDescription = if (quickCreateExpanded) "بستن ایجاد سریع" else "ایجاد فایل یا پوشه")
-            }
+                FloatingActionButton(
+                    onClick = { quickCreateExpanded = !quickCreateExpanded; layoutMenuExpanded = false },
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                ) {
+                    Icon(
+                        Icons.Rounded.Add,
+                        contentDescription = if (quickCreateExpanded) "بستن ایجاد سریع" else "ایجاد فایل یا پوشه",
+                        modifier = Modifier.graphicsLayer { rotationZ = createIconRotation },
+                    )
+                }
             }
             if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.ORIENTATION) && dual) {
                 FloatingActionButton(
@@ -552,43 +567,129 @@ fun ExplorerScreen(
                     Icon(
                         imageVector = if (horizontalSplit) Icons.Rounded.SwapVert else Icons.Rounded.SwapHoriz,
                         contentDescription = if (horizontalSplit) "چیدن پنل‌ها روی هم" else "چیدن پنل‌ها کنار هم",
+                        modifier = Modifier.graphicsLayer { rotationZ = if (horizontalSplit) 90f else 0f },
                     )
                 }
             } else if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.VIEW_LAYOUT) && !dual) {
                 Box {
-                    FloatingActionButton(
-                        onClick = { layoutMenuExpanded = true },
-                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                    Column(
+                        horizontalAlignment = androidx.compose.ui.Alignment.End,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        Icon(
-                            imageVector = if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) Icons.Rounded.GridView else Icons.Rounded.ViewList,
-                            contentDescription = "تنظیم چیدمان و اندازه",
-                        )
-                    }
-                    DropdownMenu(expanded = layoutMenuExpanded, onDismissRequest = { layoutMenuExpanded = false }) {
-                        DropdownMenuItem(
-                            text = { Text(if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.LIST) "چیدمان شبکه‌ای" else "چیدمان فهرستی") },
-                            leadingIcon = { Icon(if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.LIST) Icons.Rounded.GridView else Icons.Rounded.ViewList, contentDescription = null) },
-                            onClick = { vm.toggleViewMode(); layoutMenuExpanded = false },
-                        )
-                        DropdownMenuItem(text = { Text("اندازه فشرده") }, onClick = { vm.setItemDensity(ir.solina.files.core.model.UiDensity.COMPACT); layoutMenuExpanded = false })
-                        DropdownMenuItem(text = { Text("اندازه معمولی") }, onClick = { vm.setItemDensity(ir.solina.files.core.model.UiDensity.COMFORTABLE); layoutMenuExpanded = false })
-                        DropdownMenuItem(text = { Text("اندازه بزرگ") }, onClick = { vm.setItemDensity(ir.solina.files.core.model.UiDensity.LARGE); layoutMenuExpanded = false })
+                        AnimatedVisibility(
+                            visible = layoutMenuExpanded,
+                            enter = fadeIn() + scaleIn(initialScale = 0.82f),
+                            exit = fadeOut() + scaleOut(targetScale = 0.82f),
+                        ) {
+                            Surface(
+                                shape = MaterialTheme.shapes.extraLarge,
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                tonalElevation = 6.dp,
+                                shadowElevation = 8.dp,
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                                ) {
+                                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                        val isList = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.LIST
+                                        Surface(
+                                            shape = MaterialTheme.shapes.large,
+                                            color = if (isList) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+                                        ) {
+                                            IconButton(
+                                                onClick = { if (!isList) vm.toggleViewMode() },
+                                                modifier = Modifier.size(48.dp),
+                                            ) {
+                                                Icon(
+                                                    Icons.Rounded.ViewList,
+                                                    contentDescription = "چیدمان فهرستی",
+                                                    tint = if (isList) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                                                )
+                                            }
+                                        }
+                                        val isGrid = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID
+                                        Surface(
+                                            shape = MaterialTheme.shapes.large,
+                                            color = if (isGrid) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+                                        ) {
+                                            IconButton(
+                                                onClick = { if (!isGrid) vm.toggleViewMode() },
+                                                modifier = Modifier.size(48.dp),
+                                            ) {
+                                                Icon(
+                                                    Icons.Rounded.GridView,
+                                                    contentDescription = "چیدمان شبکه‌ای",
+                                                    tint = if (isGrid) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                                                )
+                                            }
+                                        }
+                                    }
+                                    androidx.compose.material3.HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                    Row(
+                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        verticalAlignment = androidx.compose.ui.Alignment.Bottom,
+                                    ) {
+                                        listOf(
+                                            ir.solina.files.core.model.UiDensity.COMPACT to "فشرده",
+                                            ir.solina.files.core.model.UiDensity.COMFORTABLE to "معمولی",
+                                            ir.solina.files.core.model.UiDensity.LARGE to "بزرگ",
+                                        ).forEach { (densityOption, label) ->
+                                            val selectedDensity = ui.settings.list.density == densityOption
+                                            Column(
+                                                horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
+                                                verticalArrangement = Arrangement.spacedBy(5.dp),
+                                            ) {
+                                                Text(
+                                                    label,
+                                                    style = MaterialTheme.typography.labelSmall,
+                                                    color = if (selectedDensity) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                )
+                                                Box(
+                                                    Modifier
+                                                        .size(if (selectedDensity) 28.dp else 24.dp)
+                                                        .clip(CircleShape)
+                                                        .background(if (selectedDensity) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
+                                                        .clickable { vm.setItemDensity(densityOption) },
+                                                    contentAlignment = androidx.compose.ui.Alignment.Center,
+                                                ) {
+                                                    if (selectedDensity) {
+                                                        Icon(Icons.Rounded.Check, contentDescription = "انتخاب شده: $label", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(16.dp))
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        FloatingActionButton(
+                            onClick = { layoutMenuExpanded = !layoutMenuExpanded; quickCreateExpanded = false },
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                        ) {
+                            Icon(
+                                imageVector = if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) Icons.Rounded.GridView else Icons.Rounded.ViewList,
+                                contentDescription = "تنظیم چیدمان و اندازه",
+                                modifier = Modifier.graphicsLayer { scaleX = layoutIconScale; scaleY = layoutIconScale },
+                            )
+                        }
                     }
                 }
             }
             if (floatingZones.getOrNull(0).orEmpty().contains(FloatingAction.PANE_MODE)) {
-            FloatingActionButton(
-                onClick = { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false },
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-            ) {
-                Icon(
-                    imageVector = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
-                    contentDescription = if (dual) "Switch to single pane" else "Switch to dual pane",
-                )
-            }
+                FloatingActionButton(
+                    onClick = { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false },
+                    containerColor = MaterialTheme.colorScheme.primaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+                ) {
+                    Icon(
+                        imageVector = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
+                        contentDescription = if (dual) "Switch to single pane" else "Switch to dual pane",
+                        modifier = Modifier.graphicsLayer { rotationZ = paneIconRotation },
+                    )
+                }
             }
             val floatingMenuActions = floatingZones.getOrNull(1).orEmpty()
             if (floatingMenuActions.isNotEmpty()) {
