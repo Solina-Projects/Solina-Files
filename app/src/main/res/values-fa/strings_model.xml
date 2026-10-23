@@ -5,6 +5,8 @@
     <string name="model_browse_new">جدید</string>
     <string name="model_browse_paste">جای‌گذاری</string>
     <string name="model_browse_swap">جابه‌جایی پنل‌ها</string>
+    <string name="model_browse_orientation">تغییر جهت پنل‌ها (افقی/عمودی)</string>
+    <string name="model_browse_swap_panes">جابجایی جای دو پنل</string>
     <string name="model_browse_up">پوشه بالاتر</string>
     <string name="model_browse_home">خانه</string>
     <string name="model_browse_refresh">تازه‌سازی</string>
