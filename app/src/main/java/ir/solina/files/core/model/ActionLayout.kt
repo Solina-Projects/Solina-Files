@@ -267,6 +267,7 @@ enum class FloatingAction(@StringRes val label: Int) {
     VIEW_LAYOUT(R.string.settings_entry_view_mode),
     HOME(R.string.model_browse_home),
     REFRESH(R.string.model_browse_refresh),
+    SWAP_PANES(R.string.model_browse_swap),
 }
 
 data class ActionLayout(
