@@ -38,6 +38,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -60,6 +61,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import java.io.File
 import coil3.compose.AsyncImage
 import coil3.decode.BitmapFactoryDecoder
 import coil3.request.ImageRequest
@@ -122,6 +126,19 @@ fun FileRow(
     val ghostAlpha by animateFloatAsState(if (drop.ghosted) 0.36f else 1f, motion.defaultEffectsSpec(), label = "rowGhost")
     val flash = rememberFlash(flashKey, flashPulses)
     val flashColor = colors.primary.copy(alpha = 0.32f)
+    val folderSize by produceState<Long?>(initialValue = null, item.path, item.isDirectory, singlePane) {
+        if (!singlePane || !item.isDirectory || "://" in item.path || !item.canRead) {
+            value = null
+        } else {
+            value = withContext(Dispatchers.IO) {
+                runCatching {
+                    File(item.path).walkTopDown()
+                        .filter { it.isFile && !it.isSymbolicLink() }
+                        .sumOf { it.length() }
+                }.getOrNull()
+            }
+        }
+    }
 
     Row(
         modifier
@@ -155,7 +172,7 @@ fun FileRow(
                 overflow = TextOverflow.Ellipsis,
             )
             val date = if (list.showDate) Formatters.listDate(item.lastModified, list.dateStyle, list.use24Hour) else null
-            val info = trailingInfo(item, list, singlePane)
+            val info = trailingInfo(item, list, singlePane, folderSize)
             if (date != null || info != null) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
@@ -321,9 +338,11 @@ private const val FLASH_FADE_MS = 520
 fun flashDurationMs(pulses: Int): Long = (pulses * (FLASH_IN_MS + FLASH_OUT_MS) + FLASH_FADE_MS).toLong()
 
 @Composable
-private fun trailingInfo(item: FileItem, list: ListPrefs, singlePane: Boolean): String? = when {
+private fun trailingInfo(item: FileItem, list: ListPrefs, singlePane: Boolean, folderSize: Long?): String? = when {
     item.isSymlink -> stringResource(R.string.explorer_link)
-    item.isDirectory -> if (singlePane && item.childCount >= 0) "${Formatters.number(item.childCount.toLong())} مورد" else null
+    singlePane && item.isDirectory -> folderSize?.let { Formatters.size(it, list.sizeUnits) }
+    singlePane -> Formatters.size(item.size, list.sizeUnits)
+    item.isDirectory -> null
     !list.showSize -> null
     else -> Formatters.size(item.size, list.sizeUnits)
 }
