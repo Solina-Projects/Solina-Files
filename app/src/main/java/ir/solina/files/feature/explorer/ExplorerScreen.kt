@@ -520,7 +520,9 @@ fun ExplorerScreen(
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             val floatingZones = ui.settings.actions.floating.zones
-            val floatingVisibleActions = (floatingZones.getOrNull(0).orEmpty() + floatingZones.getOrNull(1).orEmpty())
+            // Only actions assigned to Quick are rendered as floating buttons; the other
+            // stored zones are intentionally not surfaced in an overflow/menu.
+            val floatingVisibleActions = floatingZones.getOrNull(0).orEmpty()
                 .filterNot { !dual && (it == FloatingAction.ORIENTATION || it == FloatingAction.SWAP_PANES) }
             if (FloatingAction.HOME in floatingVisibleActions) {
                 FloatingActionButton(
