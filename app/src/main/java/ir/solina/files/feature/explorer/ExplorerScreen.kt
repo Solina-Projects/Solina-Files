@@ -399,7 +399,12 @@ fun ExplorerScreen(
                 onToggleOrientation = { horizontalSplit = !horizontalSplit },
                 gridView = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID,
                 onToggleViewLayout = { vm.toggleViewMode() },
-                onTogglePaneMode = { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false },
+                onTogglePaneMode = {
+                    if (!dual && ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) vm.toggleViewMode()
+                    vm.setDualPanePreferred(!dual)
+                    quickCreateExpanded = false
+                    layoutMenuExpanded = false
+                },
                 onSwapPane = vm::swapPanes,
                 actions = BottomBarActions(
                     onBack = { vm.goBack(ui.active) },
@@ -741,7 +746,12 @@ fun ExplorerScreen(
                 }
                 FloatingAction.PANE_MODE -> {
                 FloatingActionButton(
-                    onClick = { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false },
+                    onClick = {
+                        if (!dual && ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) vm.toggleViewMode()
+                        vm.setDualPanePreferred(!dual)
+                        quickCreateExpanded = false
+                        layoutMenuExpanded = false
+                    },
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
                 ) {
