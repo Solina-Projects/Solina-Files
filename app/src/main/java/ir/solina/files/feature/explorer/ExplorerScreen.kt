@@ -608,6 +608,7 @@ fun ExplorerScreen(
                     )
                     if (!ui.isRemote(ui.active)) {
                         ExtendedFloatingActionButton(
+                            modifier = Modifier.fillMaxWidth(),
                             onClick = { quickCreateExpanded = false; dialog = Dialog.NewProject(ui.activePane.path) },
                             icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
                             text = { Text("پروژه جدید") },
