@@ -246,6 +246,7 @@ private fun BrowseActions(
 ) {
     val motion = MaterialTheme.motionScheme
     var newMenu by remember { mutableStateOf(false) }
+    var layoutMenu by remember { mutableStateOf(false) }
     var more by remember { mutableStateOf(false) }
     fun enabled(action: BrowseAction) = when (action) {
         BrowseAction.BACK -> canBack
@@ -287,7 +288,6 @@ private fun BrowseActions(
                     ExpressiveMenu(expanded = newMenu, onDismiss = { newMenu = false }, groups = listOf(newEntries))
                 }
                 BrowseAction.VIEW_LAYOUT -> Box {
-                    var layoutMenu by remember { mutableStateOf(false) }
                     BarButton(actionIcon(action), actionText(action)) { layoutMenu = true }
                     ExpressiveMenu(
                         expanded = layoutMenu,
@@ -330,10 +330,13 @@ private fun BrowseActions(
             val entries = buildList {
                 for (action in browse.zones[1]) {
                     if (!action.available(context)) continue
-                    if (action == BrowseAction.NEW) {
-                        addAll(newEntries)
-                    } else {
-                        add(
+                    when (action) {
+                        BrowseAction.NEW -> addAll(newEntries)
+                        BrowseAction.VIEW_LAYOUT -> add(MenuEntry(actionText(action), actionIcon(action)) { more = false; layoutMenu = true })
+                        BrowseAction.PANE_MODE -> add(MenuEntry(actionText(action), actionIcon(action)) { more = false; onTogglePaneMode() })
+                        BrowseAction.ORIENTATION -> add(MenuEntry(actionText(action), actionIcon(action), enabled = dual) { more = false; if (dual) onToggleOrientation() })
+                        BrowseAction.SWAP_PANES -> add(MenuEntry(actionText(action), actionIcon(action), enabled = dual) { more = false; if (dual) onSwapPane() })
+                        else -> add(
                             MenuEntry(
                                 text = actionText(action),
                                 icon = actionIcon(action),
