@@ -742,6 +742,8 @@ fun ExplorerScreen(
                 }
                 }
             }
+        }
+    }
     DragLayer(drag) { host[0]?.positionInRoot() ?: Offset.Zero }
     }
     }
