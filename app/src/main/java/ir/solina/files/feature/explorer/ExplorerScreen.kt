@@ -630,7 +630,7 @@ fun ExplorerScreen(
                         if (FloatingAction.CREATE in floatingVisibleActions) {
                             FloatingActionButton(
                                 onClick = { quickCreateExpanded = !quickCreateExpanded; layoutMenuExpanded = false },
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.82f),
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                                 contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                             ) {
                                 Icon(
