@@ -584,9 +584,9 @@ fun ExplorerScreen(
                 Surface(
                     modifier = Modifier.width(240.dp),
                     shape = MaterialTheme.shapes.extraLarge,
-                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                    tonalElevation = 6.dp,
-                    shadowElevation = 8.dp,
+                    color = androidx.compose.ui.graphics.Color.Transparent,
+                    tonalElevation = 0.dp,
+                    shadowElevation = 0.dp,
                 ) {
                 Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp), horizontalAlignment = androidx.compose.ui.Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     ExtendedFloatingActionButton(
@@ -660,9 +660,9 @@ fun ExplorerScreen(
                             Surface(
                                 modifier = Modifier.width(240.dp),
                                 shape = MaterialTheme.shapes.extraLarge,
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                tonalElevation = 6.dp,
-                                shadowElevation = 8.dp,
+                                color = androidx.compose.ui.graphics.Color.Transparent,
+                                tonalElevation = 0.dp,
+                                shadowElevation = 0.dp,
                             ) {
                                 Column(
                                     modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
@@ -707,17 +707,6 @@ fun ExplorerScreen(
                                         }
                                     }
                                     androidx.compose.foundation.layout.Spacer(Modifier.height(4.dp))
-                                    if (FloatingAction.BOOKMARKS in floatingZones.getOrNull(1).orEmpty()) {
-                                        androidx.compose.foundation.layout.Spacer(Modifier.height(4.dp))
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth().clickable { dialog = Dialog.Bookmarks; layoutMenuExpanded = false },
-                                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
-                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                        ) {
-                                            Icon(Icons.Rounded.Bookmarks, contentDescription = null)
-                                            Text("نشانک‌ها", style = MaterialTheme.typography.labelLarge)
-                                        }
-                                    }
                                     Row(
                                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                                         verticalAlignment = androidx.compose.ui.Alignment.Bottom,
