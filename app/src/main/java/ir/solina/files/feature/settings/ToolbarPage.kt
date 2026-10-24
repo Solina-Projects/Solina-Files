@@ -39,6 +39,7 @@ import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Bookmarks
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -457,4 +458,5 @@ private fun floatingActionIcon(action: FloatingAction): ImageVector = when (acti
     FloatingAction.HOME -> Icons.Rounded.Home
     FloatingAction.REFRESH -> Icons.Rounded.Refresh
     FloatingAction.SWAP_PANES -> Icons.Rounded.SwapHoriz
+    FloatingAction.BOOKMARKS -> Icons.Rounded.Bookmarks
 }
