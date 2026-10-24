@@ -26,6 +26,7 @@ enum class BrowseAction(@StringRes val label: Int) {
     PANE_MODE(R.string.settings_two_panes),
     ORIENTATION(R.string.model_browse_orientation),
     SWAP_PANES(R.string.model_browse_swap_panes),
+    BOOKMARKS(R.string.model_browse_bookmarks),
 }
 
 enum class SelectionAction(@StringRes val label: Int, val asks: Boolean = false) {
@@ -291,7 +292,7 @@ data class ActionLayout(
         val BROWSE_CAPS = listOf(BROWSE_SLOTS, Int.MAX_VALUE, Int.MAX_VALUE)
         val SELECTION_CAPS = listOf(SELECTION_SLOTS, Int.MAX_VALUE, Int.MAX_VALUE)
         val SHEET_CAPS = listOf(QUICK_SLOTS, Int.MAX_VALUE, Int.MAX_VALUE)
-        val FLOATING_CAPS = listOf(4, Int.MAX_VALUE, Int.MAX_VALUE)
+        val FLOATING_CAPS = listOf(6, Int.MAX_VALUE, Int.MAX_VALUE)
 
         val DEFAULT_BROWSE = Zoned(
             listOf(
@@ -319,8 +320,8 @@ data class ActionLayout(
 
         val DEFAULT_FLOATING = Zoned<FloatingAction>(
             listOf(
-                listOf(FloatingAction.CREATE, FloatingAction.VIEW_LAYOUT, FloatingAction.HOME, FloatingAction.REFRESH),
-                listOf(FloatingAction.PANE_MODE, FloatingAction.ORIENTATION, FloatingAction.SWAP_PANES),
+                listOf(FloatingAction.CREATE, FloatingAction.VIEW_LAYOUT, FloatingAction.PANE_MODE, FloatingAction.ORIENTATION, FloatingAction.SWAP_PANES),
+                listOf(FloatingAction.HOME, FloatingAction.REFRESH, FloatingAction.BOOKMARKS),
                 emptyList(),
             ),
         )
