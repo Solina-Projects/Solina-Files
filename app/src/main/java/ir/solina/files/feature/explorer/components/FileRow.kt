@@ -206,7 +206,7 @@ fun FileRow(
         Box(
             Modifier
                 .align(Alignment.BottomEnd)
-                .padding(end = 2.dp, bottom = 8.dp)
+                .padding(end = 2.dp, bottom = 28.dp)
                 .size(22.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(if (selected) colors.primary else colors.surface.copy(alpha = 0.92f))
