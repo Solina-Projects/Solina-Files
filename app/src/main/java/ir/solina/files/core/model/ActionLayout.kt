@@ -296,10 +296,11 @@ data class ActionLayout(
 
         val DEFAULT_BROWSE = Zoned(
             listOf(
-                listOf(BrowseAction.BACK, BrowseAction.FORWARD, BrowseAction.PASTE, BrowseAction.HOME, BrowseAction.REFRESH, BrowseAction.BOOKMARKS),
+                listOf(BrowseAction.BACK, BrowseAction.FORWARD, BrowseAction.PASTE, BrowseAction.UP, BrowseAction.SWAP, BrowseAction.SELECT_ALL),
                 listOf(
-                    BrowseAction.RUN_PROJECT, BrowseAction.TERMINAL, BrowseAction.HOME, BrowseAction.REFRESH,
-                    BrowseAction.BOOKMARKS, BrowseAction.BOOKMARK_FOLDER, BrowseAction.SELECT_ALL,
+                    BrowseAction.NEW, BrowseAction.HOME, BrowseAction.REFRESH, BrowseAction.BOOKMARKS,
+                    BrowseAction.BOOKMARK_FOLDER, BrowseAction.PANE_MODE, BrowseAction.ORIENTATION, BrowseAction.SWAP_PANES,
+                    BrowseAction.RUN_PROJECT, BrowseAction.TERMINAL,
                 ),
                 listOf(BrowseAction.FILTER, BrowseAction.SEARCH, BrowseAction.SORT, BrowseAction.JUMP, BrowseAction.HIDDEN_FILES),
             ),
@@ -320,7 +321,7 @@ data class ActionLayout(
 
         val DEFAULT_FLOATING = Zoned<FloatingAction>(
             listOf(
-                listOf(FloatingAction.CREATE, FloatingAction.VIEW_LAYOUT, FloatingAction.PANE_MODE, FloatingAction.ORIENTATION, FloatingAction.SWAP_PANES),
+                listOf(FloatingAction.VIEW_LAYOUT, FloatingAction.ORIENTATION, FloatingAction.SWAP_PANES, FloatingAction.PANE_MODE, FloatingAction.CREATE),
                 listOf(FloatingAction.HOME, FloatingAction.REFRESH, FloatingAction.BOOKMARKS),
                 emptyList(),
             ),
