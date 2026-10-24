@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Check
@@ -587,7 +588,7 @@ fun ExplorerScreen(
                             exit = fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.88f),
                         ) {
                             Surface(
-                                modifier = Modifier.width(240.dp).then(Modifier.requiredWidth(240.dp)),
+                                modifier = Modifier.requiredWidth(240.dp),
                                 shape = MaterialTheme.shapes.extraLarge,
                                 color = androidx.compose.ui.graphics.Color.Transparent,
                                 tonalElevation = 0.dp,
@@ -755,7 +756,7 @@ fun ExplorerScreen(
                         }
                         FloatingActionButton(
                             onClick = { layoutMenuExpanded = !layoutMenuExpanded; quickCreateExpanded = false },
-                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.82f),
+                            containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                             contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                         ) {
                             Icon(
