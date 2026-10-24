@@ -582,7 +582,7 @@ fun ExplorerScreen(
                         androidx.compose.animation.AnimatedVisibility(
                             visible = quickCreateExpanded,
                             modifier = Modifier
-                                .align(androidx.compose.ui.Alignment.CenterEnd)
+                                .align(androidx.compose.ui.Alignment.BottomEnd)
                                 .offset(x = (-250).dp),
                             enter = fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.88f),
                             exit = fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.88f),
