@@ -580,7 +580,14 @@ fun ExplorerScreen(
                 enter = fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.7f),
                 exit = fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.7f),
             ) {
-                Column(horizontalAlignment = androidx.compose.ui.Alignment.End, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Surface(
+                    modifier = Modifier.width(240.dp),
+                    shape = MaterialTheme.shapes.extraLarge,
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    tonalElevation = 6.dp,
+                    shadowElevation = 8.dp,
+                ) {
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp), horizontalAlignment = androidx.compose.ui.Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     ExtendedFloatingActionButton(
                         onClick = { quickCreateExpanded = false; dialog = Dialog.NewFolder(ui.active) },
                         icon = { Icon(Icons.Rounded.CreateNewFolder, contentDescription = null) },
@@ -603,6 +610,7 @@ fun ExplorerScreen(
                             text = { Text("پروژه جدید") },
                         )
                     }
+                }
                 }
             }
             if (FloatingAction.CREATE in floatingVisibleActions) {
@@ -645,13 +653,14 @@ fun ExplorerScreen(
                             exit = fadeOut() + scaleOut(targetScale = 0.82f),
                         ) {
                             Surface(
+                                modifier = Modifier.width(240.dp),
                                 shape = MaterialTheme.shapes.extraLarge,
                                 color = MaterialTheme.colorScheme.surfaceContainerHigh,
                                 tonalElevation = 6.dp,
                                 shadowElevation = 8.dp,
                             ) {
                                 Column(
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
                                     horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
                                     verticalArrangement = Arrangement.spacedBy(10.dp),
                                 ) {
@@ -692,7 +701,18 @@ fun ExplorerScreen(
 
                                         }
                                     }
-                                    androidx.compose.material3.HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+                                    androidx.compose.foundation.layout.Spacer(Modifier.height(4.dp))
+                                    if (FloatingAction.BOOKMARKS in floatingZones.getOrNull(1).orEmpty()) {
+                                        androidx.compose.foundation.layout.Spacer(Modifier.height(4.dp))
+                                        Row(
+                                            modifier = Modifier.fillMaxWidth().clickable { dialog = Dialog.Bookmarks; layoutMenuExpanded = false },
+                                            verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
+                                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        ) {
+                                            Icon(Icons.Rounded.Bookmarks, contentDescription = null)
+                                            Text("نشانک‌ها", style = MaterialTheme.typography.labelLarge)
+                                        }
+                                    }
                                     Row(
                                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                                         verticalAlignment = androidx.compose.ui.Alignment.Bottom,
