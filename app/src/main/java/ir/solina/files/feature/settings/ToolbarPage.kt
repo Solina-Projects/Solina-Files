@@ -177,16 +177,13 @@ fun ToolbarPage(settings: SolinaSettings, act: SettingsActions, onBack: () -> Un
                         ResetButton { commit(layout.copy(selection = ActionLayout.DEFAULT_SELECTION)) }
                     }
                     ToolbarTab.FLOATING -> {
-                        val dualPaneMode = settings.dualPanePreferred
-                        val modeOnlyActions = if (dualPaneMode) emptySet() else setOf(FloatingAction.ORIENTATION, FloatingAction.SWAP_PANES)
                         val editableFloating = Zoned(
                             listOf(
-                                layout.floating.zones.getOrNull(0).orEmpty().filterNot { it in modeOnlyActions },
-                                (layout.floating.zones.getOrNull(1).orEmpty() + layout.floating.zones.getOrNull(2).orEmpty())
-                                    .filterNot { it in modeOnlyActions },
+                                layout.floating.zones.getOrNull(0).orEmpty(),
+                                layout.floating.zones.getOrNull(1).orEmpty() + layout.floating.zones.getOrNull(2).orEmpty(),
                             ),
                         )
-                        var preview by remember(layout.floating, dualPaneMode) { mutableStateOf(editableFloating) }
+                        var preview by remember(layout.floating) { mutableStateOf(editableFloating) }
                         BarPreview(preview.zones[0].map { PreviewButton(floatingActionIcon(it), stringResource(it.label), false) }, selecting = false)
                         SettingNote(stringResource(R.string.settings_floating_bar_note))
                         ZoneEditor(
@@ -202,19 +199,9 @@ fun ToolbarPage(settings: SolinaSettings, act: SettingsActions, onBack: () -> Un
                             scroll = scroll,
                             onPreview = { preview = it },
                             onChange = { next ->
-                                val hiddenModeActions = layout.floating.zones.getOrNull(1).orEmpty()
-                                    .plus(layout.floating.zones.getOrNull(2).orEmpty())
-                                    .filter { it in modeOnlyActions }
-                                val quickModeActions = layout.floating.zones.getOrNull(0).orEmpty()
-                                    .filter { it in modeOnlyActions }
-                                val restored = Zoned(
-                                    listOf(
-                                        next.zones.getOrNull(0).orEmpty() + quickModeActions,
-                                        emptyList(),
-                                        next.zones.getOrNull(1).orEmpty() + hiddenModeActions,
-                                    ),
-                                )
-                                commit(layout.copy(floating = restored))
+                                commit(layout.copy(floating = Zoned(
+                                    listOf(next.zones.getOrNull(0).orEmpty(), next.zones.getOrNull(1).orEmpty(), emptyList()),
+                                )))
                             },
                             hint = { null },
                             onSpill = { list -> spilled(list.map { tr(it.label) }, R.plurals.settings_toolbar_spill_quick, ActionLayout.FLOATING_CAPS.first()) },
