@@ -374,6 +374,7 @@ private fun FolderList(
                 drop = links.look(item),
                 onDragStart = links.start(item),
                 singlePane = singlePane,
+                showSelectionCheckbox = singlePane,
             )
         }
     }
