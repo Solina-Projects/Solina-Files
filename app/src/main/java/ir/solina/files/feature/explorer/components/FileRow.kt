@@ -103,6 +103,7 @@ fun FileRow(
     drop: DropLook = DropLook.NONE,
     onDragStart: ((Offset, PointerId) -> Boolean)? = null,
     singlePane: Boolean = false,
+    showSelectionCheckbox: Boolean = false,
 ) {
     val motion = MaterialTheme.motionScheme
     val colors = MaterialTheme.colorScheme
@@ -138,7 +139,7 @@ fun FileRow(
     val flash = rememberFlash(flashKey, flashPulses)
     val flashColor = colors.primary.copy(alpha = 0.32f)
 
-    Row(
+    Box(
         modifier
             .then(drop.spot)
             .fillMaxWidth()
@@ -155,6 +156,9 @@ fun FileRow(
             }
             .fileGestures(interaction, onClick, onLongClick, onDragStart)
             .padding(horizontal = 6.dp, vertical = density.rowPadDp.dp * layoutScale),
+    ) {
+    Row(
+        Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         DropHalo(look, drop.anchor) {
@@ -196,6 +200,29 @@ fun FileRow(
                 }
             }
         }
+    }
+    if (showSelectionCheckbox) {
+        Box(
+            Modifier
+                .align(Alignment.BottomStart)
+                .padding(start = 2.dp, bottom = 1.dp)
+                .size(22.dp)
+                .clip(RoundedCornerShape(4.dp))
+                .background(if (selected) colors.primary else colors.surface.copy(alpha = 0.92f))
+                .border(1.5.dp, if (selected) colors.primary else colors.outline, RoundedCornerShape(4.dp))
+                .clickable(onClickLabel = stringResource(R.string.common_select)) { onIconClick() },
+            contentAlignment = Alignment.Center,
+        ) {
+            if (selected) {
+                Icon(
+                    Icons.Rounded.Check,
+                    contentDescription = stringResource(R.string.explorer_selected),
+                    tint = colors.onPrimary,
+                    modifier = Modifier.size(16.dp),
+                )
+            }
+        }
+    }
     }
 }
 
