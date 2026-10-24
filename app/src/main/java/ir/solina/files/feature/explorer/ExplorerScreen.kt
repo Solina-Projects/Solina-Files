@@ -576,62 +576,70 @@ fun ExplorerScreen(
 
                 }
                 FloatingAction.CREATE -> {
-            AnimatedVisibility(
-                visible = quickCreateExpanded,
-                enter = fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.7f),
-                exit = fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.7f),
-            ) {
-                Surface(
-                    modifier = Modifier.width(240.dp),
-                    shape = MaterialTheme.shapes.extraLarge,
-                    color = androidx.compose.ui.graphics.Color.Transparent,
-                    tonalElevation = 0.dp,
-                    shadowElevation = 0.dp,
-                ) {
-                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp), horizontalAlignment = androidx.compose.ui.Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    ExtendedFloatingActionButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFolder(ui.active) },
-                        icon = { Icon(Icons.Rounded.CreateNewFolder, contentDescription = null) },
-                        text = { Text("پوشه جدید") },
-                    )
-                    ExtendedFloatingActionButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "untitled.txt") },
-                        icon = { Icon(Icons.Rounded.Description, contentDescription = null) },
-                        text = { Text("فایل متنی") },
-                    )
-                    ExtendedFloatingActionButton(
-                        modifier = Modifier.fillMaxWidth(),
-                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "index.html") },
-                        icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
-                        text = { Text("فایل HTML") },
-                    )
-                    if (!ui.isRemote(ui.active)) {
-                        ExtendedFloatingActionButton(
-                            modifier = Modifier.fillMaxWidth(),
-                            onClick = { quickCreateExpanded = false; dialog = Dialog.NewProject(ui.activePane.path) },
-                            icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
-                            text = { Text("پروژه جدید") },
-                        )
+                    Box(modifier = Modifier.width(56.dp), contentAlignment = androidx.compose.ui.Alignment.CenterEnd) {
+                        AnimatedVisibility(
+                            visible = quickCreateExpanded,
+                            modifier = Modifier
+                                .align(androidx.compose.ui.Alignment.CenterEnd)
+                                .offset(x = (-64).dp),
+                            enter = fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.88f),
+                            exit = fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.88f),
+                        ) {
+                            Surface(
+                                modifier = Modifier.width(240.dp),
+                                shape = MaterialTheme.shapes.extraLarge,
+                                color = androidx.compose.ui.graphics.Color.Transparent,
+                                tonalElevation = 0.dp,
+                                shadowElevation = 0.dp,
+                            ) {
+                                Column(
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
+                                    horizontalAlignment = androidx.compose.ui.Alignment.End,
+                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                ) {
+                                    ExtendedFloatingActionButton(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFolder(ui.active) },
+                                        icon = { Icon(Icons.Rounded.CreateNewFolder, contentDescription = null) },
+                                        text = { Text("پوشه جدید") },
+                                    )
+                                    ExtendedFloatingActionButton(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "untitled.txt") },
+                                        icon = { Icon(Icons.Rounded.Description, contentDescription = null) },
+                                        text = { Text("فایل متنی") },
+                                    )
+                                    ExtendedFloatingActionButton(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "index.html") },
+                                        icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
+                                        text = { Text("فایل HTML") },
+                                    )
+                                    if (!ui.isRemote(ui.active)) {
+                                        ExtendedFloatingActionButton(
+                                            modifier = Modifier.fillMaxWidth(),
+                                            onClick = { quickCreateExpanded = false; dialog = Dialog.NewProject(ui.activePane.path) },
+                                            icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
+                                            text = { Text("پروژه جدید") },
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        if (FloatingAction.CREATE in floatingVisibleActions) {
+                            FloatingActionButton(
+                                onClick = { quickCreateExpanded = !quickCreateExpanded; layoutMenuExpanded = false },
+                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.82f),
+                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                            ) {
+                                Icon(
+                                    Icons.Rounded.Add,
+                                    contentDescription = if (quickCreateExpanded) "بستن ایجاد سریع" else "ایجاد فایل یا پوشه",
+                                    modifier = Modifier.graphicsLayer { rotationZ = createIconRotation },
+                                )
+                            }
+                        }
                     }
-                }
-                }
-            }
-            if (FloatingAction.CREATE in floatingVisibleActions) {
-                FloatingActionButton(
-                    onClick = { quickCreateExpanded = !quickCreateExpanded; layoutMenuExpanded = false },
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerHighest.copy(alpha = 0.82f),
-                    contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
-                ) {
-                    Icon(
-                        Icons.Rounded.Add,
-                        contentDescription = if (quickCreateExpanded) "بستن ایجاد سریع" else "ایجاد فایل یا پوشه",
-                        modifier = Modifier.graphicsLayer { rotationZ = createIconRotation },
-                    )
-                }
-            }
-            
                 }
                 FloatingAction.ORIENTATION -> {
                 FloatingActionButton(
