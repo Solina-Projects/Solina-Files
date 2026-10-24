@@ -293,7 +293,7 @@ private fun BrowseActions(
                         expanded = layoutMenu,
                         onDismiss = { layoutMenu = false },
                         groups = listOf(listOf(
-                            MenuEntry("نمای شبکه‌ای", Icons.Rounded.GridView) { layoutMenu = false; if (!gridView) onToggleViewLayout() },
+                            if (!dual) MenuEntry("نمای شبکه‌ای", Icons.Rounded.GridView) { layoutMenu = false; if (!gridView) onToggleViewLayout() },
                             MenuEntry("نمای فهرستی", Icons.Rounded.ViewList) { layoutMenu = false; if (gridView) onToggleViewLayout() },
                             MenuEntry("تنظیم نوار", Icons.Rounded.DashboardCustomize) { layoutMenu = false; a.onCustomize(ToolbarTab.BROWSE) },
                         )),
