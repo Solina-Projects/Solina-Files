@@ -178,7 +178,13 @@ fun ToolbarPage(settings: SolinaSettings, act: SettingsActions, onBack: () -> Un
                     ToolbarTab.FLOATING -> {
                         val dualPaneMode = settings.dualPanePreferred
                         val modeOnlyActions = if (dualPaneMode) emptySet() else setOf(FloatingAction.ORIENTATION, FloatingAction.SWAP_PANES)
-                        val editableFloating = Zoned(layout.floating.zones.map { zone -> zone.filterNot { it in modeOnlyActions } })
+                        val editableFloating = Zoned(
+                            listOf(
+                                layout.floating.zones.getOrNull(0).orEmpty().filterNot { it in modeOnlyActions },
+                                (layout.floating.zones.getOrNull(1).orEmpty() + layout.floating.zones.getOrNull(2).orEmpty())
+                                    .filterNot { it in modeOnlyActions },
+                            ),
+                        )
                         var preview by remember(layout.floating, dualPaneMode) { mutableStateOf(editableFloating) }
                         BarPreview(preview.zones[0].map { PreviewButton(floatingActionIcon(it), stringResource(it.label), false) }, selecting = false)
                         SettingNote(stringResource(R.string.settings_floating_bar_note))
@@ -187,18 +193,26 @@ fun ToolbarPage(settings: SolinaSettings, act: SettingsActions, onBack: () -> Un
                             caps = ActionLayout.FLOATING_CAPS,
                             styles = listOf(
                                 ZoneStyle(tr(R.string.settings_zone_quick), tr(R.string.settings_zone_drop_here), MaterialShapes.Cookie9Sided, Tint.PRIMARY),
-                                ZoneStyle(tr(R.string.settings_zone_in_menu), tr(R.string.settings_zone_nothing), MaterialShapes.Square, Tint.SECONDARY),
                                 ZoneStyle(tr(R.string.settings_zone_hidden), tr(R.string.settings_zone_hidden_empty), MaterialShapes.Ghostish, Tint.NEUTRAL),
                             ),
-                            buttons = { zone -> zoneButtons(zone, sheet = true) },
+                            buttons = { zone -> floatingZoneButtons(zone) },
                             label = { tr(it.label) },
                             icon = { floatingActionIcon(it) },
                             scroll = scroll,
                             onPreview = { preview = it },
                             onChange = { next ->
-                                val restored = Zoned(next.zones.mapIndexed { index, zone ->
-                                    zone + layout.floating.zones.getOrNull(index).orEmpty().filter { it in modeOnlyActions }
-                                })
+                                val hiddenModeActions = layout.floating.zones.getOrNull(1).orEmpty()
+                                    .plus(layout.floating.zones.getOrNull(2).orEmpty())
+                                    .filter { it in modeOnlyActions }
+                                val quickModeActions = layout.floating.zones.getOrNull(0).orEmpty()
+                                    .filter { it in modeOnlyActions }
+                                val restored = Zoned(
+                                    listOf(
+                                        next.zones.getOrNull(0).orEmpty() + quickModeActions,
+                                        emptyList(),
+                                        next.zones.getOrNull(1).orEmpty() + hiddenModeActions,
+                                    ),
+                                )
                                 commit(layout.copy(floating = restored))
                             },
                             hint = { null },
@@ -247,6 +261,15 @@ private fun barStyles(sheet: Boolean) = listOf(
     ),
     ZoneStyle(tr(R.string.settings_zone_hidden), tr(R.string.settings_zone_hidden_empty), MaterialShapes.Ghostish, Tint.NEUTRAL),
 )
+
+private fun floatingZoneButtons(zone: Int): List<ZoneButton> = when (zone) {
+    0 -> listOf(
+        ZoneButton(Icons.Rounded.VisibilityOff, { tr(R.string.settings_zone_hide, it) }, zone = 1, atEnd = true),
+    )
+    else -> listOf(
+        ZoneButton(Icons.Rounded.Visibility, { tr(R.string.settings_zone_show_in_more, it) }, zone = 0, atEnd = true),
+    )
+}
 
 private fun zoneButtons(zone: Int, sheet: Boolean): List<ZoneButton> = when (zone) {
     0 -> listOf(
