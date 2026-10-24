@@ -589,16 +589,19 @@ fun ExplorerScreen(
                 ) {
                 Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp), horizontalAlignment = androidx.compose.ui.Alignment.End, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     ExtendedFloatingActionButton(
+                        modifier = Modifier.fillMaxWidth(),
                         onClick = { quickCreateExpanded = false; dialog = Dialog.NewFolder(ui.active) },
                         icon = { Icon(Icons.Rounded.CreateNewFolder, contentDescription = null) },
                         text = { Text("پوشه جدید") },
                     )
                     ExtendedFloatingActionButton(
+                        modifier = Modifier.fillMaxWidth(),
                         onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "untitled.txt") },
                         icon = { Icon(Icons.Rounded.Description, contentDescription = null) },
                         text = { Text("فایل متنی") },
                     )
                     ExtendedFloatingActionButton(
+                        modifier = Modifier.fillMaxWidth(),
                         onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "index.html") },
                         icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
                         text = { Text("فایل HTML") },
