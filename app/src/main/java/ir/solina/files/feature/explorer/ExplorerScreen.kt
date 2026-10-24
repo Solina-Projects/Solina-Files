@@ -524,7 +524,9 @@ fun ExplorerScreen(
             // stored zones are intentionally not surfaced in an overflow/menu.
             val floatingVisibleActions = floatingZones.getOrNull(0).orEmpty()
                 .filterNot { !dual && (it == FloatingAction.ORIENTATION || it == FloatingAction.SWAP_PANES) }
-            if (FloatingAction.HOME in floatingVisibleActions) {
+            floatingVisibleActions.forEach { action ->
+                when (action) {
+                FloatingAction.HOME -> {
                 FloatingActionButton(
                     onClick = { vm.goHome(ui.active); quickCreateExpanded = false; layoutMenuExpanded = false },
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -532,8 +534,9 @@ fun ExplorerScreen(
                 ) {
                     Icon(Icons.Rounded.Home, contentDescription = "خانه")
                 }
-            }
-            if (FloatingAction.REFRESH in floatingVisibleActions) {
+            
+                }
+                FloatingAction.REFRESH -> {
                 FloatingActionButton(
                     onClick = { vm.refresh(ui.active); quickCreateExpanded = false; layoutMenuExpanded = false },
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -541,8 +544,10 @@ fun ExplorerScreen(
                 ) {
                     Icon(Icons.Rounded.Refresh, contentDescription = "تازه‌سازی")
                 }
-            }
-            if (dual && FloatingAction.SWAP_PANES in floatingVisibleActions) {
+            
+                }
+                FloatingAction.SWAP_PANES -> {
+                if (dual) {
                 FloatingActionButton(
                     onClick = { vm.swapPanes() },
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -550,8 +555,11 @@ fun ExplorerScreen(
                 ) {
                     Icon(Icons.Rounded.SwapHoriz, contentDescription = "تعویض محتوای دو پنل")
                 }
-            }
-            if (FloatingAction.CREATE in floatingVisibleActions) {
+            
+                }
+
+                }
+                FloatingAction.CREATE -> {
             AnimatedVisibility(
                 visible = quickCreateExpanded,
                 enter = fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.7f),
@@ -595,8 +603,9 @@ fun ExplorerScreen(
                     )
                 }
             }
-            }
-            if (FloatingAction.ORIENTATION in floatingVisibleActions && dual) {
+            
+                }
+                FloatingAction.ORIENTATION -> {
                 FloatingActionButton(
                     onClick = { horizontalSplit = !horizontalSplit },
                     containerColor = MaterialTheme.colorScheme.secondaryContainer,
@@ -607,8 +616,9 @@ fun ExplorerScreen(
                         contentDescription = if (horizontalSplit) "چیدن پنل‌ها روی هم" else "چیدن پنل‌ها کنار هم",
                     )
                 }
-            }
-            if (FloatingAction.VIEW_LAYOUT in floatingVisibleActions) {
+            
+                }
+                FloatingAction.VIEW_LAYOUT -> {
                 Box {
                     Column(
                         horizontalAlignment = androidx.compose.ui.Alignment.End,
@@ -715,8 +725,9 @@ fun ExplorerScreen(
                         }
                     }
                 }
-            }
-            if (FloatingAction.PANE_MODE in floatingVisibleActions) {
+            
+                }
+                FloatingAction.PANE_MODE -> {
                 FloatingActionButton(
                     onClick = { vm.setDualPanePreferred(!dual); quickCreateExpanded = false; layoutMenuExpanded = false },
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -727,10 +738,10 @@ fun ExplorerScreen(
                         contentDescription = if (dual) "تبدیل به تک‌پنجره" else "تبدیل به دوپنجره",
                     )
                 }
+            
+                }
+                }
             }
-
-        }
-    }
     DragLayer(drag) { host[0]?.positionInRoot() ?: Offset.Zero }
     }
     }
