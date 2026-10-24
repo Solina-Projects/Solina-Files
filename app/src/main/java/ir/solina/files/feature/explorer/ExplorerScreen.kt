@@ -578,7 +578,7 @@ fun ExplorerScreen(
                 }
                 FloatingAction.CREATE -> {
                     Box(modifier = Modifier.width(56.dp), contentAlignment = androidx.compose.ui.Alignment.CenterEnd) {
-                        AnimatedVisibility(
+                        androidx.compose.animation.AnimatedVisibility(
                             visible = quickCreateExpanded,
                             modifier = Modifier
                                 .align(androidx.compose.ui.Alignment.CenterEnd)
