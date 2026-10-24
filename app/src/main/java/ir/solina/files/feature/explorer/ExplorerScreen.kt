@@ -595,6 +595,7 @@ fun ExplorerScreen(
                     )
                 }
             }
+            }
             if (FloatingAction.ORIENTATION in floatingVisibleActions && dual) {
                 FloatingActionButton(
                     onClick = { horizontalSplit = !horizontalSplit },
