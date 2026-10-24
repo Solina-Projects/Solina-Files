@@ -34,6 +34,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.DataUsage
 import androidx.compose.material.icons.rounded.FolderOpen
+import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -467,11 +468,12 @@ private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape, contentPaddingF
         contentAlignment = Alignment.Center,
     ) {
         if (item.isDirectory) {
-            AsyncImage(
-                model = R.raw.solina_folder_dualpane,
+            // One-color folder glyph follows the active Material theme automatically.
+            Icon(
+                Icons.Rounded.Folder,
                 contentDescription = stringResource(kind.label),
-                contentScale = ContentScale.Fit,
-                modifier = Modifier.fillMaxSize(),
+                tint = colors.primary,
+                modifier = Modifier.fillMaxSize().padding(iconSize * 0.08f),
             )
         } else {
             Icon(
