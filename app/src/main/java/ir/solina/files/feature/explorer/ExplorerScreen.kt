@@ -673,7 +673,7 @@ fun ExplorerScreen(
                                             }
                                         }
                                         if (!dual) {
-                                        val isGrid = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID
+                                            val isGrid = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID
                                         Surface(
                                             shape = MaterialTheme.shapes.large,
                                             color = if (isGrid) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
@@ -690,7 +690,8 @@ fun ExplorerScreen(
                                             }
                                         }
 
-                                        }                                    }
+                                        }
+                                    }
                                     androidx.compose.material3.HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                                     Row(
                                         horizontalArrangement = Arrangement.spacedBy(12.dp),
