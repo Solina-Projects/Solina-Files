@@ -587,7 +587,7 @@ fun ExplorerScreen(
                             exit = fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.88f),
                         ) {
                             Surface(
-                                modifier = Modifier.width(240.dp),
+                                modifier = Modifier.width(240.dp).then(Modifier.requiredWidth(240.dp)),
                                 shape = MaterialTheme.shapes.extraLarge,
                                 color = androidx.compose.ui.graphics.Color.Transparent,
                                 tonalElevation = 0.dp,
