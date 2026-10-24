@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
-    android:src="@drawable/solina_launcher"
-    android:gravity="fill" />
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/solina_launcher"
+    android:insetLeft="11dp"
+    android:insetTop="11dp"
+    android:insetRight="11dp"
+    android:insetBottom="11dp" />
