@@ -36,6 +36,7 @@ import androidx.compose.material.icons.rounded.CreateNewFolder
 import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Bookmarks
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Layers
 import androidx.compose.material.icons.rounded.Folder
@@ -546,6 +547,15 @@ fun ExplorerScreen(
                 }
             
                 }
+                FloatingAction.BOOKMARKS -> {
+                    FloatingActionButton(
+                        onClick = { dialog = Dialog.Bookmarks; quickCreateExpanded = false; layoutMenuExpanded = false },
+                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
+                    ) {
+                        Icon(Icons.Rounded.Bookmarks, contentDescription = "نشانک‌ها")
+                    }
+                }
                 FloatingAction.SWAP_PANES -> {
                 if (dual) {
                 FloatingActionButton(
@@ -657,6 +667,7 @@ fun ExplorerScreen(
                                                 )
                                             }
                                         }
+                                        if (!dual) {
                                         val isGrid = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID
                                         Surface(
                                             shape = MaterialTheme.shapes.large,
@@ -673,7 +684,8 @@ fun ExplorerScreen(
                                                 )
                                             }
                                         }
-                                    }
+
+                                        }                                    }
                                     androidx.compose.material3.HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                                     Row(
                                         horizontalArrangement = Arrangement.spacedBy(12.dp),
