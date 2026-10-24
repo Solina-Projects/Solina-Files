@@ -26,7 +26,6 @@ enum class BrowseAction(@StringRes val label: Int) {
     PANE_MODE(R.string.settings_two_panes),
     ORIENTATION(R.string.model_browse_orientation),
     SWAP_PANES(R.string.model_browse_swap_panes),
-    BOOKMARKS(R.string.model_browse_bookmarks),
 }
 
 enum class SelectionAction(@StringRes val label: Int, val asks: Boolean = false) {
@@ -273,6 +272,7 @@ enum class FloatingAction(@StringRes val label: Int) {
     HOME(R.string.model_browse_home),
     REFRESH(R.string.model_browse_refresh),
     SWAP_PANES(R.string.model_browse_swap_panes),
+    BOOKMARKS(R.string.model_browse_bookmarks),
 }
 
 data class ActionLayout(
