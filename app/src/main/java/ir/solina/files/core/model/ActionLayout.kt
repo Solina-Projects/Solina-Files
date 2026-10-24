@@ -296,7 +296,7 @@ data class ActionLayout(
 
         val DEFAULT_BROWSE = Zoned(
             listOf(
-                listOf(BrowseAction.BACK, BrowseAction.FORWARD, BrowseAction.PASTE, BrowseAction.UP, BrowseAction.SWAP, BrowseAction.SELECT_ALL),
+                listOf(BrowseAction.BACK, BrowseAction.FORWARD, BrowseAction.PASTE),
                 listOf(
                     BrowseAction.NEW, BrowseAction.HOME, BrowseAction.REFRESH, BrowseAction.BOOKMARKS,
                     BrowseAction.BOOKMARK_FOLDER, BrowseAction.PANE_MODE, BrowseAction.ORIENTATION, BrowseAction.SWAP_PANES,
