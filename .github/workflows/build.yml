@@ -1,9 +1,10 @@
+
 name: Build
 
 on:
   push:
     branches: [main]
-    tags: ['v*']
+    tags: ['v*', 'V*']
   pull_request:
   workflow_dispatch:
 
@@ -18,6 +19,7 @@ jobs:
     timeout-minutes: 150
     permissions:
       contents: write
+
     steps:
       - name: Set the default git branch
         run: git config --global init.defaultBranch main
@@ -74,26 +76,37 @@ jobs:
         run: |
           if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
             echo "configured=false" >> "$GITHUB_OUTPUT"
-            echo "::notice::Release signing is not configured. Debug build will remain available; no release APK will be built or published."
+            echo "::notice::Release signing is not configured. No release APK will be built or published."
             exit 0
           fi
+
           echo "configured=true" >> "$GITHUB_OUTPUT"
           echo "$KEYSTORE_BASE64" | base64 -d > release.jks
-          printf 'storeFile=release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > keystore.properties
+          printf 'storeFile=release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+            "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > keystore.properties
 
       - name: Build the signed release APKs
         if: github.event_name != 'pull_request' && steps.signing.outputs.configured == 'true'
         run: |
           version=$(grep '^solina.versionName=' gradle.properties | cut -d= -f2)
-          if [[ "$GITHUB_REF" == refs/tags/* && "$GITHUB_REF_NAME" != "v${version}" ]]; then
-            echo "::error::Tag $GITHUB_REF_NAME does not match solina.versionName=${version} in gradle.properties."
-            exit 1
+
+          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
+            tag_version="${GITHUB_REF_NAME,,}"
+            expected_tag="v${version,,}"
+            if [[ "$tag_version" != "$expected_tag" ]]; then
+              echo "::error::Tag $GITHUB_REF_NAME does not match version $version in gradle.properties."
+              exit 1
+            fi
           fi
+
           ./gradlew --stacktrace :app:assembleRelease -Psolina.splitApks=true
+
           mkdir -p dist
           for abi in arm64-v8a armeabi-v7a universal; do
-            cp "app/build/outputs/apk/release/app-${abi}-release.apk" "dist/Solina-Files-v${version}-${abi}.apk"
+            cp "app/build/outputs/apk/release/app-${abi}-release.apk" \
+              "dist/Solina-Files-v${version}-${abi}.apk"
           done
+
           (cd dist && sha256sum *.apk > SHA256SUMS.txt)
 
       - name: Upload the signed release APKs
@@ -107,16 +120,25 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
-      - name: Publish Solina Files v1.0.1 or a tagged release
-        if: steps.signing.outputs.configured == 'true' && ((github.ref == 'refs/heads/main' && contains(github.event.head_commit.message, '[release v1.0.1]')) || startsWith(github.ref, 'refs/tags/v'))
+      - name: Publish or update tagged release
+        if: github.event_name != 'pull_request' && steps.signing.outputs.configured == 'true' && startsWith(github.ref, 'refs/tags/')
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           version=$(grep '^solina.versionName=' gradle.properties | cut -d= -f2)
-          if [[ "$GITHUB_REF" == refs/tags/* ]]; then
-            gh release create "$GITHUB_REF_NAME" dist/* --title "Solina Files $GITHUB_REF_NAME" --notes "Solina Files $version. Includes ARM64, ARMv7 and Universal APKs plus SHA256 checksums." --verify-tag
+          tag="$GITHUB_REF_NAME"
+
+          if [[ "${tag,,}" != "v${version,,}" ]]; then
+            echo "::error::Tag $tag does not match version $version."
+            exit 1
+          fi
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" dist/*.apk dist/SHA256SUMS.txt --clobber
           else
-            gh release create "v$version" dist/* --title "Solina Files v$version" --notes "Solina Files $version. Includes ARM64, ARMv7 and Universal APKs plus SHA256 checksums."
+            gh release create "$tag" dist/*.apk dist/SHA256SUMS.txt \
+              --title "Solina Files v${version}" \
+              --notes "Solina Files ${version}. Includes ARM64, ARMv7 and Universal APKs plus SHA256 checksums."
           fi
 
       - name: Remove the signing key
