@@ -591,9 +591,14 @@ fun ExplorerScreen(
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
                                 shape = RoundedCornerShape(24.dp),
-                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
-                                tonalElevation = 4.dp,
-                                shadowElevation = 8.dp,
+                                color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                                contentColor = MaterialTheme.colorScheme.onSurface,
+                                border = androidx.compose.foundation.BorderStroke(
+                                    1.dp,
+                                    MaterialTheme.colorScheme.outlineVariant,
+                                ),
+                                tonalElevation = 6.dp,
+                                shadowElevation = 12.dp,
                             ) {
                                 Column(
                                     modifier = Modifier
