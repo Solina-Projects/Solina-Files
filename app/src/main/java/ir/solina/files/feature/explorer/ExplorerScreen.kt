@@ -621,7 +621,7 @@ fun ExplorerScreen(
             if (FloatingAction.CREATE in floatingVisibleActions) {
                 FloatingActionButton(
                     onClick = { quickCreateExpanded = !quickCreateExpanded; layoutMenuExpanded = false },
-                    containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+                    containerColor = MaterialTheme.colorScheme.tertiaryContainer.copy(alpha = 0.72f),
                     contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
                 ) {
                     Icon(
@@ -670,23 +670,23 @@ fun ExplorerScreen(
                                     verticalArrangement = Arrangement.spacedBy(10.dp),
                                 ) {
                                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                        val isList = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.LIST
-                                        Surface(
-                                            shape = MaterialTheme.shapes.large,
-                                            color = if (isList) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
-                                        ) {
-                                            IconButton(
-                                                onClick = { if (!isList) vm.toggleViewMode() },
-                                                modifier = Modifier.size(48.dp),
-                                            ) {
-                                                Icon(
-                                                    Icons.Rounded.ViewList,
-                                                    contentDescription = "چیدمان فهرستی",
-                                                    tint = if (isList) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
-                                                )
-                                            }
-                                        }
                                         if (!dual) {
+                                            val isList = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.LIST
+                                            Surface(
+                                                shape = MaterialTheme.shapes.large,
+                                                color = if (isList) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
+                                            ) {
+                                                IconButton(
+                                                    onClick = { if (!isList) vm.toggleViewMode() },
+                                                    modifier = Modifier.size(48.dp),
+                                                ) {
+                                                    Icon(
+                                                        Icons.Rounded.ViewList,
+                                                        contentDescription = "چیدمان فهرستی",
+                                                        tint = if (isList) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                                                    )
+                                                }
+                                            }
                                             val isGrid = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID
                                         Surface(
                                             shape = MaterialTheme.shapes.large,
@@ -746,7 +746,7 @@ fun ExplorerScreen(
                         }
                         FloatingActionButton(
                             onClick = { layoutMenuExpanded = !layoutMenuExpanded; quickCreateExpanded = false },
-                            containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                            containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.72f),
                             contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
                         ) {
                             Icon(
