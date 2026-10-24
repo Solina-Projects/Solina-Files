@@ -204,8 +204,8 @@ fun FileRow(
     if (showSelectionCheckbox) {
         Box(
             Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 2.dp, bottom = 1.dp)
+                .align(Alignment.BottomEnd)
+                .padding(end = 2.dp, bottom = 1.dp)
                 .size(22.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(if (selected) colors.primary else colors.surface.copy(alpha = 0.92f))
