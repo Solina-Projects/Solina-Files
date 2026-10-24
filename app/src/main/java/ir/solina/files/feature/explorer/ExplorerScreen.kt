@@ -578,51 +578,63 @@ fun ExplorerScreen(
 
                 }
                 FloatingAction.CREATE -> {
-                    Box(modifier = Modifier.width(56.dp), contentAlignment = androidx.compose.ui.Alignment.CenterEnd) {
-                        androidx.compose.animation.AnimatedVisibility(
+                    Column(
+                        modifier = Modifier.width(240.dp),
+                        horizontalAlignment = androidx.compose.ui.Alignment.End,
+                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        AnimatedVisibility(
                             visible = quickCreateExpanded,
-                            modifier = Modifier
-                                .align(androidx.compose.ui.Alignment.BottomEnd)
-                                .offset(x = (-250).dp),
-                            enter = fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.88f),
-                            exit = fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.88f),
+                            enter = fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.94f),
+                            exit = fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.96f),
                         ) {
                             Surface(
-                                modifier = Modifier.requiredWidth(240.dp),
-                                shape = MaterialTheme.shapes.extraLarge,
-                                color = androidx.compose.ui.graphics.Color.Transparent,
-                                tonalElevation = 0.dp,
-                                shadowElevation = 0.dp,
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(24.dp),
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                tonalElevation = 4.dp,
+                                shadowElevation = 8.dp,
                             ) {
                                 Column(
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
-                                    horizontalAlignment = androidx.compose.ui.Alignment.End,
-                                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
+                                    Text(
+                                        text = "ایجاد مورد جدید",
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+                                    )
                                     ExtendedFloatingActionButton(
                                         modifier = Modifier.fillMaxWidth(),
                                         onClick = { quickCreateExpanded = false; dialog = Dialog.NewFolder(ui.active) },
                                         icon = { Icon(Icons.Rounded.CreateNewFolder, contentDescription = null) },
-                                        text = { Text("پوشه جدید") },
+                                        text = { Text("پوشه جدید", maxLines = 1) },
+                                        expanded = true,
                                     )
                                     ExtendedFloatingActionButton(
                                         modifier = Modifier.fillMaxWidth(),
                                         onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "untitled.txt") },
                                         icon = { Icon(Icons.Rounded.Description, contentDescription = null) },
-                                        text = { Text("فایل متنی") },
+                                        text = { Text("فایل متنی", maxLines = 1) },
+                                        expanded = true,
                                     )
                                     ExtendedFloatingActionButton(
                                         modifier = Modifier.fillMaxWidth(),
                                         onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "index.html") },
                                         icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
-                                        text = { Text("فایل HTML") },
+                                        text = { Text("فایل HTML", maxLines = 1) },
+                                        expanded = true,
                                     )
                                     if (!ui.isRemote(ui.active)) {
                                         ExtendedFloatingActionButton(
                                             modifier = Modifier.fillMaxWidth(),
                                             onClick = { quickCreateExpanded = false; dialog = Dialog.NewProject(ui.activePane.path) },
                                             icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
-                                            text = { Text("پروژه جدید") },
+                                            text = { Text("پروژه جدید", maxLines = 1) },
+                                            expanded = true,
                                         )
                                     }
                                 }
@@ -630,9 +642,20 @@ fun ExplorerScreen(
                         }
                         if (FloatingAction.CREATE in floatingVisibleActions) {
                             FloatingActionButton(
-                                onClick = { quickCreateExpanded = !quickCreateExpanded; layoutMenuExpanded = false },
-                                containerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
-                                contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+                                onClick = {
+                                    quickCreateExpanded = !quickCreateExpanded
+                                    layoutMenuExpanded = false
+                                },
+                                containerColor = if (quickCreateExpanded) {
+                                    MaterialTheme.colorScheme.primaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.surfaceContainerHighest
+                                },
+                                contentColor = if (quickCreateExpanded) {
+                                    MaterialTheme.colorScheme.onPrimaryContainer
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                },
                             ) {
                                 Icon(
                                     Icons.Rounded.Add,
