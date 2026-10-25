@@ -13,6 +13,17 @@ val keystoreProperties = Properties().apply {
 }
 val hasReleaseKeystore = keystorePropertiesFile.exists()
 
+// Use the project's original image as the launcher icon without adding a frame or border.
+val syncSolinaLauncherIcon = tasks.register<Copy>("syncSolinaLauncherIcon") {
+    from(rootProject.file("1792898887402.jpg"))
+    into(layout.projectDirectory.dir("src/main/res/drawable-nodpi"))
+    rename { "solina_project_icon.jpg" }
+}
+
+tasks.named("preBuild").configure {
+    dependsOn(syncSolinaLauncherIcon)
+}
+
 android {
     namespace = "ir.solina.files"
 
