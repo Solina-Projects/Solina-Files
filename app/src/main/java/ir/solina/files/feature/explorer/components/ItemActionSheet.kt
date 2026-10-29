@@ -31,10 +31,12 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -100,10 +102,27 @@ fun ItemActionSheet(
     item: FileItem,
     actions: ItemActions,
     onDismiss: () -> Unit,
+    selectedCount: Int = 0,
     smaliFolder: Boolean = false,
     layout: Zoned<SheetAction> = ActionLayout.DEFAULT_SHEET,
     onCustomize: (() -> Unit)? = null,
 ) {
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = false)
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(selectedCount) {
+        if (selectedCount > 1) {
+            sheetState.hide()
+            onDismiss()
+        }
+    }
+    LaunchedEffect(scrollState.isScrollInProgress) {
+        if (scrollState.isScrollInProgress) {
+            sheetState.hide()
+            onDismiss()
+        }
+    }
+
     val local = !RemoteUri.isRemote(item.path)
     val kind = FileKinds.of(item)
     val file = !item.isDirectory
@@ -147,8 +166,12 @@ fun ItemActionSheet(
     val primary = layout.zones[0].filter { it.available(context) }.map(::entry)
     val groups = SheetGroup.entries.map { g -> g to layout.zones[1].filter { it.group == g && it.available(context) }.map(::entry) }
 
-    ModalBottomSheet(onDismissRequest = onDismiss, modifier = Modifier.testTag("item-sheet")) {
-        Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 16.dp).padding(bottom = 24.dp)) {
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        modifier = Modifier.testTag("item-sheet"),
+    ) {
+        Column(Modifier.verticalScroll(scrollState).padding(horizontal = 16.dp).padding(bottom = 24.dp)) {
             Header(item, kind, local, onCustomize)
             if (primary.isNotEmpty()) {
                 Row(Modifier.fillMaxWidth().padding(top = 14.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
