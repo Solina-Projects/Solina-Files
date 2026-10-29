@@ -946,7 +946,6 @@ fun ExplorerScreen(
         }
         is Dialog.ItemSheet -> ItemActionSheet(
             item = d.item,
-            selectedCount = ui.pane(d.pane).selected.size,
             smaliFolder = produceState(false, d.item.path) { value = d.item.isDirectory && vm.hasSmali(d.pane, d.item) }.value,
             actions = ItemActions(
                 onSelect = { vm.setActive(d.pane); vm.toggleSelect(d.pane, d.item); dialog = Dialog.None },
