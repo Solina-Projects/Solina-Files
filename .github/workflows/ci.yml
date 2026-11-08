@@ -38,6 +38,16 @@ jobs:
         with:
           cache-provider: basic
 
+      - name: Download Gradle (retry on network timeout)
+        run: |
+          for attempt in 1 2 3 4; do
+            if ./gradlew --version; then exit 0; fi
+            echo "::warning::Gradle download failed (attempt $attempt of 4), retrying..."
+            sleep 20
+          done
+          echo "::error::Could not download Gradle after 4 attempts."
+          exit 1
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
