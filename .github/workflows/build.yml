@@ -85,9 +85,11 @@ jobs:
             "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > keystore.properties
 
       - name: Build the signed release APKs
+        id: release_build
         if: github.event_name != 'pull_request' && steps.signing.outputs.configured == 'true'
         run: |
           version=$(grep '^solina.versionName=' gradle.properties | cut -d= -f2)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
           if [[ "$GITHUB_REF" == refs/tags/* ]]; then
             tag_version="${GITHUB_REF_NAME,,}"
@@ -131,6 +133,33 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: solina-files-universal
+          path: dist/Solina-Files-v*-universal.apk
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Upload versioned ARM64 APK
+        if: github.event_name != 'pull_request' && steps.signing.outputs.configured == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: Solina-Files-v${{ steps.release_build.outputs.version }}-arm64-v8a
+          path: dist/Solina-Files-v*-arm64-v8a.apk
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Upload versioned ARMv7 APK
+        if: github.event_name != 'pull_request' && steps.signing.outputs.configured == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: Solina-Files-v${{ steps.release_build.outputs.version }}-armeabi-v7a
+          path: dist/Solina-Files-v*-armeabi-v7a.apk
+          retention-days: 30
+          if-no-files-found: error
+
+      - name: Upload versioned Universal APK
+        if: github.event_name != 'pull_request' && steps.signing.outputs.configured == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: Solina-Files-v${{ steps.release_build.outputs.version }}-universal
           path: dist/Solina-Files-v*-universal.apk
           retention-days: 30
           if-no-files-found: error
