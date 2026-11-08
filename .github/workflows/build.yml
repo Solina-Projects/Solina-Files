@@ -146,24 +146,6 @@ jobs:
           retention-days: 30
           if-no-files-found: error
 
-      - name: Upload versioned ARMv7 APK
-        if: github.event_name != 'pull_request' && steps.signing.outputs.configured == 'true'
-        uses: actions/upload-artifact@v7
-        with:
-          name: Solina-Files-v${{ steps.release_build.outputs.version }}-armeabi-v7a
-          path: dist/Solina-Files-v*-armeabi-v7a.apk
-          retention-days: 30
-          if-no-files-found: error
-
-      - name: Upload versioned Universal APK
-        if: github.event_name != 'pull_request' && steps.signing.outputs.configured == 'true'
-        uses: actions/upload-artifact@v7
-        with:
-          name: Solina-Files-v${{ steps.release_build.outputs.version }}-universal
-          path: dist/Solina-Files-v*-universal.apk
-          retention-days: 30
-          if-no-files-found: error
-
       - name: Upload checksums and mapping
         if: github.event_name != 'pull_request' && steps.signing.outputs.configured == 'true'
         uses: actions/upload-artifact@v7
