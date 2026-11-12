@@ -155,16 +155,16 @@ class ExplorerViewModel(
     init {
         viewModelScope.launch {
             var previousRoot: Boolean? = null
-            settingsRepo.settings.collect { s ->
+            settingsRepo.settings.distinctUntilChanged().collect { s ->
                 _state.update { it.copy(settings = s) }
                 if (previousRoot != null && previousRoot != s.rootAccess) onRootModeChanged(s.rootAccess)
                 previousRoot = s.rootAccess
             }
         }
-        viewModelScope.launch { bookmarkRepo.bookmarks.collect { b -> _state.update { it.copy(bookmarks = b) } } }
+        viewModelScope.launch { bookmarkRepo.bookmarks.distinctUntilChanged().collect { b -> _state.update { it.copy(bookmarks = b) } } }
         viewModelScope.launch {
             var previous = emptyMap<String, RemoteConnection>()
-            remoteRepo.connections.collect { c ->
+            remoteRepo.connections.distinctUntilChanged().collect { c ->
                 _state.update { it.copy(storages = c) }
                 val now = c.associateBy { it.id }
                 previous.forEach { (id, old) ->
@@ -174,7 +174,7 @@ class ExplorerViewModel(
                 previous = now
             }
         }
-        viewModelScope.launch { settingsRepo.renameHistory.collect { h -> _state.update { it.copy(renameHistory = h) } } }
+        viewModelScope.launch { settingsRepo.renameHistory.distinctUntilChanged().collect { h -> _state.update { it.copy(renameHistory = h) } } }
         if (Vault.ready) {
             viewModelScope.launch {
                 Vault.store.state.collect { s ->
