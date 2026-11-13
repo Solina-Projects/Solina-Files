@@ -60,7 +60,7 @@ object TextMateEngine {
     }
 
     private fun loadTheme(theme: EditorTheme) {
-        if (!loadedThemeIds.add(theme.id)) return
+        if (theme.id in loadedThemeIds) return
         val stream = FileProviderRegistry.getInstance().tryGetInputStream(theme.path)
         ThemeRegistry.getInstance().loadTheme(
             ThemeModel(IThemeSource.fromInputStream(stream, theme.path, null), theme.id).apply {
@@ -68,6 +68,7 @@ object TextMateEngine {
             },
             false
         )
+        loadedThemeIds += theme.id
     }
 
     fun language(scope: String, autoComplete: Boolean = true): TextMateLanguage {
