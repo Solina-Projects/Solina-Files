@@ -10,10 +10,11 @@
 ## Workstreams
 
 ### 1. Explorer performance and state
-- Remove recursive filesystem traversal from per-row composition.
+- [x] Remove recursive filesystem traversal from per-row composition.
 - Keep directory listing, sorting, filtering, thumbnail decoding, and metadata work off the main thread.
 - Introduce bounded, cancellable work and explicit cache invalidation for expensive metadata.
-- Reduce broad UI state subscriptions and keep pane-local state isolated.
+- [x] Add distinct pane-specific state streams and collect each pane independently in its content composable.
+- [ ] Further reduce broad screen-level UI state subscriptions and profile recompositions.
 - Preserve stable LazyColumn/LazyGrid keys and scroll restoration.
 
 ### 2. Material 3 design system
