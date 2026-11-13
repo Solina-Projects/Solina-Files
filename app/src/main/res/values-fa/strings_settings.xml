@@ -315,7 +315,6 @@
     <string name="settings_reset_body">پوسته، فهرست، ویرایشگر و همه تنظیمات دیگر به حالت پیش‌فرض برمی‌گردند.</string>
     <string name="settings_reset">بازنشانی</string>
     <string name="settings_reset_done">تنظیمات بازنشانی شد</string>
-    <string name="settings_backup_not_strata">این یک فایل تنظیمات Solina Files نیست</string>
     <string name="settings_backup_newer">این فایل تنظیمات از نسخه جدیدتری از Solina Files است (قالب %1$d)</string>
     <string name="settings_backup_empty">این فایل هیچ تنظیمی ندارد</string>
     <string name="settings_about_version">نسخه \u2068%1$s\u2069 (%2$d)</string>

@@ -1,6 +1,6 @@
 package ir.solina.files.feature.explorer.components
 
-import ir.solina.files.ui.isolated
+import android.util.LruCache
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
@@ -18,6 +18,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,9 +33,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.DataUsage
-import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -42,8 +42,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -65,17 +65,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
 import coil3.compose.AsyncImage
 import coil3.decode.BitmapFactoryDecoder
 import coil3.request.ImageRequest
 import ir.solina.files.R
 import ir.solina.files.core.media.ApkIcon
 import ir.solina.files.core.model.FileItem
-import ir.solina.files.core.model.UiDensity
 import ir.solina.files.core.model.ListPrefs
+import ir.solina.files.core.model.UiDensity
 import ir.solina.files.core.util.FileKind
 import ir.solina.files.core.util.FileKinds
 import ir.solina.files.core.util.Formatters
@@ -86,9 +83,15 @@ import ir.solina.files.feature.explorer.dnd.fileGestures
 import ir.solina.files.feature.explorer.dnd.rememberDropAnimation
 import ir.solina.files.ui.LocalSettings
 import ir.solina.files.ui.LocalUiDensity
+import ir.solina.files.ui.isolated
 import ir.solina.files.ui.theme.KindPalette
 import ir.solina.files.ui.theme.toShape
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okio.Path.Companion.toPath
+import java.io.File
+
+private val folderCountCache = LruCache<String, Int>(256)
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -112,21 +115,54 @@ fun FileRow(
     val density = LocalUiDensity.current
     val settings = LocalSettings.current
     val list = settings.list
-    val folderStats by produceState<Pair<Long, Int>?>(initialValue = null, item.path, item.isDirectory, singlePane) {
+
+    val folderItemCount by produceState<Int?>(
+        initialValue = folderCountCache.get(item.path),
+        item.path,
+        item.isDirectory,
+        singlePane,
+    ) {
         if (!singlePane || !item.isDirectory || "://" in item.path || !item.canRead) {
             value = null
         } else {
-            value = calculateFolderStats(item.path)
+            value = folderCountCache.get(item.path) ?: readShallowFolderCount(item.path)?.also {
+                folderCountCache.put(item.path, it)
+            }
         }
     }
-    val layoutScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.5f; UiDensity.COMFORTABLE -> 2.5f; UiDensity.LARGE -> 3.5f }
-    val listIconScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 1f }
-    val listSpacingScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 0.5f }
-    val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
-    val iconSize = density.iconDp.dp * layoutScale * listIconScale
+
+    val iconSize = if (!singlePane) {
+        density.iconDp.dp
+    } else {
+        when (density) {
+            UiDensity.COMPACT -> 36.dp
+            UiDensity.COMFORTABLE -> 42.dp
+            UiDensity.LARGE -> 48.dp
+        }
+    }
+    val rowVerticalPad = if (!singlePane) {
+        density.rowPadDp.dp
+    } else {
+        when (density) {
+            UiDensity.COMPACT -> 6.dp
+            UiDensity.COMFORTABLE -> 8.dp
+            UiDensity.LARGE -> 10.dp
+        }
+    }
+    val iconTextGap = if (singlePane) 12.dp else 10.dp
+    val fontScale = if (singlePane) {
+        when (density) {
+            UiDensity.COMPACT -> 1f
+            UiDensity.COMFORTABLE -> 1.05f
+            UiDensity.LARGE -> 1.1f
+        }
+    } else {
+        1f
+    }
+
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (pressed) 0.96f else 1f, motion.fastSpatialSpec(), label = "press")
+    val scale by animateFloatAsState(if (pressed) 0.98f else 1f, motion.fastSpatialSpec(), label = "press")
     val look = rememberDropAnimation(drop)
     val background by animateColorAsState(
         when {
@@ -157,74 +193,103 @@ fun FileRow(
                 if (a > 0f) drawRect(flashColor, alpha = a)
             }
             .fileGestures(interaction, onClick, onLongClick, onDragStart)
-            .padding(horizontal = 6.dp, vertical = density.rowPadDp.dp * layoutScale),
+            .padding(horizontal = if (singlePane) 12.dp else 8.dp, vertical = rowVerticalPad),
     ) {
-    Row(
-        Modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        DropHalo(look, drop.anchor) {
-            Leading(item, selected, showThumbnail, iconSize, if (settings.behavior.iconTapSelects) onIconClick else null)
-        }
-        Spacer(Modifier.width((if (density.iconDp <= 30) 8.dp else 10.dp) * listSpacingScale))
-        Column(Modifier.weight(1f)) {
-            Text(
-                isolated(Formatters.displayName(item.name, item.isDirectory, list.showExtensions)),
-                style = MaterialTheme.typography.bodyMedium,
-                fontSize = (density.nameSp * fontScale).sp,
-                maxLines = if (list.wrapNames) 3 else density.nameMaxLines,
-                overflow = TextOverflow.Ellipsis,
-            )
-            val date = if (list.showDate) Formatters.listDate(item.lastModified, list.dateStyle, list.use24Hour) else null
-            val info = trailingInfo(item, list, singlePane, folderStats)
-            if (date != null || info != null) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        date.orEmpty(),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontSize = (density.metaSp * fontScale).sp,
-                        color = colors.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f),
-                    )
-                    if (info != null) {
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 6.dp)) {
-                            Icon(Icons.Rounded.DataUsage, contentDescription = "حجم", modifier = Modifier.size(12.dp), tint = colors.onSurfaceVariant)
-                            Text(info.first, style = MaterialTheme.typography.labelSmall, fontSize = (density.metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
-                            info.second?.let { count ->
-                                Spacer(Modifier.width(6.dp))
-                                Icon(Icons.Rounded.FolderOpen, contentDescription = "تعداد فایل‌های پوشه", modifier = Modifier.size(12.dp), tint = colors.onSurfaceVariant)
-                                Text(count, style = MaterialTheme.typography.labelSmall, fontSize = (density.metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
+        Row(
+            Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            DropHalo(look, drop.anchor) {
+                Leading(
+                    item = item,
+                    selected = selected,
+                    showThumbnail = showThumbnail,
+                    iconSize = iconSize,
+                    onIconClick = if (settings.behavior.iconTapSelects) onIconClick else null,
+                )
+            }
+            Spacer(Modifier.width(iconTextGap))
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                Text(
+                    isolated(Formatters.displayName(item.name, item.isDirectory, list.showExtensions)),
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = (density.nameSp * fontScale).sp,
+                    maxLines = if (list.wrapNames) 3 else density.nameMaxLines,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                val date = if (list.showDate) Formatters.listDate(item.lastModified, list.dateStyle, list.use24Hour) else null
+                val info = trailingInfo(item, list, singlePane, folderItemCount)
+                if (date != null || info != null) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            date.orEmpty(),
+                            style = MaterialTheme.typography.labelSmall,
+                            fontSize = (density.metaSp * fontScale).sp,
+                            color = colors.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f),
+                        )
+                        if (info != null) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier.padding(start = 8.dp),
+                            ) {
+                                if (info.first.isNotEmpty()) {
+                                    Text(
+                                        info.first,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontSize = (density.metaSp * fontScale).sp,
+                                        color = colors.onSurfaceVariant,
+                                        maxLines = 1,
+                                    )
+                                }
+                                info.second?.let { count ->
+                                    Icon(
+                                        Icons.Rounded.FolderOpen,
+                                        contentDescription = stringResource(R.string.explorer_folder_items_cd),
+                                        modifier = Modifier.size(13.dp),
+                                        tint = colors.onSurfaceVariant,
+                                    )
+                                    Text(
+                                        count,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        fontSize = (density.metaSp * fontScale).sp,
+                                        color = colors.onSurfaceVariant,
+                                        maxLines = 1,
+                                    )
+                                }
                             }
                         }
                     }
                 }
             }
-        }
-    }
-    if (showSelectionCheckbox) {
-        Box(
-            Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 2.dp, bottom = 28.dp)
-                .size(22.dp)
-                .clip(RoundedCornerShape(4.dp))
-                .background(if (selected) colors.primary else colors.surface.copy(alpha = 0.92f))
-                .border(1.5.dp, if (selected) colors.primary else colors.outline, RoundedCornerShape(4.dp))
-                .clickable(onClickLabel = stringResource(R.string.common_select)) { onIconClick() },
-            contentAlignment = Alignment.Center,
-        ) {
-            if (selected) {
-                Icon(
-                    Icons.Rounded.Check,
-                    contentDescription = stringResource(R.string.explorer_selected),
-                    tint = colors.onPrimary,
-                    modifier = Modifier.size(16.dp),
-                )
+            if (showSelectionCheckbox) {
+                Spacer(Modifier.width(8.dp))
+                Box(
+                    Modifier
+                        .size(22.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(if (selected) colors.primary else colors.surface.copy(alpha = 0.92f))
+                        .border(1.5.dp, if (selected) colors.primary else colors.outline, RoundedCornerShape(6.dp))
+                        .clickable(onClickLabel = stringResource(R.string.common_select)) { onIconClick() },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    if (selected) {
+                        Icon(
+                            Icons.Rounded.Check,
+                            contentDescription = stringResource(R.string.explorer_selected),
+                            tint = colors.onPrimary,
+                            modifier = Modifier.size(15.dp),
+                        )
+                    }
+                }
             }
         }
-    }
     }
 }
 
@@ -251,12 +316,28 @@ fun FileTile(
     val settings = LocalSettings.current
     val list = settings.list
     val density = LocalUiDensity.current
-    val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
-    val tileDensityScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.2f; UiDensity.LARGE -> 1.4f }
-    val tileIconSize = density.iconDp.dp * (if (horizontalPane) 1.125f else 1.75f) * tileDensityScale
+    val fontScale = if (singlePane) {
+        when (density) {
+            UiDensity.COMPACT -> 1f
+            UiDensity.COMFORTABLE -> 1.05f
+            UiDensity.LARGE -> 1.1f
+        }
+    } else {
+        1f
+    }
+    val tileDensityScale = if (!singlePane) {
+        1f
+    } else {
+        when (density) {
+            UiDensity.COMPACT -> 1f
+            UiDensity.COMFORTABLE -> 1.1f
+            UiDensity.LARGE -> 1.2f
+        }
+    }
+    val tileIconSize = density.iconDp.dp * (if (horizontalPane) 1.1f else 1.5f) * tileDensityScale
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (pressed) 0.95f else 1f, motion.fastSpatialSpec(), label = "press")
+    val scale by animateFloatAsState(if (pressed) 0.96f else 1f, motion.fastSpatialSpec(), label = "press")
     val look = rememberDropAnimation(drop)
     val background by animateColorAsState(
         when {
@@ -272,6 +353,7 @@ fun FileTile(
     val flashColor = colors.primary.copy(alpha = 0.32f)
     val shape = settings.appearance.iconShape.toShape()
     val kind = FileKinds.of(item)
+
     Column(
         modifier
             .then(drop.spot)
@@ -288,11 +370,18 @@ fun FileTile(
                 if (a > 0f) drawRect(flashColor, alpha = a)
             }
             .fileGestures(interaction, onClick, onLongClick, onDragStart)
-            .padding(6.dp)
+            .padding(8.dp)
             .testTag("file-tile"),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(Modifier.fillMaxWidth().aspectRatio(1f).then(drop.anchor).dropHaloBehind(look, reach = 0.72f), contentAlignment = Alignment.Center) {
+        Box(
+            Modifier
+                .fillMaxWidth()
+                .aspectRatio(1f)
+                .then(drop.anchor)
+                .dropHaloBehind(look, reach = 0.72f),
+            contentAlignment = Alignment.Center,
+        ) {
             val picture = showThumbnail && list.thumbnails && (kind == FileKind.IMAGE || kind == FileKind.VIDEO)
             val apk = showThumbnail && list.apkIcons && kind == FileKind.APK
             when {
@@ -306,7 +395,7 @@ fun FileTile(
                     )
                 }
                 apk -> ApkIconOrKind(item, tileIconSize, shape)
-                else -> KindIcon(item, tileIconSize, shape, contentPaddingFraction = if (!singlePane) 0.22f else when (density) { UiDensity.COMPACT -> 0.07f; UiDensity.COMFORTABLE -> 0.07f; UiDensity.LARGE -> 0.02f })
+                else -> KindIcon(item, tileIconSize, shape, contentPaddingFraction = 0.16f)
             }
             Box(
                 Modifier
@@ -318,22 +407,36 @@ fun FileTile(
                 contentAlignment = Alignment.Center,
             ) {
                 if (selected) {
-                    Box(Modifier.fillMaxSize().clip(CircleShape).background(colors.primary), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.explorer_selected), tint = colors.onPrimary, modifier = Modifier.size(14.dp))
+                    Box(
+                        Modifier.fillMaxSize().clip(CircleShape).background(colors.primary),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Icon(
+                            Icons.Rounded.Check,
+                            contentDescription = stringResource(R.string.explorer_selected),
+                            tint = colors.onPrimary,
+                            modifier = Modifier.size(14.dp),
+                        )
                     }
                 } else if (selecting) {
-                    Box(Modifier.fillMaxSize().clip(CircleShape).border(2.dp, colors.outline, CircleShape).background(colors.surface.copy(alpha = 0.6f)))
+                    Box(
+                        Modifier
+                            .fillMaxSize()
+                            .clip(CircleShape)
+                            .border(2.dp, colors.outline, CircleShape)
+                            .background(colors.surface.copy(alpha = 0.6f)),
+                    )
                 }
             }
         }
         Text(
             isolated(Formatters.displayName(item.name, item.isDirectory, list.showExtensions)),
             style = MaterialTheme.typography.labelMedium,
-            fontSize = ((if (horizontalPane) density.nameSp * 0.85f else density.nameSp * fontScale)).sp,
+            fontSize = ((if (horizontalPane) density.nameSp * 0.9f else density.nameSp * fontScale)).sp,
             maxLines = if (list.wrapNames) 3 else 2,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
-            modifier = Modifier.padding(top = if (singlePane) 3.dp else 6.dp),
+            modifier = Modifier.padding(top = 6.dp),
         )
     }
 }
@@ -362,19 +465,19 @@ private const val FLASH_FADE_MS = 520
 
 fun flashDurationMs(pulses: Int): Long = (pulses * (FLASH_IN_MS + FLASH_OUT_MS) + FLASH_FADE_MS).toLong()
 
-private suspend fun calculateFolderStats(path: String): Pair<Long, Int>? = withContext(Dispatchers.IO) {
-    runCatching {
-        val files = File(path).walkTopDown()
-            .filter { it.isFile && !ir.solina.files.core.fs.FsUtil.isSymlink(it) }
-            .toList()
-        files.sumOf { it.length() } to files.size
-    }.getOrNull()
+private suspend fun readShallowFolderCount(path: String): Int? = withContext(Dispatchers.IO) {
+    runCatching { File(path).list()?.size }.getOrNull()
 }
 
 @Composable
-private fun trailingInfo(item: FileItem, list: ListPrefs, singlePane: Boolean, folderStats: Pair<Long, Int>?): Pair<String, String?>? = when {
+private fun trailingInfo(
+    item: FileItem,
+    list: ListPrefs,
+    singlePane: Boolean,
+    folderItemCount: Int?,
+): Pair<String, String?>? = when {
     item.isSymlink -> stringResource(R.string.explorer_link) to null
-    singlePane && item.isDirectory -> folderStats?.let { Formatters.size(it.first, list.sizeUnits) to Formatters.number(it.second.toLong()) }
+    singlePane && item.isDirectory -> folderItemCount?.let { "" to Formatters.number(it.toLong()) }
     singlePane -> Formatters.size(item.size, list.sizeUnits) to null
     item.isDirectory -> null
     !list.showSize -> null
@@ -386,7 +489,10 @@ private fun thumbnailModel(item: FileItem): Any {
     val context = LocalContext.current
     return remember(item.path) {
         if (item.extension == "gif" || item.extension == "webp") {
-            ImageRequest.Builder(context).data(item.path.toPath()).decoderFactory(BitmapFactoryDecoder.Factory()).build()
+            ImageRequest.Builder(context)
+                .data(item.path.toPath())
+                .decoderFactory(BitmapFactoryDecoder.Factory())
+                .build()
         } else {
             item.path.toPath()
         }
@@ -395,7 +501,13 @@ private fun thumbnailModel(item: FileItem): Any {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun Leading(item: FileItem, selected: Boolean, showThumbnail: Boolean, iconSize: Dp, onIconClick: (() -> Unit)?) {
+private fun Leading(
+    item: FileItem,
+    selected: Boolean,
+    showThumbnail: Boolean,
+    iconSize: Dp,
+    onIconClick: (() -> Unit)?,
+) {
     val motion = MaterialTheme.motionScheme
     val colors = MaterialTheme.colorScheme
     val settings = LocalSettings.current
@@ -405,7 +517,13 @@ private fun Leading(item: FileItem, selected: Boolean, showThumbnail: Boolean, i
         Modifier
             .size(iconSize)
             .clip(shape)
-            .then(if (onIconClick != null) Modifier.clickable(onClickLabel = stringResource(R.string.common_select)) { onIconClick() } else Modifier),
+            .then(
+                if (onIconClick != null) {
+                    Modifier.clickable(onClickLabel = stringResource(R.string.common_select)) { onIconClick() }
+                } else {
+                    Modifier
+                },
+            ),
         contentAlignment = Alignment.Center,
     ) {
         AnimatedContent(
@@ -421,7 +539,11 @@ private fun Leading(item: FileItem, selected: Boolean, showThumbnail: Boolean, i
                     Modifier.size(iconSize).clip(shape).background(colors.primary),
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.explorer_selected), tint = colors.onPrimary)
+                    Icon(
+                        Icons.Rounded.Check,
+                        contentDescription = stringResource(R.string.explorer_selected),
+                        tint = colors.onPrimary,
+                    )
                 }
                 showThumbnail && settings.list.thumbnails && (kind == FileKind.IMAGE || kind == FileKind.VIDEO) -> Box(
                     Modifier.size(iconSize),
@@ -457,30 +579,36 @@ private fun ApkIconOrKind(item: FileItem, size: Dp, shape: Shape) {
 }
 
 @Composable
-private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape, contentPaddingFraction: Float = 0.22f) {
+private fun KindIcon(
+    item: FileItem,
+    iconSize: Dp,
+    shape: Shape,
+    contentPaddingFraction: Float = 0.18f,
+) {
     val colors = MaterialTheme.colorScheme
     val settings = LocalSettings.current
     val kind = FileKinds.of(item)
     val tile = KindPalette.colors(kind, settings.appearance.colorfulIcons, colors, colors.background.luminance() < 0.5f)
-    // Show the file-type symbol by itself: no colored tile/background or inset.
     Box(
-        Modifier.size(iconSize),
+        Modifier
+            .size(iconSize)
+            .clip(shape)
+            .background(if (item.isDirectory) colors.primaryContainer.copy(alpha = 0.45f) else tile.container),
         contentAlignment = Alignment.Center,
     ) {
         if (item.isDirectory) {
-            // One-color folder glyph follows the active Material theme automatically.
             Icon(
                 Icons.Rounded.Folder,
                 contentDescription = stringResource(kind.label),
                 tint = colors.primary,
-                modifier = Modifier.fillMaxSize().padding(iconSize * 0.08f),
+                modifier = Modifier.fillMaxSize().padding(iconSize * 0.14f),
             )
         } else {
             Icon(
                 kind.icon,
                 contentDescription = stringResource(kind.label),
                 tint = tile.content,
-                modifier = Modifier.padding(iconSize * contentPaddingFraction),
+                modifier = Modifier.fillMaxSize().padding(iconSize * contentPaddingFraction),
             )
         }
     }

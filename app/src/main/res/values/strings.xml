@@ -1,4 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Solina Files</string>
+    <string name="app_name">Solina Files</string>
 </resources>

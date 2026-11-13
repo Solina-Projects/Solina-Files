@@ -48,7 +48,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "strata_settings")
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "solina_settings")
 
 data class EditorPrefs(
     val theme: String = "auto",
