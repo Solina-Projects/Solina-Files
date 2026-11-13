@@ -91,11 +91,13 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
@@ -135,6 +137,20 @@ class ExplorerViewModel(
         ExplorerUiState(left = PaneState(path = rootPath), right = PaneState(path = rootPath)),
     )
     val state: StateFlow<ExplorerUiState> = _state.asStateFlow()
+
+    // Pane streams isolate list rendering from updates to the opposite pane and global UI state.
+    private val leftPaneState: StateFlow<PaneState> = _state
+        .map { it.left }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, _state.value.left)
+
+    private val rightPaneState: StateFlow<PaneState> = _state
+        .map { it.right }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, _state.value.right)
+
+    fun paneState(pane: Pane): StateFlow<PaneState> =
+        if (pane == Pane.LEFT) leftPaneState else rightPaneState
 
     private val navJobs = mutableMapOf<Pane, Job>()
 
