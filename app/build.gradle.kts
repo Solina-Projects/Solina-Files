@@ -20,8 +20,18 @@ val syncSolinaLauncherIcon = tasks.register<Copy>("syncSolinaLauncherIcon") {
     rename { "solina_project_icon.jpg" }
 }
 
+// Redesign v2: fetch Vazirmatn TTFs into src/main/res/font/ before the build,
+// so Type.kt's R.font references resolve on any clean checkout or CI runner.
+// The script is a no-op when the files already match their SHA-256 hashes.
+// Deliberately a Gradle task, not a CI step: the GitHub App cannot edit
+// workflow files (missing `workflows` permission), so the build must not
+// depend on a workflow change.
+val fetchVazirmatn = tasks.register<Exec>("fetchVazirmatn") {
+    commandLine("bash", rootProject.file("app/fetch-vazirmatn.sh").absolutePath)
+}
+
 tasks.named("preBuild").configure {
-    dependsOn(syncSolinaLauncherIcon)
+    dependsOn(syncSolinaLauncherIcon, fetchVazirmatn)
 }
 
 android {
