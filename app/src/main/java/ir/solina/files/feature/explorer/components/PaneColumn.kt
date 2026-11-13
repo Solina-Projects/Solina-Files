@@ -87,6 +87,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.solina.files.R
+import ir.solina.files.ui.theme.SolinaSpacing
 import ir.solina.files.core.fs.DropKind
 import ir.solina.files.core.fs.DropRules
 import ir.solina.files.core.model.FileItem
@@ -244,7 +245,7 @@ fun PaneColumn(
                 stringResource(R.string.explorer_move_here),
                 style = MaterialTheme.typography.labelLarge,
                 color = MaterialTheme.colorScheme.onPrimary,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                modifier = Modifier.padding(horizontal = SolinaSpacing.large, vertical = SolinaSpacing.small),
             )
         }
     }
@@ -419,7 +420,7 @@ private fun FolderHorizontalList(
                         } else Modifier
                     ),
                 contentPadding = PaddingValues(horizontal = 4.dp, vertical = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(SolinaSpacing.extraSmall),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 if (folder.items.isEmpty()) {
@@ -446,7 +447,7 @@ private fun FolderHorizontalList(
         }
         if (folder.path != "/") {
             Box(
-                Modifier.align(Alignment.TopStart).fillMaxWidth(0.45f).padding(horizontal = 4.dp, vertical = 2.dp),
+                Modifier.align(Alignment.TopStart).fillMaxWidth(0.45f).padding(horizontal = SolinaSpacing.extraSmall, vertical = 2.dp),
             ) {
                 ParentRow(onClick = onUp, look = links.parent())
             }
@@ -591,7 +592,7 @@ private fun ParentRow(onClick: () -> Unit, look: DropLook = DropLook.NONE) {
             .clip(RoundedCornerShape(14.dp))
             .background(if (look.hovered) colors.primaryContainer.copy(alpha = 0.6f) else Color.Transparent)
             .clickable(onClickLabel = stringResource(R.string.explorer_parent_folder), onClick = onClick)
-            .padding(horizontal = 6.dp, vertical = 6.dp),
+            .padding(horizontal = SolinaSpacing.rowHorizontal, vertical = SolinaSpacing.rowMetadataGap),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         DropHalo(anim, look.anchor) {
@@ -606,7 +607,7 @@ private fun ParentRow(onClick: () -> Unit, look: DropLook = DropLook.NONE) {
             "..",
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(start = 12.dp),
+            modifier = Modifier.padding(start = SolinaSpacing.medium),
         )
     }
 }
@@ -652,7 +653,7 @@ private fun PathHeader(
             .padding(horizontal = 2.dp, vertical = 4.dp)
             .combinedClickable(onClick = {}, onLongClick = onLongPress, onLongClickLabel = stringResource(R.string.explorer_jump_to_path)),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = SolinaSpacing.medium, vertical = SolinaSpacing.rowMetadataGap)) {
             Column(Modifier.weight(1f)) {
                 Text(isolated(title), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(shownPath, style = MaterialTheme.typography.labelSmall.asPath(), maxLines = 1, overflow = TextOverflow.StartEllipsis)
@@ -685,7 +686,7 @@ private fun PathHeader(
                 )
             }
             AnimatedVisibility(visible = loading, enter = fadeIn(motion.fastEffectsSpec()), exit = fadeOut(motion.fastEffectsSpec())) {
-                CircularProgressIndicator(Modifier.padding(start = 6.dp).size(16.dp), strokeWidth = 2.dp)
+                CircularProgressIndicator(Modifier.padding(start = SolinaSpacing.rowMetadataGap).size(16.dp), strokeWidth = 2.dp)
             }
         }
     }
@@ -693,7 +694,7 @@ private fun PathHeader(
 
 @Composable
 private fun EmptyFolder(error: String?) {
-    val modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 32.dp)
+    val modifier = Modifier.fillMaxWidth().padding(horizontal = SolinaSpacing.large, vertical = SolinaSpacing.extraExtraLarge)
     if (error != null) {
         ExpressiveEmptyState(error, modifier, icon = Icons.Rounded.FolderOff, tone = ArtTone.ERROR, maxHero = 120.dp, shapes = HeroShapes.alert)
     } else {
