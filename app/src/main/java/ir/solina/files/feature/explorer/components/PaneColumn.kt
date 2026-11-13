@@ -523,9 +523,9 @@ private fun FolderGrid(
                 .fillMaxSize()
                 .testTag("file-grid")
                 .then(if (drag != null) Modifier.onGloballyPositioned { drag.scrollers[pane.ordinal] = PaneScroller(it.boundsInRoot(), gridState) { d -> gridState.scrollBy(d) } } else Modifier),
-            contentPadding = PaddingValues(4.dp),
-            horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp),
+            contentPadding = PaddingValues(SolinaSpacing.extraSmall),
+            horizontalArrangement = Arrangement.spacedBy(SolinaSpacing.extraSmall),
+            verticalArrangement = Arrangement.spacedBy(SolinaSpacing.extraSmall),
         ) {
             if (hasParent) {
                 item(key = PARENT_KEY, contentType = PARENT_KEY) { ParentTile(onClick = onUp, look = links.parent()) }
