@@ -477,7 +477,7 @@ fun ExplorerScreen(
         val panes = if (dual) listOf(Pane.LEFT, Pane.RIGHT) else listOf(ui.active)
         @Composable
         fun PaneContent(pane: Pane, modifier: Modifier) {
-            val state = ui.pane(pane)
+            val state by vm.paneState(pane).collectAsStateWithLifecycle()
             val visible = remember(state.items, ui.settings, ui.query) { visibleItems(state, ui.settings, ui.query) }
             PaneColumn(
                 state = state,
