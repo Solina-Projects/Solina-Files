@@ -60,6 +60,26 @@ object UiSounds {
 
     @Volatile
     var enabled = false
+        set(value) {
+            field = value
+            if (value) ensureDevice()
+        }
+
+    @Volatile
+    private var deviceFactory: (() -> SoundDevice)? = null
+
+    fun installLazyDevice(factory: () -> SoundDevice) {
+        deviceFactory = factory
+        if (enabled) ensureDevice()
+    }
+
+    @Synchronized
+    private fun ensureDevice(): SoundDevice? {
+        device?.let { return it }
+        val created = runCatching { deviceFactory?.invoke() }.getOrNull() ?: return null
+        device = created
+        return created
+    }
 
     @Volatile
     var inSilent = true
@@ -74,8 +94,9 @@ object UiSounds {
     private var policy = SoundPolicy()
 
     fun play(sound: UiSound?) {
-        val d = device ?: return
-        if (sound == null || !d.foreground) return
+        if (!enabled || sound == null) return
+        val d = device ?: ensureDevice() ?: return
+        if (!d.foreground) return
         val ringer = d.ringer
         if (policy.allow(sound, enabled, ringer, clock(), inSilent)) d.play(sound, loud = ringer != RingerMode.NORMAL)
     }
