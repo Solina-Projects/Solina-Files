@@ -83,6 +83,7 @@ import ir.solina.files.feature.explorer.dnd.rememberDropAnimation
 import ir.solina.files.ui.LocalSettings
 import ir.solina.files.ui.LocalUiDensity
 import ir.solina.files.ui.theme.KindPalette
+import ir.solina.files.ui.theme.SolinaSpacing
 import ir.solina.files.ui.theme.toShape
 import okio.Path.Companion.toPath
 
@@ -146,7 +147,7 @@ fun FileRow(
                 if (a > 0f) drawRect(flashColor, alpha = a)
             }
             .fileGestures(interaction, onClick, onLongClick, onDragStart)
-            .padding(horizontal = 6.dp, vertical = density.rowPadDp.dp * layoutScale),
+            .padding(horizontal = SolinaSpacing.rowHorizontal, vertical = density.rowPadDp.dp * layoutScale),
     ) {
     Row(
         Modifier.fillMaxWidth(),
@@ -155,7 +156,7 @@ fun FileRow(
         DropHalo(look, drop.anchor) {
             Leading(item, selected, showThumbnail, iconSize, if (settings.behavior.iconTapSelects) onIconClick else null)
         }
-        Spacer(Modifier.width((if (density.iconDp <= 30) 8.dp else 10.dp) * listSpacingScale))
+        Spacer(Modifier.width((if (density.iconDp <= 30) SolinaSpacing.small else 10.dp) * listSpacingScale))
         Column(Modifier.weight(1f)) {
             Text(
                 isolated(Formatters.displayName(item.name, item.isDirectory, list.showExtensions)),
@@ -178,7 +179,7 @@ fun FileRow(
                         modifier = Modifier.weight(1f),
                     )
                     if (info != null) {
-                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 6.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = SolinaSpacing.rowMetadataGap)) {
                             Icon(
                                 if (singlePane && item.isDirectory) Icons.Rounded.FolderOpen else Icons.Rounded.DataUsage,
                                 contentDescription = if (singlePane && item.isDirectory) "تعداد موارد پوشه" else "حجم",
@@ -187,7 +188,7 @@ fun FileRow(
                             )
                             Text(info.first, style = MaterialTheme.typography.labelSmall, fontSize = (density.metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
                             info.second?.let { count ->
-                                Spacer(Modifier.width(6.dp))
+                                Spacer(Modifier.width(SolinaSpacing.rowMetadataGap))
                                 Icon(Icons.Rounded.FolderOpen, contentDescription = "تعداد فایل‌های پوشه", modifier = Modifier.size(12.dp), tint = colors.onSurfaceVariant)
                                 Text(count, style = MaterialTheme.typography.labelSmall, fontSize = (density.metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
                             }
@@ -282,7 +283,7 @@ fun FileTile(
                 if (a > 0f) drawRect(flashColor, alpha = a)
             }
             .fileGestures(interaction, onClick, onLongClick, onDragStart)
-            .padding(6.dp)
+            .padding(SolinaSpacing.rowMetadataGap)
             .testTag("file-tile"),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -308,7 +309,7 @@ fun FileTile(
                     .size(28.dp)
                     .clip(CircleShape)
                     .clickable(onClickLabel = stringResource(R.string.common_select)) { onIconClick() }
-                    .padding(4.dp),
+                    .padding(SolinaSpacing.extraSmall),
                 contentAlignment = Alignment.Center,
             ) {
                 if (selected) {
