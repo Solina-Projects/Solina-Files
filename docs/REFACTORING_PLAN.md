@@ -33,7 +33,7 @@
 - [x] Confirm native library loading is lazy through `NativeBridge.ensureLoaded()`.
 - [x] Confirm PDFium initialization and its dedicated render dispatcher are lazy.
 - [x] Confirm archive listing/extraction is initiated by `ArchiveViewModel` operations rather than application startup.
-- [ ] Review media tools, APK analysis, and network clients for avoidable eager initialization.
+- [x] Review media tools, APK analysis, and network clients for avoidable eager initialization; retain on-demand resource creation and document intentional startup status checks.
 - Evaluate Android dynamic feature delivery only for features that can safely be optional; retain an offline-capable core.
 
 ### 4. Dependency and package-size audit
@@ -54,6 +54,13 @@
 - `Pdfium` creates its single-thread dispatcher via Kotlin `by lazy` and loads PDFium/native libraries only from `ensure()`.
 - Archive I/O is started by archive view-model actions (`open`/`reload`/`materialize`), not by `SolinaFilesApp.onCreate()`.
 - Keep these existing on-demand boundaries; do not add redundant wrappers around them.
+
+
+- Image and video sibling discovery runs on `Dispatchers.IO` when their viewer opens; the video player is created by its view-model on demand.
+- The music `MediaController` is connected only while the music sheet is composed; playback queue discovery runs on `Dispatchers.IO`.
+- APK archive icon extraction occurs inside the Coil fetcher when an APK icon is requested, not during application startup.
+- Remote connection persistence is backed by the `preferencesDataStore` delegate and remote connection repository access; no network protocol session is created by `SolinaFilesApp.onCreate()`.
+- `ShizukuManager.init()` does register binder listeners and performs a startup ping/status refresh. Keep this lightweight check for accurate initial Shizuku status; the privileged filesystem service is bound only when `access()` is requested.
 
 ## First change
 
