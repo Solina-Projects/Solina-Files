@@ -38,7 +38,7 @@
 
 ### 4. Dependency and package-size audit
 - [x] Add CI capture of the debug runtime dependency tree, APK compressed size, largest packaged entries, and native library footprint by ABI.
-- [ ] Generate comparable signed release APK/AAB size reports for each distributable ABI.
+- [x] Generate signed release APK size reports for each distributable ABI when release signing is configured.
 - Remove only verified unused transitive/direct dependencies.
 - Check duplicate classes, native libraries, resource shrinking, and R8 rules.
 - Preserve native Rust, PDFium, root/Shizuku, archive, network, editor, and APK functionality.
@@ -68,7 +68,7 @@
 
 - The app declares feature-specific dependencies for Compose/media, SMB/FTP/SFTP/WebDAV, archive formats, APK inspection/signing, code editing, root/Shizuku, and PDF/native integration. Their presence in Gradle alone is not evidence that they are unused; no dependency has been removed in this audit.
 - Release builds already enable R8 minification and resource shrinking, and ABI splitting is configurable through `solina.splitApks` (ARM64, ARMv7, x86_64 plus a universal APK).
-- The build workflow now captures the `debugRuntimeClasspath` dependency tree and a debug APK report containing compressed size, largest packaged entries, and uncompressed native `.so` totals by ABI. This creates an initial CI baseline; release-variant and per-distributable ABI measurements remain pending.
+- The build workflow now captures the `debugRuntimeClasspath` dependency tree and a debug APK report containing compressed size, largest packaged entries, and uncompressed native `.so` totals by ABI. This creates a debug CI baseline. When release signing is configured, CI also reports compressed sizes, largest packaged entries, and native-library totals for each signed ABI APK.
 
 ## First change
 
