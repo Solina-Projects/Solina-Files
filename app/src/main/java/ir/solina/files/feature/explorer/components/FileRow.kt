@@ -182,14 +182,14 @@ fun FileRow(
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = SolinaSpacing.rowMetadataGap)) {
                             Icon(
                                 if (singlePane && item.isDirectory) Icons.Rounded.FolderOpen else Icons.Rounded.DataUsage,
-                                contentDescription = if (singlePane && item.isDirectory) "تعداد موارد پوشه" else "حجم",
+                                contentDescription = stringResource(if (singlePane && item.isDirectory) R.string.explorer_folder_item_count else R.string.explorer_file_size),
                                 modifier = Modifier.size(12.dp),
                                 tint = colors.onSurfaceVariant,
                             )
                             Text(info.first, style = MaterialTheme.typography.labelSmall, fontSize = (density.metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
                             info.second?.let { count ->
                                 Spacer(Modifier.width(SolinaSpacing.rowMetadataGap))
-                                Icon(Icons.Rounded.FolderOpen, contentDescription = "تعداد فایل‌های پوشه", modifier = Modifier.size(12.dp), tint = colors.onSurfaceVariant)
+                                Icon(Icons.Rounded.FolderOpen, contentDescription = stringResource(R.string.explorer_folder_item_count), modifier = Modifier.size(12.dp), tint = colors.onSurfaceVariant)
                                 Text(count, style = MaterialTheme.typography.labelSmall, fontSize = (density.metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
                             }
                         }
