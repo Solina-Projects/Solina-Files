@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'refactor/**']
     tags: ['v*', 'V*']
   pull_request:
   workflow_dispatch:
@@ -61,6 +61,9 @@ jobs:
       - name: Build the native core
         run: native/build.sh
 
+      - name: Run JVM unit tests
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: ./gradlew --stacktrace :app:testDebugUnitTest
       - name: Build the debug APK
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         run: ./gradlew --stacktrace :app:assembleDebug

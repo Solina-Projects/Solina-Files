@@ -2,8 +2,12 @@
 <data-extraction-rules>
     <cloud-backup>
         <include domain="file" path="datastore/" />
+        <exclude domain="file" path="datastore/solina_remotes.preferences_pb" />
+        <exclude domain="file" path="vault/" />
     </cloud-backup>
     <device-transfer>
         <include domain="file" path="datastore/" />
+        <exclude domain="file" path="datastore/solina_remotes.preferences_pb" />
+        <exclude domain="file" path="vault/" />
     </device-transfer>
 </data-extraction-rules>
