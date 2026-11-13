@@ -30,7 +30,10 @@
 - Separate feature implementation behind stable interfaces where it reduces startup coupling.
 - [x] Defer TextMate theme loading until a theme is selected; keep the initial theme available at editor startup.
 - [x] Defer sound-pool creation and sample loading until sound effects are enabled.
-- [ ] Audit/defer other editor grammar, archive handlers, media tools, APK analysis, and network clients until needed.
+- [x] Confirm native library loading is lazy through `NativeBridge.ensureLoaded()`.
+- [x] Confirm PDFium initialization and its dedicated render dispatcher are lazy.
+- [x] Confirm archive listing/extraction is initiated by `ArchiveViewModel` operations rather than application startup.
+- [ ] Review media tools, APK analysis, and network clients for avoidable eager initialization.
 - Evaluate Android dynamic feature delivery only for features that can safely be optional; retain an offline-capable core.
 
 ### 4. Dependency and package-size audit
@@ -44,6 +47,13 @@
 - Add regression tests around filesystem listing, navigation cancellation, selection, sorting, and metadata.
 - Use Macrobenchmark and Compose tracing/Recomposition inspection on representative devices.
 - Compare startup, scroll frame times, memory, and APK size against a recorded baseline.
+
+## Lazy-initialization audit
+
+- `NativeBridge` calls `System.loadLibrary("solina_native")` only through `ensureLoaded()` when a native operation or availability check is requested.
+- `Pdfium` creates its single-thread dispatcher via Kotlin `by lazy` and loads PDFium/native libraries only from `ensure()`.
+- Archive I/O is started by archive view-model actions (`open`/`reload`/`materialize`), not by `SolinaFilesApp.onCreate()`.
+- Keep these existing on-demand boundaries; do not add redundant wrappers around them.
 
 ## First change
 
