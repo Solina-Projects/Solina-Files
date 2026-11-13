@@ -29,6 +29,7 @@
 - Map dependency ownership before moving code.
 - Separate feature implementation behind stable interfaces where it reduces startup coupling.
 - [x] Defer TextMate theme loading until a theme is selected; keep the initial theme available at editor startup.
+- [x] Defer sound-pool creation and sample loading until sound effects are enabled.
 - [ ] Audit/defer other editor grammar, archive handlers, media tools, APK analysis, and network clients until needed.
 - Evaluate Android dynamic feature delivery only for features that can safely be optional; retain an offline-capable core.
 
