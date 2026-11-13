@@ -65,6 +65,50 @@ jobs:
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         run: ./gradlew --stacktrace :app:assembleDebug
 
+      - name: Capture APK and dependency baseline
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        run: |
+          mkdir -p app/build/reports/solina-baseline
+          ./gradlew --no-configuration-cache :app:dependencies --configuration debugRuntimeClasspath \
+            > app/build/reports/solina-baseline/debug-runtime-dependencies.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          report = Path("app/build/reports/solina-baseline/debug-apk-size.txt")
+          apks = sorted(Path("app/build/outputs/apk/debug").glob("*.apk"))
+          lines = ["Solina Files debug APK baseline", ""]
+          if not apks:
+              raise SystemExit("No debug APK found")
+          for apk in apks:
+              lines += [f"APK: {apk.name}", f"Compressed APK size: {apk.stat().st_size:,} bytes", ""]
+              with ZipFile(apk) as archive:
+                  entries = [item for item in archive.infolist() if not item.is_dir()]
+                  native = {}
+                  for item in entries:
+                      if item.filename.startswith("lib/") and item.filename.endswith(".so"):
+                          parts = item.filename.split("/")
+                          if len(parts) >= 3:
+                              native[parts[1]] = native.get(parts[1], 0) + item.file_size
+                  lines.append("Native libraries by ABI (uncompressed):")
+                  lines.extend(f"  {abi}: {size:,} bytes" for abi, size in sorted(native.items()))
+                  lines.append("Largest APK entries (uncompressed):")
+                  lines.extend(f"  {item.file_size:>12,}  {item.filename}" for item in
+                               sorted(entries, key=lambda item: item.file_size, reverse=True)[:20])
+                  lines.append("")
+          report.write_text("\n".join(lines) + "\n", encoding="utf-8")
+          PY
+
+      - name: Upload APK and dependency baseline
+        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: solina-files-build-baseline
+          path: |
+            app/build/reports/solina-baseline/*.txt
+          retention-days: 30
+          if-no-files-found: error
+
       - name: Upload the debug APK
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v7
@@ -113,12 +157,49 @@ jobs:
           ./gradlew --stacktrace :app:assembleRelease -Psolina.splitApks=true
 
           mkdir -p dist
+          python3 - <<'PY'
+          from pathlib import Path
+          from zipfile import ZipFile
+
+          report = Path("dist/release-apk-size.txt")
+          apks = sorted(Path("app/build/outputs/apk/release").glob("*.apk"))
+          if not apks:
+              raise SystemExit("No release APKs found")
+          lines = ["Solina Files signed release APK baseline", ""]
+          for apk in apks:
+              lines += [f"APK: {apk.name}", f"Compressed APK size: {apk.stat().st_size:,} bytes", ""]
+              with ZipFile(apk) as archive:
+                  entries = [item for item in archive.infolist() if not item.is_dir()]
+                  native = {}
+                  for item in entries:
+                      if item.filename.startswith("lib/") and item.filename.endswith(".so"):
+                          parts = item.filename.split("/")
+                          if len(parts) >= 3:
+                              native[parts[1]] = native.get(parts[1], 0) + item.file_size
+                  lines.append("Native libraries by ABI (uncompressed):")
+                  lines.extend(f"  {abi}: {size:,} bytes" for abi, size in sorted(native.items()))
+                  lines.append("Largest APK entries (uncompressed):")
+                  lines.extend(f"  {item.file_size:>12,}  {item.filename}" for item in
+                               sorted(entries, key=lambda item: item.file_size, reverse=True)[:20])
+                  lines.append("")
+          report.write_text("\\n".join(lines) + "\\n", encoding="utf-8")
+          PY
+
           for abi in arm64-v8a armeabi-v7a universal; do
             cp "app/build/outputs/apk/release/app-${abi}-release.apk" \
               "dist/Solina-Files-v${version}-${abi}.apk"
           done
 
           (cd dist && sha256sum *.apk > SHA256SUMS.txt)
+
+      - name: Upload signed release size report
+        if: github.event_name != 'pull_request' && steps.signing.outputs.configured == 'true'
+        uses: actions/upload-artifact@v7
+        with:
+          name: solina-files-signed-release-size-baseline
+          path: dist/release-apk-size.txt
+          retention-days: 30
+          if-no-files-found: error
 
       - name: Upload ARM64 APK
         if: github.event_name != 'pull_request' && steps.signing.outputs.configured == 'true'

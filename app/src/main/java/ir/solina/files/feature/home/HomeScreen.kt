@@ -58,7 +58,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ir.solina.files.R
+import ir.solina.files.core.util.Formatters
+import ir.solina.files.ui.theme.SolinaSpacing
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -89,7 +93,7 @@ fun HomeScreen(
         }.getOrElse { Triple(0L, 0L, 0L) }
     }
     LaunchedEffect(root, refreshKey) {
-        categoryBytes = withContext(Dispatchers.IO) { scanCategoryBytes(File(root)) }
+        categoryBytes = HomeStorageCache.getOrScan(root, force = refreshKey > 0)
     }
     val shortcuts = remember(root) {
         listOf(
@@ -116,8 +120,8 @@ fun HomeScreen(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Solina Files", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                    Text("File manager", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(stringResource(R.string.app_name), style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                    Text(stringResource(R.string.home_subtitle), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 IconButton(onClick = { refreshKey++ }) { Icon(Icons.Rounded.Refresh, contentDescription = "Refresh storage") }
                 IconButton(onClick = onToggleTheme) {
@@ -130,7 +134,7 @@ fun HomeScreen(
                 onValueChange = { query = it },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                placeholder = { Text("Search files and folders") },
+                placeholder = { Text(stringResource(R.string.home_search_hint)) },
                 leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
                 trailingIcon = { IconButton(onClick = onSearch) { Icon(Icons.Rounded.Search, contentDescription = "Open search") } },
                 shape = RoundedCornerShape(18.dp),
@@ -144,15 +148,15 @@ fun HomeScreen(
                         Icon(Icons.Rounded.Storage, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(25.dp))
                         Spacer(Modifier.width(8.dp))
                         Column(Modifier.weight(1f)) {
-                            Text("Internal storage", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            Text(stringResource(R.string.home_internal_storage), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                             Text(
-                                if (storage.first > 0) "${fa(formatBytes(storage.third))} used · ${fa(formatBytes(storage.second))} free"
+                                if (storage.first > 0) "${Formatters.size(storage.third)} · ${Formatters.size(storage.second)}"
                                 else "Storage details unavailable",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        if (storage.first > 0) Text("${fa((storage.third * 100 / storage.first).toInt().toString())}%", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+                        if (storage.first > 0) Text("${Formatters.number((storage.third * 100 / storage.first))}%", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
                     Row(
                         Modifier.fillMaxWidth().height(12.dp).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(99.dp)),
@@ -166,7 +170,7 @@ fun HomeScreen(
                             Box(Modifier.weight(bytes.coerceAtLeast(1L).toFloat()).height(12.dp).background(color))
                         }
                     }
-                    Text("Storage categories", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text(stringResource(R.string.home_storage_categories), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     categories.forEach { category ->
                         val percent = if (storage.third > 0L) (category.bytes * 100 / storage.third).toInt() else 0
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -174,17 +178,17 @@ fun HomeScreen(
                                 Icon(category.icon, contentDescription = null, tint = category.color, modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(7.dp))
                                 Text(category.title, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
-                                Text("${fa(formatBytes(category.bytes))} · ${fa(percent.toString())}%", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("${Formatters.size(category.bytes)} · ${Formatters.number(percent.toLong())}%", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             Box(Modifier.fillMaxWidth().height(5.dp).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(99.dp))) {
                                 Box(Modifier.fillMaxWidth((category.bytes.toDouble() / storage.third.coerceAtLeast(1L)).toFloat().coerceIn(0f, 1f)).height(5.dp).background(category.color, RoundedCornerShape(99.dp)))
                             }
                         }
                     }
-                    TextButton(onClick = { onOpenFolder(root) }) { Text("Browse storage") }
+                    TextButton(onClick = { onOpenFolder(root) }) { Text(stringResource(R.string.home_browse_storage)) }
                 }
             }
-            Text("Choose your workspace", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.home_choose_workspace), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Card(
                     modifier = Modifier.weight(1f).clickable { onBrowse(false) },
@@ -193,8 +197,8 @@ fun HomeScreen(
                 ) {
                     Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Rounded.ViewAgenda, contentDescription = null, modifier = Modifier.size(28.dp))
-                        Text("Single pane", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                        Text("One panel", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.home_single_pane), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.home_single_pane_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
                 Card(
@@ -204,14 +208,14 @@ fun HomeScreen(
                 ) {
                     Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Rounded.ViewWeek, contentDescription = null, modifier = Modifier.size(28.dp))
-                        Text("Dual pane", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                        Text("Copy and move between panels", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.home_dual_pane), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.home_dual_pane_desc), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Quick access", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                TextButton(onClick = { onOpenFolder(root) }) { Text("All files") }
+                Text(stringResource(R.string.home_quick_access), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                TextButton(onClick = { onOpenFolder(root) }) { Text(stringResource(R.string.home_all_files)) }
             }
             Row(
                 Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -230,7 +234,7 @@ fun HomeScreen(
                     }
                 }
             }
-            Text("Browse by category", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text(stringResource(R.string.home_browse_category), style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier.fillMaxWidth().weight(1f),
@@ -248,12 +252,37 @@ fun HomeScreen(
                             Spacer(Modifier.width(8.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(category.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                                Text("${fa(formatBytes(category.bytes))}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("${Formatters.size(category.bytes)}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
                 }
             }
+        }
+    }
+}
+
+
+private object HomeStorageCache {
+    @Volatile
+    private var cachedRoot: String? = null
+    @Volatile
+    private var cachedAtMs: Long = 0L
+    @Volatile
+    private var cachedTotals: Map<String, Long> = emptyMap()
+    private const val TTL_MS = 5 * 60 * 1000L
+
+    suspend fun getOrScan(root: String, force: Boolean): Map<String, Long> {
+        val now = System.currentTimeMillis()
+        if (!force && cachedRoot == root && cachedTotals.isNotEmpty() && (now - cachedAtMs) < TTL_MS) {
+            return cachedTotals
+        }
+        return withContext(Dispatchers.IO) {
+            val fresh = scanCategoryBytes(File(root))
+            cachedRoot = root
+            cachedAtMs = System.currentTimeMillis()
+            cachedTotals = fresh
+            fresh
         }
     }
 }
@@ -286,16 +315,3 @@ private fun scanCategoryBytes(root: File): Map<String, Long> {
     return totals
 }
 
-private fun fa(value: String): String = value.map { if (it in '0'..'9') ('۰'.code + (it.code - '0'.code)).toChar() else it }.joinToString("")
-
-private fun formatBytes(value: Long): String {
-    if (value < 1024) return "${value} B"
-    val units = arrayOf("KB", "MB", "GB", "TB")
-    var size = value.toDouble()
-    var index = -1
-    do {
-        size /= 1024.0
-        index++
-    } while (size >= 1024.0 && index < units.lastIndex)
-    return String.format(Locale.getDefault(), "%.1f %s", size, units[index])
-}

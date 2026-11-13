@@ -241,7 +241,22 @@
     <string name="explorer_drop_on_folder">روی یک پوشه رها کنید</string>
     <string name="explorer_up_one_folder">یک پوشه بالاتر</string>
     <string name="explorer_drop_into">به داخل \u2068%1$s\u2069</string>
-    <string name="explorer_incoming_hidden">\u200FSolina محل ذخیره‌ی \u2068%1$s\u2069 را نمی‌بیند</string>
+    <string name="explorer_incoming_hidden">سولینا فایلز محل ذخیره‌ی \u2068%1$s\u2069 را نمی‌بیند</string>
     <string name="explorer_incoming_save">ذخیره در Download</string>
-    <string name="explorer_incoming_unreadable">برنامه‌ی دیگر اجازه‌ی خواندن این فایل را نداد</string>
+    <string name="explorer_incoming_unreadable">برنامه‌ی دیگر اجازه‌ی خواندن این فایل را به سولینا فایلز نداد</string>
+    <string name="explorer_folder_item_count">تعداد موارد پوشه</string>
+    <string name="explorer_file_size">حجم فایل</string>
+    <string name="home_subtitle">مدیریت فایل سولینا</string>
+    <string name="home_search_hint">جست‌وجوی فایل‌ها و پوشه‌ها</string>
+    <string name="home_internal_storage">حافظه داخلی</string>
+    <string name="home_storage_categories">دسته‌بندی حافظه</string>
+    <string name="home_browse_storage">مرور حافظه</string>
+    <string name="home_choose_workspace">انتخاب فضای کاری</string>
+    <string name="home_single_pane">تک‌پنله</string>
+    <string name="home_single_pane_desc">تمرکز روی یک مسیر</string>
+    <string name="home_dual_pane">دوپنله</string>
+    <string name="home_dual_pane_desc">کپی و انتقال بین دو پنل</string>
+    <string name="home_quick_access">دسترسی سریع</string>
+    <string name="home_all_files">همه فایل‌ها</string>
+    <string name="home_browse_category">مرور بر اساس دسته‌بندی</string>
 </resources>

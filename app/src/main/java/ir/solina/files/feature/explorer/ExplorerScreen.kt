@@ -269,16 +269,25 @@ fun ExplorerScreen(
         }
     }
 
-    fun visibleOfActive() = visibleItems(ui.activePane, ui.settings, ui.query).map { it.path }
+    // Derive and sort the active listing once per relevant state change. These values are
+    // consumed by several toolbar, selection and navigation actions in the same composition.
+    val activeVisibleItems = remember(ui.activePane, ui.settings, ui.query) {
+        visibleItems(ui.activePane, ui.settings, ui.query)
+    }
+    val activeVisiblePaths = remember(activeVisibleItems) { activeVisibleItems.map { it.path } }
 
-    val selection = ui.activePane.items.filter { it.path in ui.activePane.selected }
+    fun visibleOfActive() = activeVisiblePaths
+
+    val selection = remember(ui.activePane.items, ui.activePane.selected) {
+        ui.activePane.items.filter { it.path in ui.activePane.selected }
+    }
     val single = selection.singleOrNull()
     val smaliFolder by produceState(false, single?.path, ui.active) {
         value = single != null && single.isDirectory && vm.hasSmali(ui.active, single)
     }
     val jarFile = single != null && !single.isDirectory && single.extension.equals("jar", ignoreCase = true)
 
-    fun selectionInOrder() = visibleItems(ui.activePane, ui.settings, ui.query).filter { it.path in ui.activePane.selected }
+    fun selectionInOrder() = activeVisibleItems.filter { it.path in ui.activePane.selected }
 
     fun archiveName(items: List<FileItem>, folder: String): String =
         items.singleOrNull()?.let { ArchiveFormat.ZIP.defaultName(it).removeSuffix(ArchiveFormat.ZIP.extension) }
@@ -339,7 +348,7 @@ fun ExplorerScreen(
                             }
                         }
                     },
-                    title = { ExplorerTitle(ui.activePane, visibleItems(ui.activePane, ui.settings, ui.query)) },
+                    title = { ExplorerTitle(ui.activePane, activeVisibleItems) },
                     actions = {
                         IconButton(onClick = { vm.setSearchActive(true) }) { Icon(Icons.Rounded.Search, contentDescription = stringResource(R.string.explorer_filter)) }
                         IconButton(onClick = {
@@ -468,7 +477,7 @@ fun ExplorerScreen(
         val panes = if (dual) listOf(Pane.LEFT, Pane.RIGHT) else listOf(ui.active)
         @Composable
         fun PaneContent(pane: Pane, modifier: Modifier) {
-            val state = ui.pane(pane)
+            val state by vm.paneState(pane).collectAsStateWithLifecycle()
             val visible = remember(state.items, ui.settings, ui.query) { visibleItems(state, ui.settings, ui.query) }
             PaneColumn(
                 state = state,

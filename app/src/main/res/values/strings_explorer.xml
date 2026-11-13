@@ -244,4 +244,19 @@
     <string name="explorer_incoming_hidden">Solina can\'t see where %1$s is stored</string>
     <string name="explorer_incoming_save">Save to Download</string>
     <string name="explorer_incoming_unreadable">The other app didn\'t let Solina read this file</string>
+    <string name="explorer_folder_item_count">Folder item count</string>
+    <string name="explorer_file_size">File size</string>
+    <string name="home_subtitle">File manager</string>
+    <string name="home_search_hint">Search files and folders</string>
+    <string name="home_internal_storage">Internal storage</string>
+    <string name="home_storage_categories">Storage categories</string>
+    <string name="home_browse_storage">Browse storage</string>
+    <string name="home_choose_workspace">Choose your workspace</string>
+    <string name="home_single_pane">Single pane</string>
+    <string name="home_single_pane_desc">Focused single-panel browsing</string>
+    <string name="home_dual_pane">Dual pane</string>
+    <string name="home_dual_pane_desc">Copy and move between panels</string>
+    <string name="home_quick_access">Quick access</string>
+    <string name="home_all_files">All files</string>
+    <string name="home_browse_category">Browse by category</string>
 </resources>

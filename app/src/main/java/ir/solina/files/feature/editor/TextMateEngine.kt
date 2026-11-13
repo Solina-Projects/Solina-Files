@@ -24,6 +24,7 @@ object TextMateEngine {
     private var ready = false
     private lateinit var assets: AssetManager
     private val loadedScopes = HashSet<String>()
+    private val loadedThemeIds = HashSet<String>()
 
     lateinit var catalog: GrammarCatalog
         private set
@@ -39,22 +40,35 @@ object TextMateEngine {
             FileProviderRegistry.getInstance().addFileProvider(AssetsFileResolver(assets))
             catalog = GrammarCatalog.parse(read("textmate/languages.json"), read("textmate/filetypes.json"))
             themes = GrammarCatalog.parseThemes(read("textmate/themes.json"))
+            val initialTheme = themes.firstOrNull()
+                ?: error("No TextMate themes are configured")
             val registry = ThemeRegistry.getInstance()
-            for (t in themes) {
-                val stream = FileProviderRegistry.getInstance().tryGetInputStream(t.path)
-                registry.loadTheme(ThemeModel(IThemeSource.fromInputStream(stream, t.path, null), t.id).apply { isDark = t.dark }, false)
-            }
-            registry.setTheme(themes.first().id)
+            loadTheme(initialTheme)
+            registry.setTheme(initialTheme.id)
             ready = true
         }
     }
 
     fun theme(id: String): EditorTheme? = themes.firstOrNull { it.id == id }
 
-    fun activateTheme(id: String): ThemeModel {
+    fun activateTheme(id: String): ThemeModel = synchronized(lock) {
+        val selected = theme(id) ?: error("Unknown TextMate theme: $id")
+        loadTheme(selected)
         val registry = ThemeRegistry.getInstance()
         if (registry.currentThemeModel?.name != id) registry.setTheme(id)
-        return registry.currentThemeModel
+        registry.currentThemeModel
+    }
+
+    private fun loadTheme(theme: EditorTheme) {
+        if (theme.id in loadedThemeIds) return
+        val stream = FileProviderRegistry.getInstance().tryGetInputStream(theme.path)
+        ThemeRegistry.getInstance().loadTheme(
+            ThemeModel(IThemeSource.fromInputStream(stream, theme.path, null), theme.id).apply {
+                isDark = theme.dark
+            },
+            false
+        )
+        loadedThemeIds += theme.id
     }
 
     fun language(scope: String, autoComplete: Boolean = true): TextMateLanguage {

@@ -33,7 +33,7 @@ class SolinaFilesApp : Application(), SingletonImageLoader.Factory {
         RootManager.init(this)
         SafFileSystem.appContext = this
         runCatching { ShizukuManager.init(this) }
-        runCatching { UiSounds.device = SoundPoolDevice(this).also { it.trackActivities(this) } }
+        UiSounds.installLazyDevice { SoundPoolDevice(this).also { it.trackActivities(this) } }
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =

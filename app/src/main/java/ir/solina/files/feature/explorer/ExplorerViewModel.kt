@@ -91,11 +91,13 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
@@ -136,6 +138,20 @@ class ExplorerViewModel(
     )
     val state: StateFlow<ExplorerUiState> = _state.asStateFlow()
 
+    // Pane streams isolate list rendering from updates to the opposite pane and global UI state.
+    private val leftPaneState: StateFlow<PaneState> = _state
+        .map { it.left }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, _state.value.left)
+
+    private val rightPaneState: StateFlow<PaneState> = _state
+        .map { it.right }
+        .distinctUntilChanged()
+        .stateIn(viewModelScope, SharingStarted.Eagerly, _state.value.right)
+
+    fun paneState(pane: Pane): StateFlow<PaneState> =
+        if (pane == Pane.LEFT) leftPaneState else rightPaneState
+
     private val navJobs = mutableMapOf<Pane, Job>()
 
     private val rootEnabled: Boolean get() = _state.value.settings.rootAccess
@@ -155,16 +171,16 @@ class ExplorerViewModel(
     init {
         viewModelScope.launch {
             var previousRoot: Boolean? = null
-            settingsRepo.settings.collect { s ->
+            settingsRepo.settings.distinctUntilChanged().collect { s ->
                 _state.update { it.copy(settings = s) }
                 if (previousRoot != null && previousRoot != s.rootAccess) onRootModeChanged(s.rootAccess)
                 previousRoot = s.rootAccess
             }
         }
-        viewModelScope.launch { bookmarkRepo.bookmarks.collect { b -> _state.update { it.copy(bookmarks = b) } } }
+        viewModelScope.launch { bookmarkRepo.bookmarks.distinctUntilChanged().collect { b -> _state.update { it.copy(bookmarks = b) } } }
         viewModelScope.launch {
             var previous = emptyMap<String, RemoteConnection>()
-            remoteRepo.connections.collect { c ->
+            remoteRepo.connections.distinctUntilChanged().collect { c ->
                 _state.update { it.copy(storages = c) }
                 val now = c.associateBy { it.id }
                 previous.forEach { (id, old) ->
@@ -174,7 +190,7 @@ class ExplorerViewModel(
                 previous = now
             }
         }
-        viewModelScope.launch { settingsRepo.renameHistory.collect { h -> _state.update { it.copy(renameHistory = h) } } }
+        viewModelScope.launch { settingsRepo.renameHistory.distinctUntilChanged().collect { h -> _state.update { it.copy(renameHistory = h) } } }
         if (Vault.ready) {
             viewModelScope.launch {
                 Vault.store.state.collect { s ->
