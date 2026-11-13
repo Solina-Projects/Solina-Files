@@ -37,7 +37,8 @@
 - Evaluate Android dynamic feature delivery only for features that can safely be optional; retain an offline-capable core.
 
 ### 4. Dependency and package-size audit
-- Generate dependency insight and APK/AAB size reports for each ABI.
+- [x] Add CI capture of the debug runtime dependency tree, APK compressed size, largest packaged entries, and native library footprint by ABI.
+- [ ] Generate comparable signed release APK/AAB size reports for each distributable ABI.
 - Remove only verified unused transitive/direct dependencies.
 - Check duplicate classes, native libraries, resource shrinking, and R8 rules.
 - Preserve native Rust, PDFium, root/Shizuku, archive, network, editor, and APK functionality.
@@ -62,6 +63,13 @@
 - Remote connection persistence is backed by the `preferencesDataStore` delegate and remote connection repository access; no network protocol session is created by `SolinaFilesApp.onCreate()`.
 - `ShizukuManager.init()` does register binder listeners and performs a startup ping/status refresh. Keep this lightweight check for accurate initial Shizuku status; the privileged filesystem service is bound only when `access()` is requested.
 
+
+## Dependency and package-size baseline
+
+- The app declares feature-specific dependencies for Compose/media, SMB/FTP/SFTP/WebDAV, archive formats, APK inspection/signing, code editing, root/Shizuku, and PDF/native integration. Their presence in Gradle alone is not evidence that they are unused; no dependency has been removed in this audit.
+- Release builds already enable R8 minification and resource shrinking, and ABI splitting is configurable through `solina.splitApks` (ARM64, ARMv7, x86_64 plus a universal APK).
+- The build workflow now captures the `debugRuntimeClasspath` dependency tree and a debug APK report containing compressed size, largest packaged entries, and uncompressed native `.so` totals by ABI. This creates an initial CI baseline; release-variant and per-distributable ABI measurements remain pending.
+
 ## First change
 
 The explorer previously recursively walked every readable directory from each visible single-pane file row to calculate descendant size/count. That work could be repeated as rows entered composition and could traverse very large trees. The first change removes that recursive scan from composition and uses the already available immediate `FileItem.childCount` when present. This deliberately avoids changing file operations or directory contents. A dedicated, bounded on-demand folder statistics feature can be introduced later if product requirements still need recursive sizes.
@@ -72,5 +80,6 @@ The explorer previously recursively walked every readable directory from each vi
 - No recursive directory scan triggered by composing a file row.
 - No filesystem, decoding, or analysis work on the UI thread.
 - No unverified dependency removals.
+- Use CI-generated dependency and package-size baselines before proposing dependency or packaging changes.
 - CI passes for debug build and lint; release build and tests pass where CI prerequisites are available.
 - Visual behavior is consistent across light/dark themes, RTL/LTR, phones, and tablets.
