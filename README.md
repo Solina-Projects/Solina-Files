@@ -1,6 +1,6 @@
 # Solina Files
 
-**Solina Files** is an open-source file manager for Android, developed under the **Solin** project identity. It aims to make everyday file organization and advanced file workflows clear, capable, and convenient.
+**Solina Files** is an open-source file manager for Android, developed under the **Solina** project identity. It aims to make everyday file organization and advanced file workflows clear, capable, and convenient.
 
 **Languages:** English · [فارسی](README.fa.md)
 
@@ -11,12 +11,12 @@
 
 ## Project information
 
-- **Project:** Solin
+- **Project:** Solina
 - **Application:** Solina Files
 - **Android application ID:** `ir.solina.files`
 - **Repository:** [Solina-Projects/Solina-Files](https://github.com/Solina-Projects/Solina-Files)
 
-Solin is the project identity; Solina Files is its Android file-management application.
+Solina is the brand identity behind Solina Files, an Android file-management application.
 
 ## Features
 

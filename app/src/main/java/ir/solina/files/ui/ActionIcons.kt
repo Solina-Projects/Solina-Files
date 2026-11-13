@@ -15,9 +15,9 @@ import androidx.compose.material.icons.rounded.Android
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.BookmarkAdd
 import androidx.compose.material.icons.rounded.Bookmarks
-import androidx.compose.material.icons.rounded.Build
+import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.CheckCircle
-import androidx.compose.material.icons.rounded.Coffee
+import androidx.compose.material.icons.rounded.Inventory2
 import androidx.compose.material.icons.rounded.Compare
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.ContentCut
@@ -37,21 +37,21 @@ import androidx.compose.material.icons.rounded.FormatListNumbered
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Key
-import androidx.compose.material.icons.rounded.Layers
-import androidx.compose.material.icons.rounded.Memory
+import androidx.compose.material.icons.rounded.ViewWeek
+import androidx.compose.material.icons.rounded.DataObject
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.SelectAll
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material.icons.rounded.SortByAlpha
+import androidx.compose.material.icons.rounded.SwapVert
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.rounded.Terminal
 import androidx.compose.material.icons.rounded.Unarchive
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.ViewList
-import androidx.compose.material.icons.rounded.ViewAgenda
+import androidx.compose.material.icons.rounded.Splitscreen
 import androidx.compose.material.icons.rounded.ViewColumn
 import androidx.compose.ui.graphics.vector.ImageVector
 import ir.solina.files.core.model.BrowseAction
@@ -75,12 +75,12 @@ val BrowseAction.icon: ImageVector
         BrowseAction.TERMINAL -> Icons.Rounded.Terminal
         BrowseAction.FILTER -> Icons.Rounded.Search
         BrowseAction.SEARCH -> Icons.AutoMirrored.Rounded.ManageSearch
-        BrowseAction.SORT -> Icons.Rounded.SortByAlpha
+        BrowseAction.SORT -> Icons.Rounded.SwapVert
         BrowseAction.JUMP -> Icons.Rounded.Explore
         BrowseAction.HIDDEN_FILES -> Icons.Rounded.Visibility
         BrowseAction.VIEW_LAYOUT -> Icons.Rounded.GridView
-        BrowseAction.PANE_MODE -> Icons.Rounded.Layers
-        BrowseAction.ORIENTATION -> Icons.Rounded.ViewAgenda
+        BrowseAction.PANE_MODE -> Icons.Rounded.ViewWeek
+        BrowseAction.ORIENTATION -> Icons.Rounded.Splitscreen
         BrowseAction.SWAP_PANES -> Icons.Rounded.SwapHoriz
     }
 
@@ -96,8 +96,8 @@ val SelectionAction.icon: ImageVector
         SelectionAction.COMPRESS -> Icons.Rounded.FolderZip
         SelectionAction.MERGE -> Icons.AutoMirrored.Rounded.CallMerge
         SelectionAction.COMPARE -> Icons.Rounded.Compare
-        SelectionAction.SMALI_TO_DEX -> Icons.Rounded.Build
-        SelectionAction.JAR_TO_DEX -> Icons.Rounded.Coffee
+        SelectionAction.SMALI_TO_DEX -> Icons.Rounded.Code
+        SelectionAction.JAR_TO_DEX -> Icons.Rounded.Inventory2
         SelectionAction.BOOKMARK -> Icons.Rounded.BookmarkAdd
         SelectionAction.LINKS -> Icons.Rounded.AddLink
         SelectionAction.VAULT -> Icons.Rounded.EnhancedEncryption
@@ -115,14 +115,14 @@ val SheetAction.icon: ImageVector
         SheetAction.SHARE -> Icons.Rounded.Share
         SheetAction.RENAME -> Icons.Rounded.DriveFileRenameOutline
         SheetAction.OPEN_AS_TEXT -> Icons.Rounded.Edit
-        SheetAction.HEX -> Icons.Rounded.Memory
+        SheetAction.HEX -> Icons.Rounded.DataObject
         SheetAction.VIEW -> Icons.Rounded.FolderOpen
         SheetAction.APK_INFO -> Icons.Rounded.Android
         SheetAction.EXTRACT -> Icons.Rounded.Unarchive
         SheetAction.COMPRESS -> Icons.Rounded.FolderZip
         SheetAction.SIGN_APK -> Icons.Rounded.Key
-        SheetAction.SMALI_TO_DEX -> Icons.Rounded.Build
-        SheetAction.JAR_TO_DEX -> Icons.Rounded.Coffee
+        SheetAction.SMALI_TO_DEX -> Icons.Rounded.Code
+        SheetAction.JAR_TO_DEX -> Icons.Rounded.Inventory2
         SheetAction.CHECKSUM -> Icons.Rounded.Fingerprint
         SheetAction.SPLIT -> Icons.AutoMirrored.Rounded.CallSplit
         SheetAction.CIPHER -> Icons.Rounded.EnhancedEncryption

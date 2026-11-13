@@ -32,7 +32,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
-import androidx.compose.material.icons.rounded.DataUsage
 import androidx.compose.material.icons.rounded.FolderOpen
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -109,11 +108,8 @@ fun FileRow(
     val density = LocalUiDensity.current
     val settings = LocalSettings.current
     val list = settings.list
-    val layoutScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.5f; UiDensity.COMFORTABLE -> 2.5f; UiDensity.LARGE -> 3.5f }
-    val listIconScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 1f }
-    val listSpacingScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 0.5f }
-    val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
-    val iconSize = density.iconDp.dp * layoutScale * listIconScale
+    val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.03f; UiDensity.LARGE -> 1.06f } else 1f
+    val iconSize = density.iconDp.dp
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.96f else 1f, motion.fastSpatialSpec(), label = "press")
@@ -147,7 +143,7 @@ fun FileRow(
                 if (a > 0f) drawRect(flashColor, alpha = a)
             }
             .fileGestures(interaction, onClick, onLongClick, onDragStart)
-            .padding(horizontal = SolinaSpacing.rowHorizontal, vertical = density.rowPadDp.dp * layoutScale),
+            .padding(horizontal = SolinaSpacing.medium, vertical = density.rowPadDp.dp + SolinaSpacing.extraSmall),
     ) {
     Row(
         Modifier.fillMaxWidth(),
@@ -156,7 +152,7 @@ fun FileRow(
         DropHalo(look, drop.anchor) {
             Leading(item, selected, showThumbnail, iconSize, if (settings.behavior.iconTapSelects) onIconClick else null)
         }
-        Spacer(Modifier.width((if (density.iconDp <= 30) SolinaSpacing.small else 10.dp) * listSpacingScale))
+        Spacer(Modifier.width(SolinaSpacing.medium))
         Column(Modifier.weight(1f)) {
             Text(
                 isolated(Formatters.displayName(item.name, item.isDirectory, list.showExtensions)),
@@ -180,12 +176,15 @@ fun FileRow(
                     )
                     if (info != null) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = SolinaSpacing.rowMetadataGap)) {
-                            Icon(
-                                if (singlePane && item.isDirectory) Icons.Rounded.FolderOpen else Icons.Rounded.DataUsage,
-                                contentDescription = stringResource(if (singlePane && item.isDirectory) R.string.explorer_folder_item_count else R.string.explorer_file_size),
-                                modifier = Modifier.size(12.dp),
-                                tint = colors.onSurfaceVariant,
-                            )
+                            if (singlePane && item.isDirectory) {
+                                Icon(
+                                    Icons.Rounded.FolderOpen,
+                                    contentDescription = stringResource(R.string.explorer_folder_item_count),
+                                    modifier = Modifier.size(12.dp),
+                                    tint = colors.onSurfaceVariant,
+                                )
+                                Spacer(Modifier.width(SolinaSpacing.extraSmall))
+                            }
                             Text(info.first, style = MaterialTheme.typography.labelSmall, fontSize = (density.metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
                             info.second?.let { count ->
                                 Spacer(Modifier.width(SolinaSpacing.rowMetadataGap))
@@ -201,8 +200,8 @@ fun FileRow(
     if (showSelectionCheckbox) {
         Box(
             Modifier
-                .align(Alignment.BottomEnd)
-                .padding(end = 2.dp, bottom = 28.dp)
+                .align(Alignment.CenterEnd)
+                .padding(end = SolinaSpacing.small)
                 .size(22.dp)
                 .clip(RoundedCornerShape(4.dp))
                 .background(if (selected) colors.primary else colors.surface.copy(alpha = 0.92f))

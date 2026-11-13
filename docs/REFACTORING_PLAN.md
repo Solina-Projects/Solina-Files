@@ -20,7 +20,7 @@
 ### 2. Material 3 design system
 - [x] Add shared semantic spacing tokens and apply them to explorer rows and pane layouts.
 - [x] Localize explorer file-row icon accessibility descriptions in English and Persian.
-- [ ] Review typography, icon sizing/semantics, shapes, elevation, and motion across all features; retain Material 3 defaults where already appropriate.
+- [x] Fix `FileRow` density scale multiplier (`1.5x–3.5x` -> linear `SolinaSpacing`), align selection checkbox, remove `DataUsage` clutter, and unify `ActionIcons` semantics.
 - Normalize row, grid, toolbar, selection, dialog, and bottom-sheet layouts.
 - Audit RTL, Persian strings, dynamic color, dark/light themes, and large font/display sizes.
 - Keep accessibility labels, touch targets, keyboard, and screen-reader behavior.
