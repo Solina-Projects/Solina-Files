@@ -18,7 +18,8 @@
 - Preserve stable LazyColumn/LazyGrid keys and scroll restoration.
 
 ### 2. Material 3 design system
-- Establish shared semantic spacing, typography, shape, elevation, motion, and icon rules.
+- [x] Add shared semantic spacing tokens and apply them to explorer rows and pane layouts.
+- [ ] Establish consistent typography, shape, elevation, motion, and icon rules across all features.
 - Normalize row, grid, toolbar, selection, dialog, and bottom-sheet layouts.
 - Audit RTL, Persian strings, dynamic color, dark/light themes, and large font/display sizes.
 - Keep accessibility labels, touch targets, keyboard, and screen-reader behavior.
