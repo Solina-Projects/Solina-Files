@@ -244,4 +244,6 @@
     <string name="explorer_incoming_hidden">Solina can\'t see where %1$s is stored</string>
     <string name="explorer_incoming_save">Save to Download</string>
     <string name="explorer_incoming_unreadable">The other app didn\'t let Solina read this file</string>
+    <string name="explorer_folder_item_count">Folder item count</string>
+    <string name="explorer_file_size">File size</string>
 </resources>
