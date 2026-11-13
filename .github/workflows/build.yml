@@ -96,7 +96,7 @@ jobs:
                   lines.extend(f"  {item.file_size:>12,}  {item.filename}" for item in
                                sorted(entries, key=lambda item: item.file_size, reverse=True)[:20])
                   lines.append("")
-          report.write_text("\\n".join(lines) + "\\n", encoding="utf-8")
+          report.write_text("\n".join(lines) + "\n", encoding="utf-8")
           PY
 
       - name: Upload APK and dependency baseline
