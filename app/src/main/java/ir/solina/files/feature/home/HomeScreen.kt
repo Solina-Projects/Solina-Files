@@ -3,6 +3,7 @@ package ir.solina.files.feature.home
 import android.os.Environment
 import android.os.StatFs
 import androidx.compose.foundation.background
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -59,13 +60,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import ir.solina.files.core.util.FileKind
+import ir.solina.files.ui.theme.KindPalette
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Locale
 
-private data class HomeShortcut(val title: String, val path: String, val icon: ImageVector)
-private data class StorageCategory(val title: String, val path: String, val icon: ImageVector, val color: Color, val bytes: Long)
+private data class HomeShortcut(val title: String, val path: String, val icon: ImageVector, val kind: FileKind)
+private data class StorageCategory(val title: String, val path: String, val icon: ImageVector, val kind: FileKind, val bytes: Long)
 
 @Composable
 fun HomeScreen(
@@ -93,20 +96,25 @@ fun HomeScreen(
     }
     val shortcuts = remember(root) {
         listOf(
-            HomeShortcut("Downloads", "$root/Download", Icons.Rounded.Download),
-            HomeShortcut("Images", "$root/DCIM", Icons.Rounded.Image),
-            HomeShortcut("Documents", "$root/Documents", Icons.Rounded.Description),
-            HomeShortcut("Music", "$root/Music", Icons.Rounded.MusicNote),
-            HomeShortcut("Videos", "$root/Movies", Icons.Rounded.Movie),
-            HomeShortcut("Internal storage", root, Icons.Rounded.Storage),
+            HomeShortcut("دانلودها", "$root/Download", Icons.Rounded.Download, FileKind.FOLDER),
+            HomeShortcut("تصاویر", "$root/DCIM", Icons.Rounded.Image, FileKind.IMAGE),
+            HomeShortcut("اسناد", "$root/Documents", Icons.Rounded.Description, FileKind.DOCUMENT),
+            HomeShortcut("موزیک", "$root/Music", Icons.Rounded.MusicNote, FileKind.AUDIO),
+            HomeShortcut("فیلم‌ها", "$root/Movies", Icons.Rounded.Movie, FileKind.VIDEO),
+            HomeShortcut("حافظه داخلی", root, Icons.Rounded.Storage, FileKind.FOLDER),
         )
     }
+    // Redesign v2: category colours come from KindPalette (one hue per file
+    // kind) instead of hardcoded random colours.
+    val scheme = MaterialTheme.colorScheme
+    val dark = isSystemInDarkTheme()
+    fun kindColor(kind: FileKind): Color = KindPalette.colors(kind, colorful = true, scheme = scheme, dark = dark).content
     val categories = listOf(
-        StorageCategory("Images", "$root/DCIM", Icons.Rounded.Image, Color(0xFF4CAF50), categoryBytes["images"] ?: 0L),
-        StorageCategory("Videos", "$root/Movies", Icons.Rounded.Movie, Color(0xFFFF9800), categoryBytes["videos"] ?: 0L),
-        StorageCategory("Documents", "$root/Documents", Icons.Rounded.Description, Color(0xFF2196F3), categoryBytes["documents"] ?: 0L),
-        StorageCategory("Music", "$root/Music", Icons.Rounded.MusicNote, Color(0xFF9C27B0), categoryBytes["music"] ?: 0L),
-        StorageCategory("Apps / APK", "$root/Android", Icons.Rounded.Apps, Color(0xFFE91E63), categoryBytes["apps"] ?: 0L),
+        StorageCategory("تصاویر", "$root/DCIM", Icons.Rounded.Image, FileKind.IMAGE, categoryBytes["images"] ?: 0L),
+        StorageCategory("فیلم‌ها", "$root/Movies", Icons.Rounded.Movie, FileKind.VIDEO, categoryBytes["videos"] ?: 0L),
+        StorageCategory("اسناد", "$root/Documents", Icons.Rounded.Description, FileKind.DOCUMENT, categoryBytes["documents"] ?: 0L),
+        StorageCategory("موزیک", "$root/Music", Icons.Rounded.MusicNote, FileKind.AUDIO, categoryBytes["music"] ?: 0L),
+        StorageCategory("برنامه‌ها / APK", "$root/Android", Icons.Rounded.Apps, FileKind.APK, categoryBytes["apps"] ?: 0L),
     )
     var query by remember { mutableStateOf("") }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -116,23 +124,23 @@ fun HomeScreen(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Solina Files", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
-                    Text("File manager", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("سولینا فایلز", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
+                    Text("مدیریت فایل‌ها", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                IconButton(onClick = { refreshKey++ }) { Icon(Icons.Rounded.Refresh, contentDescription = "Refresh storage") }
+                IconButton(onClick = { refreshKey++ }) { Icon(Icons.Rounded.Refresh, contentDescription = "تازه‌سازی حافظه") }
                 IconButton(onClick = onToggleTheme) {
-                    Icon(if (isDarkTheme) Icons.Rounded.LightMode else Icons.Rounded.DarkMode, contentDescription = "Toggle theme")
+                    Icon(if (isDarkTheme) Icons.Rounded.LightMode else Icons.Rounded.DarkMode, contentDescription = "تغییر تم")
                 }
-                IconButton(onClick = onSettings) { Icon(Icons.Rounded.Settings, contentDescription = "Settings") }
+                IconButton(onClick = onSettings) { Icon(Icons.Rounded.Settings, contentDescription = "تنظیمات") }
             }
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
-                placeholder = { Text("Search files and folders") },
+                placeholder = { Text("جست‌وجوی فایل‌ها و پوشه‌ها") },
                 leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
-                trailingIcon = { IconButton(onClick = onSearch) { Icon(Icons.Rounded.Search, contentDescription = "Open search") } },
+                trailingIcon = { IconButton(onClick = onSearch) { Icon(Icons.Rounded.Search, contentDescription = "باز کردن جستجو") } },
                 shape = RoundedCornerShape(18.dp),
             )
             Card(
@@ -144,10 +152,10 @@ fun HomeScreen(
                         Icon(Icons.Rounded.Storage, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(25.dp))
                         Spacer(Modifier.width(8.dp))
                         Column(Modifier.weight(1f)) {
-                            Text("Internal storage", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                            Text("حافظه داخلی", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                             Text(
-                                if (storage.first > 0) "${fa(formatBytes(storage.third))} used · ${fa(formatBytes(storage.second))} free"
-                                else "Storage details unavailable",
+                                if (storage.first > 0) "${fa(formatBytes(storage.third))} استفاده‌شده · ${fa(formatBytes(storage.second))} آزاد"
+                                else "جزئیات حافظه در دسترس نیست",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
@@ -155,36 +163,36 @@ fun HomeScreen(
                         if (storage.first > 0) Text("${fa((storage.third * 100 / storage.first).toInt().toString())}%", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
                     }
                     Row(
-                        Modifier.fillMaxWidth().height(12.dp).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(99.dp)),
+                        Modifier.fillMaxWidth().height(14.dp).background(MaterialTheme.colorScheme.surfaceContainerHighest, RoundedCornerShape(99.dp)),
                         horizontalArrangement = Arrangement.Start,
                     ) {
                         val known = categories.sumOf { it.bytes }.coerceAtMost(storage.third)
                         val other = (storage.third - known).coerceAtLeast(0L)
-                        val parts = categories.filter { it.bytes > 0L }.map { it.color to it.bytes } +
-                            listOf(Color(0xFF78909C) to other, MaterialTheme.colorScheme.surfaceVariant to storage.second)
+                        val parts = categories.filter { it.bytes > 0L }.map { kindColor(it.kind) to it.bytes } +
+                            listOf(MaterialTheme.colorScheme.outline to other, MaterialTheme.colorScheme.surfaceVariant to storage.second)
                         parts.filter { it.second > 0L }.forEach { (color, bytes) ->
-                            Box(Modifier.weight(bytes.coerceAtLeast(1L).toFloat()).height(12.dp).background(color))
+                            Box(Modifier.weight(bytes.coerceAtLeast(1L).toFloat()).height(14.dp).background(color))
                         }
                     }
-                    Text("Storage categories", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text("دسته‌بندی حافظه", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
                     categories.forEach { category ->
                         val percent = if (storage.third > 0L) (category.bytes * 100 / storage.third).toInt() else 0
                         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(category.icon, contentDescription = null, tint = category.color, modifier = Modifier.size(18.dp))
+                                Icon(category.icon, contentDescription = null, tint = kindColor(category.kind), modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(7.dp))
                                 Text(category.title, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
                                 Text("${fa(formatBytes(category.bytes))} · ${fa(percent.toString())}%", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             Box(Modifier.fillMaxWidth().height(5.dp).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(99.dp))) {
-                                Box(Modifier.fillMaxWidth((category.bytes.toDouble() / storage.third.coerceAtLeast(1L)).toFloat().coerceIn(0f, 1f)).height(5.dp).background(category.color, RoundedCornerShape(99.dp)))
+                                Box(Modifier.fillMaxWidth((category.bytes.toDouble() / storage.third.coerceAtLeast(1L)).toFloat().coerceIn(0f, 1f)).height(5.dp).background(kindColor(category.kind), RoundedCornerShape(99.dp)))
                             }
                         }
                     }
-                    TextButton(onClick = { onOpenFolder(root) }) { Text("Browse storage") }
+                    TextButton(onClick = { onOpenFolder(root) }) { Text("مرور حافظه") }
                 }
             }
-            Text("Choose your workspace", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text("نمای کار", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Card(
                     modifier = Modifier.weight(1f).clickable { onBrowse(false) },
@@ -193,8 +201,8 @@ fun HomeScreen(
                 ) {
                     Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Rounded.ViewAgenda, contentDescription = null, modifier = Modifier.size(28.dp))
-                        Text("Single pane", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                        Text("One panel", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("تک‌پنجره‌ای", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                        Text("یک پنل", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
                 Card(
@@ -204,14 +212,14 @@ fun HomeScreen(
                 ) {
                     Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Rounded.ViewWeek, contentDescription = null, modifier = Modifier.size(28.dp))
-                        Text("Dual pane", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-                        Text("Copy and move between panels", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("دوپنجره‌ای", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+                        Text("کپی و جابه‌جایی بین دو پنل", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Quick access", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
-                TextButton(onClick = { onOpenFolder(root) }) { Text("All files") }
+                Text("دسترسی سریع", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, modifier = Modifier.weight(1f))
+                TextButton(onClick = { onOpenFolder(root) }) { Text("همه فایل‌ها") }
             }
             Row(
                 Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
@@ -224,13 +232,13 @@ fun HomeScreen(
                         shape = RoundedCornerShape(16.dp),
                     ) {
                         Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(7.dp)) {
-                            Icon(shortcut.icon, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+                            Icon(shortcut.icon, contentDescription = null, tint = kindColor(shortcut.kind), modifier = Modifier.size(24.dp))
                             Text(shortcut.title, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Medium)
                         }
                     }
                 }
             }
-            Text("Browse by category", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text("مرور بر اساس دسته", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
                 modifier = Modifier.fillMaxWidth().weight(1f),
@@ -244,7 +252,7 @@ fun HomeScreen(
                         shape = RoundedCornerShape(16.dp),
                     ) {
                         Row(Modifier.fillMaxWidth().padding(12.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(category.icon, contentDescription = null, tint = category.color, modifier = Modifier.size(23.dp))
+                            Icon(category.icon, contentDescription = null, tint = kindColor(category.kind), modifier = Modifier.size(23.dp))
                             Spacer(Modifier.width(8.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(category.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)

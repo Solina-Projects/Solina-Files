@@ -93,25 +93,20 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.graphics.shapes.RoundedPolygon
-import com.materialkolor.hct.Hct
-import com.materialkolor.ktx.toColor
-import com.materialkolor.ktx.toHct
-import com.materialkolor.temperature.TemperatureCache
 import ir.solina.files.core.bookmarks.Bookmark
 import ir.solina.files.core.model.MotionStyle
 import ir.solina.files.core.remote.RemoteConnection
 import ir.solina.files.core.util.Formatters
-import ir.solina.files.ui.expressive.MorphShape
-import ir.solina.files.ui.expressive.rememberPolygonMorph
 import ir.solina.files.ui.theme.LocalAppearance
+import androidx.compose.foundation.isSystemInDarkTheme
+import ir.solina.files.core.util.FileKind
+import ir.solina.files.ui.theme.KindPalette
 import kotlin.math.PI
 import kotlin.math.roundToInt
 import kotlin.math.sin
@@ -132,7 +127,10 @@ class DrawerActions(
     val onVault: () -> Unit = {},
 )
 
-private class Place(@StringRes val label: Int, val icon: ImageVector, val folder: String, val shape: RoundedPolygon)
+// Redesign v2: one shape for every place tile, colour by file kind.
+// The old tiles each had a random morph shape (arrow, flower, cookie…)
+// and an analogous palette — no system behind it.
+private class Place(@StringRes val label: Int, val icon: ImageVector, val folder: String, val kind: FileKind)
 
 private class DrawerLink(val label: String, val icon: ImageVector, val onClick: () -> Unit)
 
@@ -183,20 +181,21 @@ fun SolinaDrawerContent(
         SectionTitle(stringResource(R.string.drawer_places), Modifier.stagger())
         val places = remember(root) {
             listOf(
-                Place(R.string.drawer_downloads, Icons.Rounded.Download, "$root/Download", MaterialShapes.Arrow),
-                Place(R.string.drawer_images, Icons.Rounded.Image, "$root/Pictures", MaterialShapes.Flower),
-                Place(R.string.drawer_camera, Icons.Rounded.CameraAlt, "$root/DCIM", MaterialShapes.Cookie12Sided),
-                Place(R.string.drawer_movies, Icons.Rounded.Movie, "$root/Movies", MaterialShapes.Clover8Leaf),
-                Place(R.string.drawer_music, Icons.Rounded.Audiotrack, "$root/Music", MaterialShapes.SoftBurst),
-                Place(R.string.drawer_documents, Icons.Rounded.Description, "$root/Documents", MaterialShapes.Bun),
+                Place(R.string.drawer_downloads, Icons.Rounded.Download, "$root/Download", FileKind.FOLDER),
+                Place(R.string.drawer_images, Icons.Rounded.Image, "$root/Pictures", FileKind.IMAGE),
+                Place(R.string.drawer_camera, Icons.Rounded.CameraAlt, "$root/DCIM", FileKind.IMAGE),
+                Place(R.string.drawer_movies, Icons.Rounded.Movie, "$root/Movies", FileKind.VIDEO),
+                Place(R.string.drawer_music, Icons.Rounded.Audiotrack, "$root/Music", FileKind.AUDIO),
+                Place(R.string.drawer_documents, Icons.Rounded.Description, "$root/Documents", FileKind.DOCUMENT),
             )
         }
-        val palette = rememberPlacePalette(places.size)
+        val scheme = MaterialTheme.colorScheme
+        val dark = isSystemInDarkTheme()
         places.chunked(3).forEachIndexed { row, three ->
             Row(Modifier.fillMaxWidth().stagger().padding(top = if (row == 0) 0.dp else 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                three.forEachIndexed { i, place ->
-                    val colors = palette[row * 3 + i]
-                    PlaceTile(place, colors.first, colors.second, reduced, Modifier.weight(1f)) { actions.onShortcut(place.folder) }
+                three.forEach { place ->
+                    val colors = KindPalette.colors(place.kind, colorful = true, scheme = scheme, dark = dark)
+                    PlaceTile(place, colors.container, colors.content, reduced, Modifier.weight(1f)) { actions.onShortcut(place.folder) }
                 }
             }
         }
@@ -224,7 +223,6 @@ fun SolinaDrawerContent(
                     add(DrawerLink(systemLabel, Icons.Rounded.Memory) { actions.onShortcut("/system") })
                 }
             },
-            MaterialShapes.Cookie6Sided,
             Modifier.stagger(),
         )
 
@@ -237,7 +235,6 @@ fun SolinaDrawerContent(
                 storages.forEach { c -> add(DrawerLink(c.name.ifBlank { c.host }, Icons.Rounded.CloudQueue) { actions.onStorage(c) }) }
                 add(DrawerLink(sharingLabel, Icons.Rounded.Wifi, actions.onShare))
             },
-            MaterialShapes.Clover4Leaf,
             Modifier.stagger(),
         )
 
@@ -250,7 +247,6 @@ fun SolinaDrawerContent(
                 DrawerLink(stringResource(R.string.keys_title), Icons.Rounded.Key, actions.onSigningKeys),
                 DrawerLink(stringResource(R.string.plugin_title), Icons.Rounded.Extension, actions.onPlugins),
             ),
-            MaterialShapes.Cookie9Sided,
             Modifier.stagger(),
         )
 
@@ -376,7 +372,7 @@ private fun StorageSolina(path: String, open: Boolean, reduced: Boolean, modifie
                 )
             }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text("استفاده‌شده", style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
+                Text(stringResource(R.string.drawer_used), style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
                 Spacer(Modifier.weight(1f))
                 Text(
                     if (total > 0L) Formatters.size((total - free).coerceAtLeast(0L)) else "—",
@@ -384,24 +380,6 @@ private fun StorageSolina(path: String, open: Boolean, reduced: Boolean, modifie
                     color = colors.onSurface,
                 )
             }
-        }
-    }
-}
-
-@Composable
-private fun rememberPlacePalette(count: Int): List<Pair<Color, Color>> {
-    val colors = MaterialTheme.colorScheme
-    val dark = colors.background.luminance() < 0.5f
-    val seed = colors.primary
-    return remember(seed, dark, count) {
-        val hues = runCatching { TemperatureCache(seed.toHct()).getAnalogousColors(count, 9) }.getOrNull()
-            ?.map { it.hue }
-            ?.takeIf { it.size == count }
-            ?: List(count) { (seed.toHct().hue + it * 360.0 / count) % 360.0 }
-        hues.map { hue ->
-            val container = Hct.from(hue, 42.0, if (dark) 30.0 else 90.0).toColor()
-            val content = Hct.from(hue, 48.0, if (dark) 90.0 else 25.0).toColor()
-            container to content
         }
     }
 }
@@ -415,7 +393,6 @@ private fun PlaceTile(place: Place, container: Color, content: Color, reduced: B
         if (pressed) 1f else 0f,
         if (reduced) snap() else spring(dampingRatio = 0.45f, stiffness = 520f),
     )
-    val morph = rememberPolygonMorph(place.shape, MaterialShapes.Circle)
     Column(
         modifier
             .clip(RoundedCornerShape(24.dp))
@@ -432,7 +409,7 @@ private fun PlaceTile(place: Place, container: Color, content: Color, reduced: B
                     scaleY = s
                     rotationZ = 18f * press
                 }
-                .clip(MorphShape(morph, press))
+                .clip(RoundedCornerShape(20.dp))
                 .background(container),
             contentAlignment = Alignment.Center,
         ) {
@@ -483,7 +460,7 @@ private fun SectionTitle(text: String, modifier: Modifier) {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun DrawerGroup(links: List<DrawerLink>, shape: RoundedPolygon, modifier: Modifier) {
+private fun DrawerGroup(links: List<DrawerLink>, modifier: Modifier) {
     val colors = MaterialTheme.colorScheme
     Column(modifier, verticalArrangement = Arrangement.spacedBy(ListItemDefaults.SegmentedGap)) {
         links.forEachIndexed { i, link ->
@@ -493,7 +470,7 @@ private fun DrawerGroup(links: List<DrawerLink>, shape: RoundedPolygon, modifier
                 colors = ListItemDefaults.segmentedColors(containerColor = colors.surfaceBright),
                 leadingContent = {
                     Box(
-                        Modifier.size(36.dp).clip(shape.toShape()).background(colors.secondaryContainer),
+                        Modifier.size(36.dp).clip(RoundedCornerShape(12.dp)).background(colors.secondaryContainer),
                         contentAlignment = Alignment.Center,
                     ) {
                         Icon(link.icon, contentDescription = null, tint = colors.onSecondaryContainer, modifier = Modifier.size(20.dp))
