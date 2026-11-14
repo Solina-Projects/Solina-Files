@@ -463,4 +463,6 @@
     <string name="feature_plugins_summary">Extend Solina Files with plugins</string>
     <string name="feature_vault_title">Vault</string>
     <string name="feature_vault_summary">Encrypted private storage</string>
+    <string name="settings_summary_features_all">All tools shown</string>
+    <string name="settings_summary_features_hidden">%1$d tools hidden</string>
 </resources>

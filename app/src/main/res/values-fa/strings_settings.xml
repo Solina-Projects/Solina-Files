@@ -462,4 +462,6 @@
     <string name="feature_plugins_summary">گسترش سولینا فایلز با افزونه</string>
     <string name="feature_vault_title">گاوصندوق</string>
     <string name="feature_vault_summary">حافظهٔ خصوصی رمزگذاری‌شده</string>
+    <string name="settings_summary_features_all">همهٔ ابزارها نمایش داده می‌شوند</string>
+    <string name="settings_summary_features_hidden">%1$d ابزار پنهان است</string>
 </resources>

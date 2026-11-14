@@ -298,6 +298,7 @@ private fun summary(page: SettingsPage, s: SolinaSettings, rootState: RootState)
         onOff(s.security.appLock, R.string.settings_summary_app_lock_on, R.string.settings_summary_app_lock_off),
         onOff(s.security.secureScreen, R.string.settings_summary_secure_on, R.string.settings_summary_secure_off),
     ).joinToString(separator())
+    SettingsPage.FEATURES -> if (s.features.disabled.isEmpty()) tr(R.string.settings_summary_features_all) else tr(R.string.settings_summary_features_hidden, s.features.disabled.size)
     SettingsPage.BACKUP -> tr(R.string.settings_summary_backup)
     SettingsPage.ABOUT -> tr(R.string.settings_summary_version, BuildConfig.VERSION_NAME)
     SettingsPage.SUPPORT -> tr(R.string.settings_support_summary)
