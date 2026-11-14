@@ -6,6 +6,8 @@ import androidx.compose.material.icons.rounded.LockOpen
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.res.stringResource
 import ir.solina.files.R
+import ir.solina.files.core.features.FeatureSet
+import ir.solina.files.core.features.SolinaFeature
 import ir.solina.files.core.vault.Vault
 import ir.solina.files.core.vault.VaultStore
 import android.os.StatFs
@@ -146,6 +148,7 @@ fun SolinaDrawerContent(
     open: Boolean,
     closed: Boolean,
     actions: DrawerActions,
+    features: FeatureSet = FeatureSet(),
 ) {
     val reduced = LocalAppearance.current.motion == MotionStyle.REDUCED
     val entrance = remember { Animatable(if (reduced) 1f else 0f) }
@@ -228,33 +231,35 @@ fun SolinaDrawerContent(
             Modifier.stagger(),
         )
 
-        SectionTitle(stringResource(R.string.remote_title), Modifier.stagger())
-        val manageLabel = stringResource(R.string.drawer_manage_storages)
-        val sharingLabel = stringResource(R.string.drawer_wifi_sharing)
-        DrawerGroup(
-            buildList {
-                add(DrawerLink(manageLabel, Icons.Rounded.Cloud, actions.onNetwork))
+        val networkLinks = buildList {
+            if (features.isEnabled(SolinaFeature.NETWORK_STORAGE)) {
+                add(DrawerLink(stringResource(R.string.drawer_manage_storages), Icons.Rounded.Cloud, actions.onNetwork))
                 storages.forEach { c -> add(DrawerLink(c.name.ifBlank { c.host }, Icons.Rounded.CloudQueue) { actions.onStorage(c) }) }
-                add(DrawerLink(sharingLabel, Icons.Rounded.Wifi, actions.onShare))
-            },
-            MaterialShapes.Clover4Leaf,
-            Modifier.stagger(),
-        )
+            }
+            if (features.isEnabled(SolinaFeature.LAN_SHARING)) {
+                add(DrawerLink(stringResource(R.string.drawer_wifi_sharing), Icons.Rounded.Wifi, actions.onShare))
+            }
+        }
+        if (networkLinks.isNotEmpty()) {
+            SectionTitle(stringResource(R.string.remote_title), Modifier.stagger())
+            DrawerGroup(networkLinks, MaterialShapes.Clover4Leaf, Modifier.stagger())
+        }
 
-        SectionTitle(stringResource(R.string.common_tools), Modifier.stagger())
-        DrawerGroup(
-            listOf(
-                DrawerLink(stringResource(R.string.drawer_languages), Icons.Rounded.Terminal, actions.onLanguages),
-                DrawerLink(stringResource(R.string.apps_title), Icons.Rounded.Apps, actions.onApps),
-                DrawerLink(stringResource(R.string.color_picker_title), Icons.Rounded.Palette, actions.onColorPicker),
-                DrawerLink(stringResource(R.string.keys_title), Icons.Rounded.Key, actions.onSigningKeys),
-                DrawerLink(stringResource(R.string.plugin_title), Icons.Rounded.Extension, actions.onPlugins),
-            ),
-            MaterialShapes.Cookie9Sided,
-            Modifier.stagger(),
-        )
+        val toolLinks = buildList {
+            if (features.isEnabled(SolinaFeature.LANGUAGES)) add(DrawerLink(stringResource(R.string.drawer_languages), Icons.Rounded.Terminal, actions.onLanguages))
+            if (features.isEnabled(SolinaFeature.APP_MANAGER)) add(DrawerLink(stringResource(R.string.apps_title), Icons.Rounded.Apps, actions.onApps))
+            if (features.isEnabled(SolinaFeature.COLOR_PICKER)) add(DrawerLink(stringResource(R.string.color_picker_title), Icons.Rounded.Palette, actions.onColorPicker))
+            if (features.isEnabled(SolinaFeature.SIGNING_KEYS)) add(DrawerLink(stringResource(R.string.keys_title), Icons.Rounded.Key, actions.onSigningKeys))
+            if (features.isEnabled(SolinaFeature.PLUGINS)) add(DrawerLink(stringResource(R.string.plugin_title), Icons.Rounded.Extension, actions.onPlugins))
+        }
+        if (toolLinks.isNotEmpty()) {
+            SectionTitle(stringResource(R.string.common_tools), Modifier.stagger())
+            DrawerGroup(toolLinks, MaterialShapes.Cookie9Sided, Modifier.stagger())
+        }
 
-        VaultCard(actions.onVault, Modifier.stagger().padding(top = 22.dp))
+        if (features.isEnabled(SolinaFeature.VAULT)) {
+            VaultCard(actions.onVault, Modifier.stagger().padding(top = 22.dp))
+        }
 
         Row(
             Modifier.fillMaxWidth().stagger().padding(top = 10.dp),

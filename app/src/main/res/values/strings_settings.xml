@@ -439,4 +439,28 @@
     <string name="settings_support_copied">Address copied</string>
     <string name="settings_kw_support">donate donation support sponsor tip crypto wallet usdt trx tron bnb ton gram</string>
     <string name="settings_backup_not_solina">This is not a valid Solina Files settings backup.</string>
+
+    <!-- Feature management -->
+    <string name="settings_page_features">Features</string>
+    <string name="settings_features_subtitle">Choose which tools appear in Solina Files</string>
+    <string name="settings_features_group">Optional tools</string>
+    <string name="settings_features_footer">Turning a tool off only hides it. Your saved keys, connections and plugins are kept.</string>
+    <string name="settings_features_reset">Show all tools</string>
+    <string name="feature_needs_parent">Requires Network storage</string>
+    <string name="feature_network_title">Network storage</string>
+    <string name="feature_network_summary">FTP, SFTP, SMB and WebDAV locations</string>
+    <string name="feature_sharing_title">Wi-Fi sharing</string>
+    <string name="feature_sharing_summary">Share files over the local network</string>
+    <string name="feature_languages_title">Programming languages</string>
+    <string name="feature_languages_summary">Termux projects and runners</string>
+    <string name="feature_apps_title">App manager</string>
+    <string name="feature_apps_summary">Installed apps and APK tools</string>
+    <string name="feature_color_title">Color picker</string>
+    <string name="feature_color_summary">Pick and convert colors</string>
+    <string name="feature_keys_title">Signing keys</string>
+    <string name="feature_keys_summary">Keystores and certificates</string>
+    <string name="feature_plugins_title">Plugins</string>
+    <string name="feature_plugins_summary">Extend Solina Files with plugins</string>
+    <string name="feature_vault_title">Vault</string>
+    <string name="feature_vault_summary">Encrypted private storage</string>
 </resources>

@@ -29,6 +29,7 @@ import androidx.compose.material.icons.rounded.Restore
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Translate
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material.icons.rounded.VolunteerActivism
@@ -99,6 +100,7 @@ enum class SettingsPage(@StringRes val title: Int, val icon: ImageVector, val ti
     ACCESS(R.string.settings_page_access, Icons.Rounded.Shield, Tint.PRIMARY),
     OPENING(R.string.settings_page_opening, Icons.AutoMirrored.Rounded.OpenInNew, Tint.SECONDARY),
     SECURITY(R.string.security_title, Icons.Rounded.Security, Tint.TERTIARY),
+    FEATURES(R.string.settings_page_features, Icons.Rounded.Tune, Tint.SECONDARY),
     BACKUP(R.string.settings_page_backup, Icons.Rounded.Restore, Tint.PRIMARY),
     ABOUT(R.string.settings_page_about, Icons.Rounded.Info, Tint.NEUTRAL),
     SUPPORT(R.string.settings_support_title, Icons.Rounded.VolunteerActivism, Tint.TERTIARY),
@@ -112,7 +114,7 @@ object SettingsIndex {
     val home = listOf(
         R.string.settings_home_look to listOf(SettingsPage.LANGUAGE, SettingsPage.APPEARANCE, SettingsPage.FILE_LIST, SettingsPage.TOOLBAR),
         R.string.settings_home_files to listOf(SettingsPage.BEHAVIOR, SettingsPage.OPERATIONS, SettingsPage.OPENING, SettingsPage.EDITOR, SettingsPage.READER, SettingsPage.APPS),
-        R.string.settings_home_system to listOf(SettingsPage.ACCESS, SettingsPage.SECURITY, SettingsPage.BACKUP, SettingsPage.ABOUT),
+        R.string.settings_home_system to listOf(SettingsPage.ACCESS, SettingsPage.SECURITY, SettingsPage.FEATURES, SettingsPage.BACKUP, SettingsPage.ABOUT),
     )
 
     val entries = listOf(
@@ -240,6 +242,7 @@ fun SettingsScreen(
             SettingsPage.ACCESS -> AccessPage(settings, act, rootState, onRootAccess, back)
             SettingsPage.OPENING -> OpeningPage(settings, act, back)
             SettingsPage.SECURITY -> SecurityPage(settings, act, onOpenVault, back)
+            SettingsPage.FEATURES -> FeaturesPage(settings, act, back)
             SettingsPage.BACKUP -> BackupPage(act, activeFolder, back)
             SettingsPage.ABOUT -> AboutPage(back)
             SettingsPage.SUPPORT -> SupportPage(back)

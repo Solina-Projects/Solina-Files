@@ -11,6 +11,8 @@ import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import ir.solina.files.core.color.RecentColors
+import ir.solina.files.core.features.FeatureSet
+import ir.solina.files.core.features.SolinaFeature
 import ir.solina.files.core.model.ActionLayout
 import ir.solina.files.core.model.AppearancePrefs
 import ir.solina.files.core.model.BehaviorPrefs
@@ -98,6 +100,7 @@ data class SolinaSettings(
     val runCommands: Map<String, String> = emptyMap(),
     val reader: ReaderPrefs = ReaderPrefs(),
     val actions: ActionLayout = ActionLayout(),
+    val features: FeatureSet = FeatureSet(),
 )
 
 fun SolinaSettings.sortFor(path: String): SortOrder = FolderSorts.effective(path, sortOrder, folderSorts)
@@ -189,6 +192,7 @@ class SettingsRepository(private val context: Context) {
         val ACTION_LAYOUT = stringPreferencesKey("action_layout")
         val ACTION_LAYOUT_SINGLE = stringPreferencesKey("action_layout_single")
         val ACTION_LAYOUT_DUAL = stringPreferencesKey("action_layout_dual")
+        val DISABLED_FEATURES = stringPreferencesKey("disabled_features")
 
         val BOOLEANS = listOf(
             SORT_DESC, DIRS_FIRST, SHOW_HIDDEN, DYNAMIC, PURE_BLACK, COLORFUL_ICONS, HAPTICS, SOUNDS, SOUNDS_IN_SILENT, THUMBNAILS, APK_ICONS, SHOW_DATE,
@@ -204,7 +208,7 @@ class SettingsRepository(private val context: Context) {
             SORT_BY, FOLDER_SORTS, THEME_MODE, THEME_STYLE, CONTRAST, CORNERS, ICON_SHAPE, MOTION, VIEW_MODE, DATE_STYLE, SIZE_UNITS,
             START_FOLDER, START_PATH, CONFLICT, UI_DENSITY, OPEN_DEFAULTS, EDITOR_THEME, APK_EXTRACT_DIR, APK_NAME_PATTERN,
             RENAME_HISTORY, RECENT_COLORS, PLUGIN_PINS, LAST_LEFT, LAST_RIGHT, RUN_COMMANDS, READER_THEME, READER_SPOTS, READER_MARKS,
-            ACTION_LAYOUT, ACTION_LAYOUT_SINGLE, ACTION_LAYOUT_DUAL, LOCK_DELAY, VAULT_LOCK_DELAY,
+            ACTION_LAYOUT, ACTION_LAYOUT_SINGLE, ACTION_LAYOUT_DUAL, LOCK_DELAY, VAULT_LOCK_DELAY, DISABLED_FEATURES,
         )
 
         val PRIVATE: Set<String> = setOf(
@@ -271,6 +275,10 @@ class SettingsRepository(private val context: Context) {
     suspend fun setDualPanePreferred(value: Boolean) = context.dataStore.edit { it[Keys.DUAL_PANE] = value }
     suspend fun setTrashByDefault(value: Boolean) = context.dataStore.edit { it[Keys.TRASH_DEFAULT] = value }
     suspend fun setTrashAutoCleanDays(days: Int) = context.dataStore.edit { it[Keys.TRASH_CLEAN_DAYS] = days }
+    suspend fun setFeatureEnabled(feature: SolinaFeature, enabled: Boolean) = context.dataStore.edit { p ->
+        val next = FeatureSet.decode(p[Keys.DISABLED_FEATURES]).with(feature, enabled).encode()
+        if (next.isEmpty()) p.remove(Keys.DISABLED_FEATURES) else p[Keys.DISABLED_FEATURES] = next
+    }
     suspend fun setRootAccess(value: Boolean) = context.dataStore.edit { it[Keys.ROOT_ACCESS] = value }
     suspend fun setShizukuAccess(value: Boolean) = context.dataStore.edit { it[Keys.SHIZUKU_ACCESS] = value }
     suspend fun setUiDensity(value: UiDensity) = context.dataStore.edit { it[Keys.UI_DENSITY] = value.name }
@@ -385,6 +393,7 @@ class SettingsRepository(private val context: Context) {
             apkNamePattern = p[Keys.APK_NAME_PATTERN] ?: "{A}_{V}",
             runCommands = RunCommands.decode(p[Keys.RUN_COMMANDS]),
             reader = readReader(p),
+            features = FeatureSet.decode(p[Keys.DISABLED_FEATURES]),
             actions = ActionLayout.decode(
                 if (p[Keys.DUAL_PANE] ?: false) {
                     p[Keys.ACTION_LAYOUT_DUAL] ?: p[Keys.ACTION_LAYOUT]

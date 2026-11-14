@@ -438,4 +438,28 @@
     <string name="settings_support_copied">آدرس کپی شد</string>
     <string name="settings_kw_support">حمایت کمک مالی دونیت اهدا کیف پول رمزارز ارز دیجیتال تتر ترون</string>
     <string name="settings_backup_not_solina">این فایل، پشتیبان معتبر تنظیمات سولینا فایلز نیست.</string>
+
+    <!-- مدیریت قابلیت‌ها -->
+    <string name="settings_page_features">قابلیت‌ها</string>
+    <string name="settings_features_subtitle">انتخاب کنید کدام ابزارها در سولینا فایلز نمایش داده شوند</string>
+    <string name="settings_features_group">ابزارهای اختیاری</string>
+    <string name="settings_features_footer">خاموش کردن یک ابزار فقط آن را پنهان می‌کند. کلیدها، اتصال‌ها و افزونه‌های ذخیره‌شده حفظ می‌شوند.</string>
+    <string name="settings_features_reset">نمایش همهٔ ابزارها</string>
+    <string name="feature_needs_parent">نیازمند فضای ذخیره‌سازی شبکه</string>
+    <string name="feature_network_title">فضای ذخیره‌سازی شبکه</string>
+    <string name="feature_network_summary">FTP، SFTP، SMB و WebDAV</string>
+    <string name="feature_sharing_title">اشتراک‌گذاری Wi-Fi</string>
+    <string name="feature_sharing_summary">اشتراک فایل در شبکهٔ محلی</string>
+    <string name="feature_languages_title">زبان‌های برنامه‌نویسی</string>
+    <string name="feature_languages_summary">پروژه‌ها و اجرای کد با Termux</string>
+    <string name="feature_apps_title">مدیر برنامه‌ها</string>
+    <string name="feature_apps_summary">برنامه‌های نصب‌شده و ابزار APK</string>
+    <string name="feature_color_title">انتخابگر رنگ</string>
+    <string name="feature_color_summary">انتخاب و تبدیل رنگ</string>
+    <string name="feature_keys_title">کلیدهای امضا</string>
+    <string name="feature_keys_summary">Keystore و گواهی‌ها</string>
+    <string name="feature_plugins_title">افزونه‌ها</string>
+    <string name="feature_plugins_summary">گسترش سولینا فایلز با افزونه</string>
+    <string name="feature_vault_title">گاوصندوق</string>
+    <string name="feature_vault_summary">حافظهٔ خصوصی رمزگذاری‌شده</string>
 </resources>

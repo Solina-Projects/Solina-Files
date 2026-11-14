@@ -336,6 +336,7 @@ fun AppShell(
                 SolinaDrawerContent(
                     root = root,
                     rootMode = settings.rootAccess,
+                    features = settings.features,
                     bookmarks = sidebarBookmarks,
                     storages = storages,
                     open = drawerState.targetValue == DrawerValue.Open,
