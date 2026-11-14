@@ -74,4 +74,4 @@ When reporting a problem, include the app version, Android version, device detai
 
 ## License
 
-Solina Files is distributed under the [GNU Affero General Public License v3.0 or later](LICENSE). Third-party components may have their own license terms; consult [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES) and the relevant component notices for details.
+Solina Files is distributed under the [GNU Affero General Public License v3.0 or later](LICENSE). Third-party components may have their own license terms; consult [THIRD_PARTY_NOTICES](THIRD_PARTY_NOTICES.md) and the relevant component notices for details.
