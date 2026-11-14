@@ -1,1 +1,51 @@
-IyBTb2xpbmEgRmlsZXMg4oCUIFJlZGVzaWduIHYyIChicmFuY2ggYGRlc2lnbi9yZWRlc2lnbi12MmApCgpGdWxsIHBoYXNlZCByZWRlc2lnbiBpbiBLb3RsaW4uIGBtYWluYCBpcyB1bnRvdWNoZWQ7IG1lcmdlIG9ubHkgd2hlbiB0aGUgdXNlcgpzYXlzIHNvLiBQbGFuIGFuZCBtb2NrdXBzOiBgfi93b3Jrc3BhY2Uvc29saW5hLWZpbGVzLWRlc2lnbi9gIChQTEFOLm1kLAptb2NrdXBzLmh0bWwpLgoKIyMgUGhhc2UgMSDigJQgZGVzaWduIHN5c3RlbSAodGhpcyBjb21taXQpCi0gKipTZWVkOioqIGV4cHJlc3NpdmUgcHVycGxlIGAjNjc1MEE0YCAoc2FtZSB3aW5uZXIgYXMgU29saW5hLVBsYXllciksCiAgc3R5bGUgYEVYUFJFU1NJVkVgLCBjb250cmFzdCBgTUVESVVNYCAoYEFwcGVhcmFuY2VQcmVmc2AgZGVmYXVsdHMpLgotICoqV2FsbHBhcGVyIGNvbG91cnMgT0ZGIGJ5IGRlZmF1bHQuKiogVGhleSB3ZXJlIHRoZSByZWFzb24gdGhlIFVJIGNhbWUgb3V0CiAgd2FzaGVkLW91dCBwYWxlIHBpbmsgb24gbW9zdCBwaG9uZXM7IHRoZSBTb2xpbmEgc2VlZCBvd25zIHRoZSBwYWxldHRlIG5vdy4KICBVc2VycyBjYW4gc3RpbGwgdHVybiB3YWxscGFwZXIgY29sb3VycyBiYWNrIG9uIGluIFNldHRpbmdzIOKGkiBBcHBlYXJhbmNlLgotICoqRm9udDoqKiBWYXppcm1hdG4gZm9yIGFsbCB0ZXh0IHN0eWxlcyAoYHVpL3RoZW1lL1R5cGUua3RgKS4KICBUaGUgVFRGIGZpbGVzIGFyZSBub3QgY29tbWl0dGVkOiBgYXBwL2ZldGNoLXZhemlybWF0bi5zaGAgZG93bmxvYWRzIHRoZW0KICAoU0hBLTI1NiB2ZXJpZmllZCwgU0lMIE9GTCAxLjEpIGludG8gYGFwcC9zcmMvbWFpbi9yZXMvZm9udC9gIGJlZm9yZSB0aGUKICBidWlsZCDigJQgc2FtZSBwYXR0ZXJuIGFzIGBuYXRpdmUvZmV0Y2gtcGRmaXVtLnNoYC4gVGhlIGZldGNoIHJ1bnMgZnJvbSBhCiAgYGZldGNoVmF6aXJtYXRuYCBHcmFkbGUgdGFzayB3aXJlZCBpbnRvIGBwcmVCdWlsZGAsIHNvIG5vIHdvcmtmbG93IGZpbGUKICBjaGFuZ2UgaXMgbmVlZGVkOyB0aGUgZmlsZXMgYXJlIGdpdC1pZ25vcmVkLiBGb250IGZpbGVzIG11c3QgYmUgbG93ZXJjYXNlCiAgYHZhemlybWF0bl8qLnR0ZmAg4oCUIEFuZHJvaWQgcmVzb3VyY2UgbmFtZXMgYWxsb3cgb25seSBh4oCTeiwgMOKAkzksIGBfYC4KLSAqKkZvbGRlcnM6KiogdGhlaXIgb3duIHB1cnBsZSBodWUgKDI2NSkgaW4gYEtpbmRQYWxldHRlYCBpbnN0ZWFkIG9mIHRoZQogIHNlZWQncyBwcmltYXJ5IGNvbnRhaW5lciDigJQgcHJldmlvdXNseSBldmVyeSBmb2xkZXIgd2FzIHRoZSBzYW1lIGJyb3duLgotICoqVG9rZW5zOioqIGB1aS90aGVtZS9Tb2xpbmFEZXNpZ24ua3RgIGRvY3VtZW50cyB0aGUgdjIgZGVjaXNpb25zLgotICoqQ0k6KiogdGhlIEdpdEh1YiBBcHAgaGFzIG5vIGB3b3JrZmxvd3NgIHBlcm1pc3Npb24sIHNvIHRoZSB3b3JrZmxvdyBmaWxlcwogIGNhbm5vdCBiZSB1cGRhdGVkIHZpYSBBUEkgYW5kIENJLW9uLXB1c2ggZm9yIHRoaXMgYnJhbmNoIGlzIE5PVCBlbmFibGVkLgogIFZlcmlmaWNhdGlvbiBydW5zIHRocm91Z2ggZHJhZnQgUFIgIzExIChgZGVzaWduL3JlZGVzaWduLXYyYCDihpIgYG1haW5gLAogIERPIE5PVCBNRVJHRSksIHdob3NlIGBwdWxsX3JlcXVlc3RgIHRyaWdnZXIgZmlyZXMgb24gZXZlcnkgcHVzaAogIChzeW5jaHJvbml6ZSkuIEEgZ3JlZW4gcnVuIGFsb25lIGlzIG5vdCBwcm9vZiDigJQgaW5zdGFsbCB0aGUgZGVidWcgQVBLCiAgYXJ0aWZhY3Qgb24tZGV2aWNlIChQT0NPIEYzKS4gUGhhc2UgMSB2ZXJpZmllZCBncmVlbiBvbiAyMDI2LTExLTE0CiAgKENJICYgQVBLIEJ1aWxkIHJ1biA0MzQ5MTAyOTA2MCkuCgojIyBQaGFzZSAyIOKAlCBIb21lICsgZHJhd2VyICh0aGlzIGNvbW1pdCkKLSAqKkhvbWUgKGBmZWF0dXJlL2hvbWUvSG9tZVNjcmVlbi5rdGApOioqIGFsbCBVSSBsYWJlbHMgUGVyc2lhbjsgY2F0ZWdvcnkKICBjb2xvdXJzIGZyb20gYEtpbmRQYWxldHRlYCAob25lIGh1ZSBwZXIgZmlsZSBraW5kKSBpbnN0ZWFkIG9mIGhhcmRjb2RlZAogIHJhbmRvbSBjb2xvdXJzOyBzaG9ydGN1dCBpY29ucyB0aW50ZWQgYnkga2luZDsgc3RvcmFnZSBiYXIgdGhpY2tlcgogICgxNCBkcCkgb24gYSBoaWdoZXItY29udHJhc3QgdHJhY2suCi0gKipEcmF3ZXIgKGB1aS9kcmF3ZXIvU29saW5hRHJhd2VyLmt0YCk6KiogUGxhY2VzIHRpbGVzIHNoYXJlIG9uZSByb3VuZGVkCiAgc2hhcGUgKDIwIGRwKSBhbmQgdGFrZSB0aGVpciBjb2xvdXIgZnJvbSBgS2luZFBhbGV0dGVgIOKAlCB0aGUgb2xkIHRpbGVzCiAgZWFjaCBoYWQgYSByYW5kb20gbW9ycGggc2hhcGUgYW5kIGFuIGFuYWxvZ291cyBwYWxldHRlLCBzbwogIGByZW1lbWJlclBsYWNlUGFsZXR0ZWAsIGBNb3JwaFNoYXBlYCBhbmQgdGhlIHBlci1wbGFjZSBzaGFwZXMgYXJlIGdvbmUuCiAgRHJhd2VyIGdyb3VwcyB1c2Ugb25lIGZpeGVkIGljb24gc2hhcGUgKDEyIGRwKS4gVGhlIGhhcmRjb2RlZCBQZXJzaWFuCiAgItin2LPYqtmB2KfYr9mH4oCM2LTYr9mHIiBpbiB0aGUgc3RvcmFnZSBjYXJkIGlzIG5vdyBgUi5zdHJpbmcuZHJhd2VyX3VzZWRgCiAgKHZhbHVlcyArIHZhbHVlcy1mYSkuCi0gKipOb3QgZG9uZSB5ZXQ6KiogbGF1bmNoZXIgaWNvbiBpcyBzdGlsbCB0aGUgY29waWVkIEpQRywgYW5kIHRoZSBzdHJheQogIHJvb3QgaW1hZ2VzIChgUG9saXNoXypgLCBgMTc5Mjg5Ki5qcGdgKSBhcmUgc3RpbGwgaW4gdGhlIHJlcG8g4oCUIFBoYXNlIDQuCgojIyBOZXh0IHBoYXNlcwotICoqUGhhc2UgMzoqKiBFeHBsb3JlciDigJQgc2luZ2xlIHBhbmUgYnkgZGVmYXVsdCBvbiBwaG9uZSBwb3J0cmFpdAogIChkdWFsIHBhbmUgc3RheXMgYSBzZXR0aW5nIGZvciB0YWJsZXRzL2xhbmRzY2FwZTsgaXRzIGRlZmF1bHQgd2FzIGFscmVhZHkKICBvZmYpLCBvbmUgZmxvYXRpbmcgIisiIGFjdGlvbiwgcm93IHNob3dzIGRhdGUgKyBjb3VudC9zaXplLgotICoqUGhhc2UgNDoqKiBTdHJ1Y3R1cmUgY2xlYW51cCwgZGVhZC1jb2RlIHJlbW92YWwsIHRlc3RzIGZvciBzZW5zaXRpdmUKICBhcmVhcyAodmF1bHQsIGFyY2hpdmVzLCBuZXR3b3JrKS4gTm8gZmVhdHVyZSBpcyByZW1vdmVkIGluIHRoZSByZWRlc2lnbi4K
+# Solina Files — Redesign v2 (branch `design/redesign-v2`)
+
+Full phased redesign in Kotlin. `main` is untouched; merge only when the user
+says so. Plan and mockups: `~/workspace/solina-files-design/` (PLAN.md,
+mockups.html).
+
+## Phase 1 — design system (this commit)
+- **Seed:** expressive purple `#6750A4` (same winner as Solina-Player),
+  style `EXPRESSIVE`, contrast `MEDIUM` (`AppearancePrefs` defaults).
+- **Wallpaper colours OFF by default.** They were the reason the UI came out
+  washed-out pale pink on most phones; the Solina seed owns the palette now.
+  Users can still turn wallpaper colours back on in Settings → Appearance.
+- **Font:** Vazirmatn for all text styles (`ui/theme/Type.kt`).
+  The TTF files are not committed: `app/fetch-vazirmatn.sh` downloads them
+  (SHA-256 verified, SIL OFL 1.1) into `app/src/main/res/font/` before the
+  build — same pattern as `native/fetch-pdfium.sh`. The fetch runs from a
+  `fetchVazirmatn` Gradle task wired into `preBuild`, so no workflow file
+  change is needed; the files are git-ignored. Font files must be lowercase
+  `vazirmatn_*.ttf` — Android resource names allow only a–z, 0–9, `_`.
+- **Folders:** their own purple hue (265) in `KindPalette` instead of the
+  seed's primary container — previously every folder was the same brown.
+- **Tokens:** `ui/theme/SolinaDesign.kt` documents the v2 decisions.
+- **CI:** the GitHub App has no `workflows` permission, so the workflow files
+  cannot be updated via API and CI-on-push for this branch is NOT enabled.
+  Verification runs through draft PR #11 (`design/redesign-v2` → `main`,
+  DO NOT MERGE), whose `pull_request` trigger fires on every push
+  (synchronize). A green run alone is not proof — install the debug APK
+  artifact on-device (POCO F3). Phase 1 verified green on 2026-11-14
+  (CI & APK Build run 43491029060).
+
+## Phase 2 — Home + drawer (this commit)
+- **Home (`feature/home/HomeScreen.kt`):** all UI labels Persian; category
+  colours from `KindPalette` (one hue per file kind) instead of hardcoded
+  random colours; shortcut icons tinted by kind; storage bar thicker
+  (14 dp) on a higher-contrast track.
+- **Drawer (`ui/drawer/SolinaDrawer.kt`):** Places tiles share one rounded
+  shape (20 dp) and take their colour from `KindPalette` — the old tiles
+  each had a random morph shape and an analogous palette, so
+  `rememberPlacePalette`, `MorphShape` and the per-place shapes are gone.
+  Drawer groups use one fixed icon shape (12 dp). The hardcoded Persian
+  "استفاده‌شده" in the storage card is now `R.string.drawer_used`
+  (values + values-fa).
+- **Not done yet:** launcher icon is still the copied JPG, and the stray
+  root images (`Polish_*`, `179289*.jpg`) are still in the repo — Phase 4.
+
+## Next phases
+- **Phase 3:** Explorer — single pane by default on phone portrait
+  (dual pane stays a setting for tablets/landscape; its default was already
+  off), one floating "+" action, row shows date + count/size.
+- **Phase 4:** Structure cleanup, dead-code removal, tests for sensitive
+  areas (vault, archives, network). No feature is removed in the redesign.
