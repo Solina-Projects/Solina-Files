@@ -30,7 +30,6 @@ import ir.solina.files.core.archive.PasswordRequiredException
 import ir.solina.files.core.archive.WrongPasswordException
 import ir.solina.files.core.bookmarks.Bookmark
 import ir.solina.files.core.bookmarks.BookmarkRepository
-import ir.solina.files.core.bookmarks.Bookmarks
 import ir.solina.files.core.crypto.FileCipher
 import ir.solina.files.core.crypto.IncorrectPasswordException
 import ir.solina.files.core.data.SettingsRepository
@@ -50,7 +49,6 @@ import ir.solina.files.core.fs.Mounts
 import ir.solina.files.core.fs.MountEntry
 import ir.solina.files.core.fs.LocalFileAccess
 import ir.solina.files.core.fs.OpProgress
-import ir.solina.files.core.model.ConflictChoice
 import ir.solina.files.core.model.FileItem
 import ir.solina.files.core.pdf.PdfMerger
 import ir.solina.files.core.model.SortOrder
@@ -138,6 +136,8 @@ class ExplorerViewModel(
     )
     val state: StateFlow<ExplorerUiState> = _state.asStateFlow()
 
+    private val bookmarks = BookmarkActions(bookmarkRepo, viewModelScope, ::postMessage)
+
     // Pane streams isolate list rendering from updates to the opposite pane and global UI state.
     private val leftPaneState: StateFlow<PaneState> = _state
         .map { it.left }
@@ -220,12 +220,7 @@ class ExplorerViewModel(
         }
     }
 
-    private fun conflictPolicy(): Conflict? = when (_state.value.settings.operations.conflict) {
-        ConflictChoice.ASK -> null
-        ConflictChoice.KEEP_BOTH -> Conflict.KEEP_BOTH
-        ConflictChoice.OVERWRITE -> Conflict.OVERWRITE
-        ConflictChoice.SKIP -> Conflict.SKIP
-    }
+    private fun conflictPolicy(): Conflict? = ExplorerRules.conflictPolicy(_state.value.settings.operations.conflict)
 
     private val keepTime: Boolean get() = _state.value.settings.operations.keepModifiedTime
 
@@ -824,8 +819,7 @@ class ExplorerViewModel(
         }
     }
 
-    private fun signedApkName(name: String): String =
-        if (name.endsWith(".apk", ignoreCase = true)) name.dropLast(4) + "-signed.apk" else "$name-signed.apk"
+    private fun signedApkName(name: String): String = ExplorerRules.signedApkName(name)
 
     private fun defaultSigningKey(): SigningKey = SigningKeys.default(getApplication<Application>().filesDir)
 
@@ -980,17 +974,7 @@ class ExplorerViewModel(
         }
     }
 
-    fun addBookmarks(paths: List<String>) = viewModelScope.launch {
-        var added = 0
-        bookmarkRepo.edit { list -> Bookmarks.add(list, paths).also { added = it.second }.first }
-        postMessage(
-            when (added) {
-                0 -> tr(R.string.explorer_bookmark_exists)
-                1 -> tr(R.string.explorer_bookmark_added)
-                else -> trPlural(R.plurals.explorer_bookmarks_added, added, added)
-            },
-        )
-    }
+    fun addBookmarks(paths: List<String>) = bookmarks.add(paths)
 
     fun addSelectionToBookmarks(pane: Pane) {
         val paths = selectedItems(pane).map { it.path }
@@ -999,19 +983,15 @@ class ExplorerViewModel(
         clearSelection(pane)
     }
 
-    fun updateBookmark(path: String, edited: Bookmark) = viewModelScope.launch {
-        var error: String? = null
-        bookmarkRepo.edit { list -> Bookmarks.update(list, path, edited).getOrElse { e -> error = e.message; list } }
-        postMessage(error)
-    }
+    fun updateBookmark(path: String, edited: Bookmark) = bookmarks.update(path, edited)
 
-    fun removeBookmark(path: String) = viewModelScope.launch { bookmarkRepo.edit { Bookmarks.remove(it, listOf(path)) } }
+    fun removeBookmark(path: String) = bookmarks.remove(path)
 
-    fun moveBookmark(path: String, offset: Int) = viewModelScope.launch { bookmarkRepo.edit { Bookmarks.move(it, path, offset) } }
+    fun moveBookmark(path: String, offset: Int) = bookmarks.move(path, offset)
 
-    fun deleteBookmarkGroup(group: String) = viewModelScope.launch { bookmarkRepo.edit { Bookmarks.deleteGroup(it, group) } }
+    fun deleteBookmarkGroup(group: String) = bookmarks.deleteGroup(group)
 
-    fun renameBookmarkGroup(from: String, to: String) = viewModelScope.launch { bookmarkRepo.edit { Bookmarks.renameGroup(it, from, to) } }
+    fun renameBookmarkGroup(from: String, to: String) = bookmarks.renameGroup(from, to)
 
     fun openBookmark(pane: Pane, bookmark: Bookmark) = viewModelScope.launch {
         setActive(pane)
