@@ -72,13 +72,10 @@ import ir.solina.files.core.termux.Project
 import ir.solina.files.core.termux.TermuxProjects
 import ir.solina.files.core.util.FileKind
 import ir.solina.files.core.util.FileKinds
-import ir.solina.files.core.util.IntentUtils
 import ir.solina.files.feature.explorer.dnd.DragLayer
 import ir.solina.files.feature.explorer.dnd.FileDragState
 import ir.solina.files.feature.explorer.dnd.LocalFileDrag
 import ir.solina.files.feature.explorer.dnd.dragHost
-import ir.solina.files.feature.explorer.components.BottomBarActions
-import ir.solina.files.feature.explorer.components.ExplorerBottomBar
 import ir.solina.files.feature.explorer.components.PaneColumn
 import ir.solina.files.feature.explorer.components.TaskOverlay
 import ir.solina.files.feature.settings.ToolbarTab
@@ -264,87 +261,26 @@ fun ExplorerScreen(
             )
         },
         bottomBar = {
-            ExplorerBottomBar(
-                selectionCount = ui.activePane.selected.size,
-                canBack = ui.activePane.history.canBack,
-                canForward = ui.activePane.history.canForward,
-                activeIsLeft = ui.active == Pane.LEFT,
+            ExplorerBottomBarHost(
+                ui = ui,
+                vm = vm,
                 dual = dual,
-                clipboardCount = ui.clipboard?.items?.size ?: 0,
-                clipboardIsMove = ui.clipboard?.move == true,
-                selectedFiles = selection.count { !it.isDirectory },
-                remote = ui.isRemote(ui.active),
-                projectLabel = project?.kind?.label,
+                selection = selection,
+                single = single,
+                project = project,
                 smaliFolder = smaliFolder,
                 jarFile = jarFile,
-                vault = ui.isVault(ui.active),
-                browse = ui.settings.actions.browse,
-                selection = ui.settings.actions.selection,
-                showHidden = ui.settings.showHidden,
                 horizontalSplit = horizontalSplit,
+                termux = termux,
+                visibleOfActive = ::visibleOfActive,
+                selectionInOrder = ::selectionInOrder,
                 onToggleOrientation = { horizontalSplit = !horizontalSplit },
-                gridView = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID,
-                onToggleViewLayout = { vm.toggleViewMode() },
-                onTogglePaneMode = {
-                    if (!dual && ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) vm.toggleViewMode()
-                    vm.setDualPanePreferred(!dual)
-                    quickCreateExpanded = false
-                    layoutMenuExpanded = false
-                },
-                onSwapPane = vm::swapPanes,
-                actions = BottomBarActions(
-                    onBack = { vm.goBack(ui.active) },
-                    onForward = { vm.goForward(ui.active) },
-                    onUp = { vm.navigateUp(ui.active) },
-                    onHome = { vm.goHome(ui.active) },
-                    onSwap = vm::swapPanes,
-                    onNewFolder = { dialog = Dialog.NewFolder(ui.active) },
-                    onNewFile = { dialog = Dialog.NewFile(ui.active) },
-                    onRefresh = { vm.refresh(ui.active) },
-                    onPaste = { vm.paste(ui.active) },
-                    onCancelClipboard = vm::clearClipboard,
-                    onSelectAll = { vm.selectAll(ui.active, visibleOfActive()) },
-                    onClearSelection = { vm.clearSelection(ui.active) },
-                    onCopyToOther = { vm.beginTransfer(move = false) },
-                    onMoveToOther = { vm.beginTransfer(move = true) },
-                    onCopyToClipboard = { vm.copySelectionToClipboard(ui.active, move = false) },
-                    onCutToClipboard = { vm.copySelectionToClipboard(ui.active, move = true) },
-                    onDelete = { dialog = Dialog.Delete },
-                    onRename = { selection.firstOrNull()?.let { dialog = Dialog.Rename(ui.active, it) } },
-                    onCompress = { dialog = Dialog.CreateArchive(ui.active, selectionInOrder()) },
-                    onShare = { IntentUtils.share(context, selection) },
-                    onProperties = { dialog = Dialog.Properties(selection) },
-                    onInvert = { vm.invertSelection(ui.active, visibleOfActive()) },
-                    onBookmarks = { dialog = Dialog.Bookmarks },
-                    onBookmarkFolder = { vm.addBookmarks(listOf(ui.activePane.path)) },
-                    onBookmarkSelection = { vm.addSelectionToBookmarks(ui.active) },
-                    onBatchRename = { dialog = Dialog.BatchRename(ui.active, selectionInOrder()) },
-                    onCreateLinks = { dialog = Dialog.CreateLink(ui.active, selectionInOrder()) },
-                    onMerge = { dialog = Dialog.Merge(ui.active, selectionInOrder().filterNot { it.isDirectory }) },
-                    onCompare = {
-                        val two = selectionInOrder().filterNot { it.isDirectory }
-                        if (two.size == 2) onCompare(two[0], two[1])
-                    },
-                    onNewProject = { dialog = Dialog.NewProject(ui.activePane.path) },
-                    onOpenTerminal = { termux.openTerminal(ui.activePane.path) },
-                    onRunProject = { project?.let { dialog = Dialog.RunProject(it) } },
-                    onSmaliToDex = { single?.let { vm.smaliToDex(ui.active, it) } },
-                    onJarToDex = { single?.let { vm.jarToDex(ui.active, it) } },
-                    onFilter = { vm.setSearchActive(true) },
-                    onSearch = {
-                        if (RemoteUri.isRemote(ui.activePane.path)) {
-                            scope.launch { snackbar.showSnackbar(tr(R.string.explorer_search_local_only)) }
-                        } else {
-                            onOpenSearch(ui.activePane.path)
-                        }
-                    },
-                    onSort = { dialog = Dialog.Sort },
-                    onJump = { dialog = Dialog.JumpTo(ui.active) },
-                    onToggleHidden = { vm.setShowHidden(!ui.settings.showHidden) },
-                    onCustomize = onCustomize,
-                    onMoveToVault = { vm.moveSelectionToVault(ui.active) },
-                    onRestore = { vm.restoreFromVault(ui.active) },
-                ),
+                onResetMenus = { quickCreateExpanded = false; layoutMenuExpanded = false },
+                onDialog = { dialog = it },
+                onCompare = onCompare,
+                onOpenSearch = onOpenSearch,
+                onSearchLocalOnly = { scope.launch { snackbar.showSnackbar(tr(R.string.explorer_search_local_only)) } },
+                onCustomize = onCustomize,
             )
         },
     ) { padding ->
