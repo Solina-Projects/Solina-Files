@@ -39,7 +39,7 @@ Feature availability may vary by version, device, permissions, and build configu
 
 Check the repository's [Releases](https://github.com/Solina-Projects/Solina-Files/releases) for published versions and the [Actions](https://github.com/Solina-Projects/Solina-Files/actions) page for automated build results and development artifacts.
 
-When available, choose the APK matching your device architecture. ARM64 (`arm64-v8a`) is suitable for most modern 64-bit Android devices, while ARMv7 (`armeabi-v7a`) is for compatible 32-bit ARM devices. A universal APK may support a wider range of devices but can be larger. Check the actual release assets and notes before installing.
+**Requirements:** Android 12 (API 31) or newer, 64-bit ARM device (`arm64-v8a`). Only a debug build for `arm64-v8a` is produced by CI; no release, ARMv7, x86 or universal APKs are built.
 
 A successful workflow run is required before treating a build as verified. Development builds and release builds may differ in signing, optimization, and supported configurations.
 
@@ -57,7 +57,7 @@ A successful workflow run is required before treating a build as verified. Devel
 From the repository root, prepare the Rust targets and native dependencies, then run the Gradle task:
 
 ```bash
-rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
+rustup target add aarch64-linux-android
 cargo install cargo-ndk --locked
 native/fetch-pdfium.sh
 native/build.sh

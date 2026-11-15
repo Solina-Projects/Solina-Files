@@ -12,14 +12,12 @@ if [[ -z "${ANDROID_NDK_HOME:-}" ]]; then
 fi
 echo "Using NDK: ${ANDROID_NDK_HOME:-<none>}"
 
-for t in aarch64_linux_android armv7_linux_androideabi x86_64_linux_android; do
+for t in aarch64_linux_android; do
   export "CXXFLAGS_${t}=-D_POSIX_C_SOURCE=200809L"
 done
 
 cargo ndk \
   -t arm64-v8a \
-  -t armeabi-v7a \
-  -t x86_64 \
   -o ../app/src/main/jniLibs \
   build --release
 

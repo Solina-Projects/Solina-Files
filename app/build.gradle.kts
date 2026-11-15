@@ -33,13 +33,16 @@ android {
 
     defaultConfig {
         applicationId = "ir.solina.files"
-        minSdk = 24
+        minSdk = 31  // Android 12+
         targetSdk = 36
         versionCode = (project.property("solina.versionCode") as String).toInt()
         versionName = project.property("solina.versionName") as String
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
+
+        // Only 64-bit ARM is built and shipped.
+        ndk { abiFilters += "arm64-v8a" }
     }
 
     signingConfigs {
@@ -80,15 +83,6 @@ android {
         }
     }
     testBuildType = (findProperty("solina.testBuildType") as String?) ?: "debug"
-
-    splits {
-        abi {
-            isEnable = providers.gradleProperty("solina.splitApks").map { it.toBoolean() }.getOrElse(false)
-            reset()
-            include("arm64-v8a", "armeabi-v7a", "x86_64")
-            isUniversalApk = true
-        }
-    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
