@@ -293,23 +293,23 @@ private fun BrowseActions(
                         expanded = layoutMenu,
                         onDismiss = { layoutMenu = false },
                         groups = listOf(buildList {
-                            if (!dual) add(MenuEntry("نمای شبکه‌ای", Icons.Rounded.GridView) { layoutMenu = false; if (!gridView) onToggleViewLayout() })
-                            add(MenuEntry("نمای فهرستی", Icons.Rounded.ViewList) { layoutMenu = false; if (gridView) onToggleViewLayout() })
-                            add(MenuEntry("تنظیم نوار", Icons.Rounded.DashboardCustomize) { layoutMenu = false; a.onCustomize(ToolbarTab.BROWSE) })
+                            if (!dual) add(MenuEntry(stringResource(R.string.fab_grid_layout), Icons.Rounded.GridView) { layoutMenu = false; if (!gridView) onToggleViewLayout() })
+                            add(MenuEntry(stringResource(R.string.fab_list_layout), Icons.Rounded.ViewList) { layoutMenu = false; if (gridView) onToggleViewLayout() })
+                            add(MenuEntry(stringResource(R.string.bar_customize), Icons.Rounded.DashboardCustomize) { layoutMenu = false; a.onCustomize(ToolbarTab.BROWSE) })
                         }),
                     )
                 }
                 BrowseAction.PANE_MODE -> BarButton(
                     icon = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
-                    description = if (dual) "تبدیل به تک‌پنجره" else "تبدیل به دوپنجره",
+                    description = if (dual) stringResource(R.string.fab_single_pane) else stringResource(R.string.fab_dual_pane),
                 ) { onTogglePaneMode() }
                 BrowseAction.ORIENTATION -> if (dual) BarButton(
                     icon = if (horizontalSplit) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda,
-                    description = if (horizontalSplit) "چیدن پنل‌ها کنار هم" else "چیدن پنل‌ها روی هم",
+                    description = if (horizontalSplit) stringResource(R.string.fab_side_panes) else stringResource(R.string.fab_stack_panes),
                 ) { onToggleOrientation() }
                 BrowseAction.SWAP_PANES -> if (dual) BarButton(
                     icon = Icons.Rounded.SwapHoriz,
-                    description = if (activeIsLeft) "فعال‌کردن پنل راست" else "فعال‌کردن پنل چپ",
+                    description = if (activeIsLeft) stringResource(R.string.bar_activate_right) else stringResource(R.string.bar_activate_left),
                 ) { onSwapPane() }
                 BrowseAction.SWAP -> BarButton(
                     icon = actionIcon(action),

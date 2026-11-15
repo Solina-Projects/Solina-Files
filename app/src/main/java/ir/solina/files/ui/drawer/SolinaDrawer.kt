@@ -381,7 +381,7 @@ private fun StorageSolina(path: String, open: Boolean, reduced: Boolean, modifie
                 )
             }
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Text("استفاده‌شده", style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
+                Text(stringResource(R.string.drawer_storage_used), style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
                 Spacer(Modifier.weight(1f))
                 Text(
                     if (total > 0L) Formatters.size((total - free).coerceAtLeast(0L)) else "—",

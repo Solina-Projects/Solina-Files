@@ -489,4 +489,8 @@
     <string name="fab_single_pane">Switch to single pane</string>
     <string name="fab_dual_pane">Switch to dual pane</string>
     <string name="fab_selected">Selected: %1$s</string>
+    <string name="bar_customize">Customize bar</string>
+    <string name="bar_activate_right">Activate right pane</string>
+    <string name="bar_activate_left">Activate left pane</string>
+    <string name="drawer_storage_used">Used</string>
 </resources>

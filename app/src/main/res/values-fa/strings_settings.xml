@@ -488,4 +488,8 @@
     <string name="fab_single_pane">تبدیل به تک‌پنجره</string>
     <string name="fab_dual_pane">تبدیل به دوپنجره</string>
     <string name="fab_selected">انتخاب شده: %1$s</string>
+    <string name="bar_customize">تنظیم نوار</string>
+    <string name="bar_activate_right">فعال‌کردن پنل راست</string>
+    <string name="bar_activate_left">فعال‌کردن پنل چپ</string>
+    <string name="drawer_storage_used">استفاده‌شده</string>
 </resources>
