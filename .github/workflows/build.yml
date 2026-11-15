@@ -2,7 +2,7 @@ name: Build
 
 on:
   push:
-    branches: [main, 'refactor/**']
+    branches: [main, 'refactor/**', 'rewrite/**']
     tags: ['v*', 'V*']
   pull_request:
   workflow_dispatch:
