@@ -113,9 +113,7 @@ class ExplorerViewModel(
         onTrusted = { c -> remoteRepo.save(c) },
     )
 
-    private val remoteOpened = LinkedHashMap<String, RemoteOpened>()
-
-    private data class RemoteOpened(val uri: String, val stamp: Long, val length: Long)
+    private val remoteEdits = RemoteEditTracker()
 
     private val lister = DirectoryLister(
         storageRoot = rootPath,
@@ -1174,7 +1172,7 @@ class ExplorerViewModel(
                     val local = File(File(getApplication<Application>().cacheDir, "remote-panes/$id"), path.removePrefix("/"))
                     local.parentFile?.mkdirs()
                     sessions.use(id) { fs -> local.outputStream().use { out -> fs.download(path, out) } }
-                    remoteOpened[local.path] = RemoteOpened(item.path, local.lastModified(), local.length())
+                    remoteEdits.track(local, item.path)
                     if (id == Vault.ID) Vault.store.trackOpened(local, path)
                     local
                 }
@@ -1185,9 +1183,8 @@ class ExplorerViewModel(
     }
 
     fun checkRemoteEdits() {
-        remoteOpened.keys.filter { !File(it).exists() }.forEach { remoteOpened.remove(it) }
-        val edited = remoteOpened.filter { (copy, o) -> File(copy).let { it.exists() && (it.lastModified() != o.stamp || it.length() != o.length) } }
-        _state.update { it.copy(remoteEdits = edited.map { (copy, o) -> RemoteEdit(copy, o.uri) }) }
+        val pending = remoteEdits.pending()
+        _state.update { it.copy(remoteEdits = pending) }
     }
 
     fun uploadRemoteEdits() {
@@ -1203,7 +1200,7 @@ class ExplorerViewModel(
                     runCatching { sessions.use(id) { fs -> File(e.copy).inputStream().use { fs.upload(it, path) } } }
                         .onSuccess {
                             File(e.copy).let { f ->
-                                remoteOpened[e.copy] = RemoteOpened(e.uri, f.lastModified(), f.length())
+                                remoteEdits.track(f, e.uri)
                                 if (id == Vault.ID) Vault.store.trackOpened(f, path)
                             }
                         }
@@ -1217,9 +1214,7 @@ class ExplorerViewModel(
     }
 
     fun keepRemoteEdits() {
-        _state.value.remoteEdits.forEach { e ->
-            remoteOpened[e.copy]?.let { o -> File(e.copy).let { f -> remoteOpened[e.copy] = o.copy(stamp = f.lastModified(), length = f.length()) } }
-        }
+        _state.value.remoteEdits.forEach { e -> remoteEdits.markSynced(e.copy) }
         _state.update { it.copy(remoteEdits = emptyList()) }
     }
 
@@ -1324,7 +1319,7 @@ class ExplorerViewModel(
             updatePane(pane) { it.copy(items = emptyList(), selected = emptySet()) }
             navigate(pane, back, history = HistoryOp.NONE)
         }
-        remoteOpened.keys.filter { it.contains("/remote-panes/${Vault.ID}/") }.forEach { remoteOpened.remove(it) }
+        remoteEdits.forgetMatching("/remote-panes/${Vault.ID}/")
         if (left && locked) postMessage(tr(R.string.vault_locked_message))
     }
 
