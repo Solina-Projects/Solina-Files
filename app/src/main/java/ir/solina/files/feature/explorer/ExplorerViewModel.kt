@@ -17,12 +17,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import ir.solina.files.core.apk.ApkSigning
-import ir.solina.files.core.apk.KeyStoreFactory
-import ir.solina.files.core.apk.KeystoreFile
-import ir.solina.files.core.apk.KeystoreFormat
-import ir.solina.files.core.apk.SavedKeys
 import ir.solina.files.core.apk.SigningKey
-import ir.solina.files.core.apk.SigningKeys
 import ir.solina.files.core.archive.ArchiveCreator
 import ir.solina.files.core.archive.ArchiveManager
 import ir.solina.files.core.archive.ArchiveOptions
@@ -137,6 +132,8 @@ class ExplorerViewModel(
     val state: StateFlow<ExplorerUiState> = _state.asStateFlow()
 
     private val bookmarks = BookmarkActions(bookmarkRepo, viewModelScope, ::postMessage)
+
+    private val signingKeys = SigningKeyResolver(app.filesDir)
 
     // Pane streams isolate list rendering from updates to the opposite pane and global UI state.
     private val leftPaneState: StateFlow<PaneState> = _state
@@ -744,14 +741,7 @@ class ExplorerViewModel(
     fun signApk(item: FileItem, request: ir.solina.files.feature.apk.SignRequest) {
         if (RemoteUri.isRemote(item.path)) return notOnStorage()
         val dir = item.parentPath ?: return
-        val keyStep = tr(
-            when (request) {
-                is ir.solina.files.feature.apk.SignRequest.Quick -> R.string.explorer_step_default_key
-                is ir.solina.files.feature.apk.SignRequest.SavedKey -> R.string.explorer_step_saved_key
-                is ir.solina.files.feature.apk.SignRequest.NewKey -> R.string.explorer_step_new_key
-                is ir.solina.files.feature.apk.SignRequest.ExistingKeystore -> R.string.explorer_step_keystore
-            },
-        )
+        val keyStep = signingKeys.stepLabel(request)
         var keptMessage: String? = null
         if (_state.value.build?.finished == false) return
         viewModelScope.launch {
@@ -764,25 +754,7 @@ class ExplorerViewModel(
                     summary = { out: File -> tr(R.string.explorer_signed_as, out.name) },
                 ) { log ->
                     log.step(keyStep)
-                    val key: SigningKey = when (request) {
-                        is ir.solina.files.feature.apk.SignRequest.Quick -> defaultSigningKey()
-                        is ir.solina.files.feature.apk.SignRequest.SavedKey ->
-                            SavedKeys(File(getApplication<Application>().filesDir, "keystores")).load(request.id)
-                        is ir.solina.files.feature.apk.SignRequest.NewKey -> {
-                            val key = KeyStoreFactory.generateKey(request.identity)
-                            SavedKeys(File(getApplication<Application>().filesDir, "keystores")).save(request.alias, key)
-                            log.info(tr(R.string.explorer_kept_as, request.alias))
-                            keptMessage = tr(R.string.explorer_signed_kept)
-                            if (request.jksCopy) {
-                                val jks = FsUtil.uniqueSibling(File(dir, "${request.alias}.jks"), isDirectory = false)
-                                jks.writeBytes(KeystoreFile.export(KeystoreFormat.JKS, listOf(request.alias to key), request.storePassword, request.keyPassword))
-                                log.info(tr(R.string.explorer_saved_file, jks.name))
-                                keptMessage = tr(R.string.explorer_signed_kept_jks, jks.name)
-                            }
-                            key
-                        }
-                        is ir.solina.files.feature.apk.SignRequest.ExistingKeystore -> KeyStoreFactory.load(request.spec)
-                    }
+                    val key: SigningKey = signingKeys.resolve(request, dir, log) { keptMessage = it }
                     key.certificates.firstOrNull()?.let { log.info(it.subjectX500Principal.name) }
                     val out = FsUtil.uniqueSibling(File(dir, signedApkName(item.name)), isDirectory = false)
                     ApkSigning.sign(File(item.path), out, key, request.options, log = log)
@@ -820,8 +792,6 @@ class ExplorerViewModel(
     }
 
     private fun signedApkName(name: String): String = ExplorerRules.signedApkName(name)
-
-    private fun defaultSigningKey(): SigningKey = SigningKeys.default(getApplication<Application>().filesDir)
 
     fun dismissPasswordPrompt() = _state.update { it.copy(passwordPrompt = null) }
 
