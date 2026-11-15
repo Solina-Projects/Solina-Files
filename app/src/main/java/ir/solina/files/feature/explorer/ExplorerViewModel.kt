@@ -133,6 +133,16 @@ class ExplorerViewModel(
 
     private val signingKeys = SigningKeyResolver(app.filesDir)
 
+    private val dex = DexTools(
+        scope = viewModelScope,
+        state = _state,
+        access = ::access,
+        clearSelection = ::clearSelection,
+        refreshAllRevealing = ::refreshAllRevealing,
+        refreshAll = ::refreshAll,
+        notOnStorage = ::notOnStorage,
+    )
+
     // Pane streams isolate list rendering from updates to the opposite pane and global UI state.
     private val leftPaneState: StateFlow<PaneState> = _state
         .map { it.left }
@@ -860,55 +870,11 @@ class ExplorerViewModel(
         }
     }
 
-    suspend fun hasSmali(pane: Pane, folder: FileItem): Boolean {
-        if (!folder.isDirectory || _state.value.isRemote(pane)) return false
-        val ps = _state.value.pane(pane)
-        return withContext(Dispatchers.IO) {
-            runCatching {
-                val from = access(ps.path, write = false, viaRoot = ps.viaRoot)
-                DexConvert.containsSmali(from.file(folder.path), from)
-            }.getOrDefault(false)
-        }
-    }
+    suspend fun hasSmali(pane: Pane, folder: FileItem): Boolean = dex.hasSmali(pane, folder)
 
-    fun smaliToDex(pane: Pane, folder: FileItem) {
-        if (_state.value.isRemote(pane)) return notOnStorage()
-        val ps = _state.value.pane(pane)
-        build("Smali → Dex", folder.name, listOf(DexConvert.STEP_COLLECT), pane, ps.path) { log ->
-            val from = access(ps.path, write = false, viaRoot = ps.viaRoot)
-            val to = access(ps.path, write = true, viaRoot = ps.viaRoot)
-            DexConvert.smaliToDex(folder.path, from, to, log)
-        }
-    }
+    fun smaliToDex(pane: Pane, folder: FileItem) = dex.smaliToDex(pane, folder)
 
-    fun jarToDex(pane: Pane, jar: FileItem) {
-        if (_state.value.isRemote(pane)) return notOnStorage()
-        val ps = _state.value.pane(pane)
-        build("Jar → Dex", jar.name, listOf(DexConvert.STEP_READ_JAR, DexConvert.STEP_D8), pane, ps.path) { log ->
-            val from = access(ps.path, write = false, viaRoot = ps.viaRoot)
-            val to = access(ps.path, write = true, viaRoot = ps.viaRoot)
-            DexConvert.jarToDex(jar.path, from, to, log = log)
-        }
-    }
-
-    private fun build(title: String, subject: String, plan: List<String>, pane: Pane?, dir: String, onDone: (File) -> Unit = {}, work: suspend (ir.solina.files.core.build.BuildListener) -> File) {
-        if (_state.value.build?.finished == false) return
-        viewModelScope.launch {
-            val result = ir.solina.files.feature.build.runBuild(
-                title,
-                subject,
-                plan,
-                publish = { run -> _state.update { it.copy(build = run) } },
-                summary = { out: File -> tr(R.string.explorer_wrote, out.name) },
-                work = work,
-            )
-            result.onSuccess { out ->
-                pane?.let { clearSelection(it) }
-                refreshAllRevealing(dir, listOf(out.absolutePath))
-                onDone(out)
-            }.onFailure { refreshAll() }
-        }
-    }
+    fun jarToDex(pane: Pane, jar: FileItem) = dex.jarToDex(pane, jar)
 
     fun closeBuild() = _state.update { it.copy(build = null) }
 
