@@ -2,7 +2,7 @@
 
 Solina Files is licensed under the **GNU AGPL v3.0 or later** (see `LICENSE`). It bundles or links the third-party components below.
 
-> **Status: draft.** The list of direct dependencies and versions is generated from `gradle/libs.versions.toml`. The license column reflects the maintainers' understanding and is **not yet verified against each upstream release**; rows marked "verify" need checking before a public release. Transitive dependencies are not listed here; the CI build uploads the full dependency tree.
+> **Status: draft (partially verified).** Verified against upstream pages on 2026-11-15: Sora Editor (LGPL-2.1-or-later). Still unverified: every other row. The list of direct dependencies and versions is generated from `gradle/libs.versions.toml`. The license column reflects the maintainers' understanding and is **not yet verified against each upstream release**; rows marked "verify" need checking before a public release. Transitive dependencies are not listed here; the CI build uploads the full dependency tree.
 
 ## Android / JVM dependencies (direct)
 
@@ -41,7 +41,7 @@ Solina Files is licensed under the **GNU AGPL v3.0 or later** (see `LICENSE`). I
 | `com.android.tools.smali:smali` | 3.0.10 | BSD-3-Clause |
 | `com.android.tools.smali:smali-baksmali` | 3.0.10 | BSD-3-Clause |
 | `com.android.tools.smali:smali-dexlib2` | 3.0.10 | BSD-3-Clause |
-| `com.android.tools:desugar_jdk_libs` | 2.1.5 | GPL-2.0 with Classpath Exception (JDK-derived) / Apache-2.0; verify |
+| `com.android.tools:desugar_jdk_libs` | 2.1.5 | Mixed: Google code under Apache-2.0 plus JDK-derived classes under GPL-2.0 with Classpath Exception (a package index also lists GPL-3.0 and libpng-2.0); build-time desugaring library — verify exact terms |
 | `com.android.tools:r8` | 9.4.28 | BSD-3-Clause (R8; see bundled license) |
 | `com.github.luben:zstd-jni` | 1.5.7-4 | BSD-2-Clause |
 | `com.github.topjohnwu.libsu:core` | 6.0.0 | Apache-2.0 |
@@ -53,7 +53,7 @@ Solina Files is licensed under the **GNU AGPL v3.0 or later** (see `LICENSE`). I
 | `com.mikepenz:multiplatform-markdown-renderer-code` | 0.45.0 | Apache-2.0 |
 | `com.mikepenz:multiplatform-markdown-renderer-coil3` | 0.45.0 | Apache-2.0 |
 | `com.mikepenz:multiplatform-markdown-renderer-m3` | 0.45.0 | Apache-2.0 |
-| `com.rapid7.client:dcerpc` | 0.12.13 | verify upstream |
+| `com.rapid7.client:dcerpc` | 0.12.13 | Upstream lists \"other\" (custom `LICENSE.txt`); text not yet reviewed — must be reviewed before release |
 | `com.squareup.okhttp3:okhttp` | 5.5.0 | Apache-2.0 |
 | `commons-net:commons-net` | 3.11.1 | Apache-2.0 |
 | `de.femtopedia.dex2jar:dex-tools` | 2.4.38 | Apache-2.0 |
@@ -66,10 +66,10 @@ Solina Files is licensed under the **GNU AGPL v3.0 or later** (see `LICENSE`). I
 | `io.coil-kt.coil3:coil-video` | 3.6.3 | Apache-2.0 |
 | `io.github.rburgst:okhttp-digest` | 3.1.1 | Apache-2.0 |
 | `io.github.reandroid:ARSCLib` | 1.4.0 | Apache-2.0 |
-| `io.github.rosemoe:editor` | managed by BOM | LGPL-2.1 |
-| `io.github.rosemoe:editor-bom` | 0.24.6 | LGPL-2.1 |
-| `io.github.rosemoe:language-textmate` | managed by BOM | LGPL-2.1 |
-| `io.github.rosemoe:oniguruma-native` | managed by BOM | LGPL-2.1 |
+| `io.github.rosemoe:editor` | managed by BOM | LGPL-2.1-or-later (verified) |
+| `io.github.rosemoe:editor-bom` | 0.24.6 | LGPL-2.1-or-later (verified) |
+| `io.github.rosemoe:language-textmate` | managed by BOM | LGPL-2.1-or-later (verified) |
+| `io.github.rosemoe:oniguruma-native` | managed by BOM | LGPL-2.1-or-later (verified) |
 | `io.github.skylot:jadx-core` | 1.5.6 | Apache-2.0 |
 | `io.github.skylot:jadx-dex-input` | 1.5.6 | Apache-2.0 |
 | `io.github.skylot:jadx-java-input` | 1.5.6 | Apache-2.0 |
@@ -101,10 +101,10 @@ Solina Files is licensed under the **GNU AGPL v3.0 or later** (see `LICENSE`). I
 - **PDFium** and its dependencies: texts in `app/src/main/assets/licenses/pdfium/`.
 - **R8**: `app/src/main/assets/licenses/r8/`.
 - **TextMate grammars and themes** (derived from Visual Studio Code, MIT): `app/src/main/assets/textmate/LICENSE-vscode.txt`.
-- **Vazirmatn** font and other design assets: license not yet recorded here (verify).
+- No font files are bundled in `app/src/main/res/font` or the assets folder (checked 2026-11-15).
 
 ## Known licensing items to resolve before release
 
 1. `native/Cargo.toml` declares `license = "Apache-2.0"` while the project is AGPL-3.0-or-later. Confirm the intended license of the native crate (a license change requires the owner's explicit decision).
-2. `io.github.rosemoe` (Sora Editor) is LGPL-2.1; confirm that distribution as part of an AGPL application and the LGPL relinking/notice requirements are satisfied.
-3. Verify every "verify" row above and add full license texts where upstream requires them.
+2. `io.github.rosemoe` (Sora Editor) is LGPL-2.1-or-later (verified); confirm that distribution as part of an AGPL application and the LGPL relinking/notice requirements are satisfied.
+3. Review the `com.rapid7.client:dcerpc` license text and the desugar_jdk_libs terms, then verify every remaining row and add full license texts where upstream requires them.
