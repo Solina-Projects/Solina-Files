@@ -41,7 +41,7 @@ Solina Files is licensed under the **GNU AGPL v3.0 or later** (see `LICENSE`). I
 | `com.android.tools.smali:smali` | 3.0.10 | BSD-3-Clause |
 | `com.android.tools.smali:smali-baksmali` | 3.0.10 | BSD-3-Clause |
 | `com.android.tools.smali:smali-dexlib2` | 3.0.10 | BSD-3-Clause |
-| `com.android.tools:desugar_jdk_libs` | 2.1.5 | Mixed: Google code under Apache-2.0 plus JDK-derived classes under GPL-2.0 with Classpath Exception (a package index also lists GPL-3.0 and libpng-2.0); build-time desugaring library — verify exact terms |
+| `com.android.tools:desugar_jdk_libs` | 2.1.5 | Mixed: Google code under Apache-2.0 plus JDK-derived classes under GPL-2.0 with Classpath Exception (a package index also lists GPL-3.0 and libpng-2.0); build-time desugaring library — index lists GPL-3.0 / libpng-2.0 / GPL-2.0-with-classpath-exception (libraries.io, 2026-11-15); the Maven POM and bundled license files could not be fetched from this environment — verify against the artifact before release |
 | `com.android.tools:r8` | 9.4.28 | BSD-3-Clause (R8; see bundled license) |
 | `com.github.luben:zstd-jni` | 1.5.7-4 | BSD-2-Clause |
 | `com.github.topjohnwu.libsu:core` | 6.0.0 | Apache-2.0 |
@@ -53,7 +53,7 @@ Solina Files is licensed under the **GNU AGPL v3.0 or later** (see `LICENSE`). I
 | `com.mikepenz:multiplatform-markdown-renderer-code` | 0.45.0 | Apache-2.0 |
 | `com.mikepenz:multiplatform-markdown-renderer-coil3` | 0.45.0 | Apache-2.0 |
 | `com.mikepenz:multiplatform-markdown-renderer-m3` | 0.45.0 | Apache-2.0 |
-| `com.rapid7.client:dcerpc` | 0.12.13 | Upstream lists "other" (custom `LICENSE.txt`); text not yet reviewed — must be reviewed before release |
+| `com.rapid7.client:dcerpc` | 0.12.13 | Upstream lists "other" (custom `LICENSE.txt`); text not yet reviewed (upstream POM/LICENSE.txt not reachable from the build environment on 2026-11-15) — must be reviewed before release |
 | `com.squareup.okhttp3:okhttp` | 5.5.0 | Apache-2.0 |
 | `commons-net:commons-net` | 3.11.1 | Apache-2.0 |
 | `de.femtopedia.dex2jar:dex-tools` | 2.4.38 | Apache-2.0 |
