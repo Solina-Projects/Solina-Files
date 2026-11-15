@@ -1,5 +1,7 @@
 package ir.solina.files.feature.explorer
 
+import ir.solina.files.R
+import androidx.compose.ui.res.stringResource
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
@@ -88,7 +90,7 @@ internal fun BoxScope.ExplorerFloatingActions(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     contentColor = MaterialTheme.colorScheme.onSurface,
                 ) {
-                    Icon(Icons.Rounded.Home, contentDescription = "خانه")
+                    Icon(Icons.Rounded.Home, contentDescription = stringResource(R.string.fab_home))
                 }
             
                 }
@@ -98,7 +100,7 @@ internal fun BoxScope.ExplorerFloatingActions(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     contentColor = MaterialTheme.colorScheme.onSurface,
                 ) {
-                    Icon(Icons.Rounded.Refresh, contentDescription = "تازه‌سازی")
+                    Icon(Icons.Rounded.Refresh, contentDescription = stringResource(R.string.fab_refresh))
                 }
             
                 }
@@ -108,7 +110,7 @@ internal fun BoxScope.ExplorerFloatingActions(
                         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                         contentColor = MaterialTheme.colorScheme.onSurface,
                     ) {
-                        Icon(Icons.Rounded.Bookmarks, contentDescription = "نشانک‌ها")
+                        Icon(Icons.Rounded.Bookmarks, contentDescription = stringResource(R.string.fab_bookmarks))
                     }
                 }
                 FloatingAction.SWAP_PANES -> {
@@ -118,7 +120,7 @@ internal fun BoxScope.ExplorerFloatingActions(
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     contentColor = MaterialTheme.colorScheme.onSurface,
                 ) {
-                    Icon(Icons.Rounded.SwapHoriz, contentDescription = "تعویض محتوای دو پنل")
+                    Icon(Icons.Rounded.SwapHoriz, contentDescription = stringResource(R.string.fab_swap_panes))
                 }
             
                 }
@@ -154,7 +156,7 @@ internal fun BoxScope.ExplorerFloatingActions(
                                     verticalArrangement = Arrangement.spacedBy(8.dp),
                                 ) {
                                     Text(
-                                        text = "ایجاد مورد جدید",
+                                        text = stringResource(R.string.fab_create_title),
                                         style = MaterialTheme.typography.titleSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
@@ -163,21 +165,21 @@ internal fun BoxScope.ExplorerFloatingActions(
                                         modifier = Modifier.fillMaxWidth(),
                                         onClick = { onQuickCreateExpanded(false); onDialog(Dialog.NewFolder(ui.active)) },
                                         icon = { Icon(Icons.Rounded.CreateNewFolder, contentDescription = null) },
-                                        text = { Text("پوشه جدید", maxLines = 1) },
+                                        text = { Text(stringResource(R.string.fab_new_folder), maxLines = 1) },
                                         expanded = true,
                                     )
                                     ExtendedFloatingActionButton(
                                         modifier = Modifier.fillMaxWidth(),
                                         onClick = { onQuickCreateExpanded(false); onDialog(Dialog.NewFile(ui.active, "untitled.txt")) },
                                         icon = { Icon(Icons.Rounded.Description, contentDescription = null) },
-                                        text = { Text("فایل متنی", maxLines = 1) },
+                                        text = { Text(stringResource(R.string.fab_new_text_file), maxLines = 1) },
                                         expanded = true,
                                     )
                                     ExtendedFloatingActionButton(
                                         modifier = Modifier.fillMaxWidth(),
                                         onClick = { onQuickCreateExpanded(false); onDialog(Dialog.NewFile(ui.active, "index.html")) },
                                         icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
-                                        text = { Text("فایل HTML", maxLines = 1) },
+                                        text = { Text(stringResource(R.string.fab_new_html_file), maxLines = 1) },
                                         expanded = true,
                                     )
                                     if (!ui.isRemote(ui.active)) {
@@ -185,7 +187,7 @@ internal fun BoxScope.ExplorerFloatingActions(
                                             modifier = Modifier.fillMaxWidth(),
                                             onClick = { onQuickCreateExpanded(false); onDialog(Dialog.NewProject(ui.activePane.path)) },
                                             icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
-                                            text = { Text("پروژه جدید", maxLines = 1) },
+                                            text = { Text(stringResource(R.string.fab_new_project), maxLines = 1) },
                                             expanded = true,
                                         )
                                     }
@@ -211,7 +213,7 @@ internal fun BoxScope.ExplorerFloatingActions(
                             ) {
                                 Icon(
                                     Icons.Rounded.Add,
-                                    contentDescription = if (quickCreateExpanded) "بستن ایجاد سریع" else "ایجاد فایل یا پوشه",
+                                    contentDescription = if (quickCreateExpanded) stringResource(R.string.fab_close_quick_create) else stringResource(R.string.fab_quick_create),
                                     modifier = Modifier.graphicsLayer { rotationZ = createIconRotation },
                                 )
                             }
@@ -226,7 +228,7 @@ internal fun BoxScope.ExplorerFloatingActions(
                 ) {
                     Icon(
                         imageVector = if (horizontalSplit) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
-                        contentDescription = if (horizontalSplit) "چیدن پنل‌ها روی هم" else "چیدن پنل‌ها کنار هم",
+                        contentDescription = if (horizontalSplit) stringResource(R.string.fab_stack_panes) else stringResource(R.string.fab_side_panes),
                     )
                 }
             
@@ -272,7 +274,7 @@ internal fun BoxScope.ExplorerFloatingActions(
                                                 ) {
                                                     Icon(
                                                         Icons.Rounded.ViewList,
-                                                        contentDescription = "چیدمان فهرستی",
+                                                        contentDescription = stringResource(R.string.fab_list_layout),
                                                         tint = if (isList) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                                                     )
                                                 }
@@ -288,7 +290,7 @@ internal fun BoxScope.ExplorerFloatingActions(
                                             ) {
                                                 Icon(
                                                     Icons.Rounded.GridView,
-                                                    contentDescription = "چیدمان شبکه‌ای",
+                                                    contentDescription = stringResource(R.string.fab_grid_layout),
                                                     tint = if (isGrid) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                                                 )
                                             }
@@ -302,9 +304,9 @@ internal fun BoxScope.ExplorerFloatingActions(
                                         verticalAlignment = androidx.compose.ui.Alignment.Bottom,
                                     ) {
                                         listOf(
-                                            ir.solina.files.core.model.UiDensity.COMPACT to "فشرده",
-                                            ir.solina.files.core.model.UiDensity.COMFORTABLE to "معمولی",
-                                            ir.solina.files.core.model.UiDensity.LARGE to "بزرگ",
+                                            ir.solina.files.core.model.UiDensity.COMPACT to stringResource(R.string.fab_density_compact),
+                                            ir.solina.files.core.model.UiDensity.COMFORTABLE to stringResource(R.string.fab_density_comfortable),
+                                            ir.solina.files.core.model.UiDensity.LARGE to stringResource(R.string.fab_density_large),
                                         ).forEach { (densityOption, label) ->
                                             val selectedDensity = ui.settings.uiDensity == densityOption
                                             Column(
@@ -325,7 +327,7 @@ internal fun BoxScope.ExplorerFloatingActions(
                                                     contentAlignment = androidx.compose.ui.Alignment.Center,
                                                 ) {
                                                     if (selectedDensity) {
-                                                        Icon(Icons.Rounded.Check, contentDescription = "انتخاب شده: $label", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(16.dp))
+                                                        Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.fab_selected, label), tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(16.dp))
                                                     }
                                                 }
                                             }
@@ -341,7 +343,7 @@ internal fun BoxScope.ExplorerFloatingActions(
                         ) {
                             Icon(
                                 imageVector = if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) Icons.Rounded.GridView else Icons.Rounded.ViewList,
-                                contentDescription = "تنظیم چیدمان و اندازه",
+                                contentDescription = stringResource(R.string.fab_layout_and_size),
                                 modifier = Modifier.graphicsLayer { scaleX = layoutIconScale; scaleY = layoutIconScale },
                             )
                         }
@@ -362,7 +364,7 @@ internal fun BoxScope.ExplorerFloatingActions(
                 ) {
                     Icon(
                         imageVector = if (dual) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda,
-                        contentDescription = if (dual) "تبدیل به تک‌پنجره" else "تبدیل به دوپنجره",
+                        contentDescription = if (dual) stringResource(R.string.fab_single_pane) else stringResource(R.string.fab_dual_pane),
                     )
                 }
             

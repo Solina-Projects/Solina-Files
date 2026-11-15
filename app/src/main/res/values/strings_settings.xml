@@ -465,4 +465,28 @@
     <string name="feature_vault_summary">Encrypted private storage</string>
     <string name="settings_summary_features_all">All tools shown</string>
     <string name="settings_summary_features_hidden">%1$d tools hidden</string>
+
+    <!-- Floating quick actions -->
+    <string name="fab_home">Home</string>
+    <string name="fab_refresh">Refresh</string>
+    <string name="fab_bookmarks">Bookmarks</string>
+    <string name="fab_swap_panes">Swap the contents of both panes</string>
+    <string name="fab_create_title">Create new item</string>
+    <string name="fab_new_folder">New folder</string>
+    <string name="fab_new_text_file">Text file</string>
+    <string name="fab_new_html_file">HTML file</string>
+    <string name="fab_new_project">New project</string>
+    <string name="fab_close_quick_create">Close quick create</string>
+    <string name="fab_quick_create">Create file or folder</string>
+    <string name="fab_stack_panes">Stack panes vertically</string>
+    <string name="fab_side_panes">Place panes side by side</string>
+    <string name="fab_list_layout">List layout</string>
+    <string name="fab_grid_layout">Grid layout</string>
+    <string name="fab_density_compact">Compact</string>
+    <string name="fab_density_comfortable">Comfortable</string>
+    <string name="fab_density_large">Large</string>
+    <string name="fab_layout_and_size">Layout and size</string>
+    <string name="fab_single_pane">Switch to single pane</string>
+    <string name="fab_dual_pane">Switch to dual pane</string>
+    <string name="fab_selected">Selected: %1$s</string>
 </resources>

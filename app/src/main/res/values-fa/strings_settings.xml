@@ -464,4 +464,28 @@
     <string name="feature_vault_summary">حافظهٔ خصوصی رمزگذاری‌شده</string>
     <string name="settings_summary_features_all">همهٔ ابزارها نمایش داده می‌شوند</string>
     <string name="settings_summary_features_hidden">%1$d ابزار پنهان است</string>
+
+    <!-- Floating quick actions -->
+    <string name="fab_home">خانه</string>
+    <string name="fab_refresh">تازه‌سازی</string>
+    <string name="fab_bookmarks">نشانک‌ها</string>
+    <string name="fab_swap_panes">تعویض محتوای دو پنل</string>
+    <string name="fab_create_title">ایجاد مورد جدید</string>
+    <string name="fab_new_folder">پوشه جدید</string>
+    <string name="fab_new_text_file">فایل متنی</string>
+    <string name="fab_new_html_file">فایل HTML</string>
+    <string name="fab_new_project">پروژه جدید</string>
+    <string name="fab_close_quick_create">بستن ایجاد سریع</string>
+    <string name="fab_quick_create">ایجاد فایل یا پوشه</string>
+    <string name="fab_stack_panes">چیدن پنل‌ها روی هم</string>
+    <string name="fab_side_panes">چیدن پنل‌ها کنار هم</string>
+    <string name="fab_list_layout">چیدمان فهرستی</string>
+    <string name="fab_grid_layout">چیدمان شبکه‌ای</string>
+    <string name="fab_density_compact">فشرده</string>
+    <string name="fab_density_comfortable">معمولی</string>
+    <string name="fab_density_large">بزرگ</string>
+    <string name="fab_layout_and_size">تنظیم چیدمان و اندازه</string>
+    <string name="fab_single_pane">تبدیل به تک‌پنجره</string>
+    <string name="fab_dual_pane">تبدیل به دوپنجره</string>
+    <string name="fab_selected">انتخاب شده: %1$s</string>
 </resources>
