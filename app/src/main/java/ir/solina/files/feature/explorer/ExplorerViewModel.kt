@@ -129,7 +129,7 @@ class ExplorerViewModel(
     )
     val state: StateFlow<ExplorerUiState> = _state.asStateFlow()
 
-    private val bookmarks = BookmarkActions(bookmarkRepo, viewModelScope, ::postMessage)
+    private val bookmarks = BookmarkEditor(bookmarkRepo, viewModelScope, ::postMessage)
 
     private val signingKeys = SigningKeyResolver(app.filesDir)
 

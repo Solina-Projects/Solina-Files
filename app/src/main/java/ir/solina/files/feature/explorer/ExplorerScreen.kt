@@ -17,17 +17,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.requiredWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Check
@@ -39,11 +36,7 @@ import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Bookmarks
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material.icons.rounded.Layers
-import androidx.compose.material.icons.rounded.Folder
-import androidx.compose.material.icons.rounded.Storage
 import androidx.compose.material.icons.rounded.ViewList
-import androidx.compose.material.icons.rounded.SwapVert
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.automirrored.rounded.ManageSearch
 import androidx.compose.material.icons.rounded.Menu
@@ -103,10 +96,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import ir.solina.files.R
 import ir.solina.files.core.i18n.tr
 import ir.solina.files.core.fs.Mounts
-import ir.solina.files.core.data.sortFor
-import ir.solina.files.core.model.FolderSorts
 import ir.solina.files.core.archive.ArchiveFormat
-import ir.solina.files.core.fs.Conflict
 import ir.solina.files.core.model.FileItem
 import ir.solina.files.core.model.FloatingAction
 import ir.solina.files.core.open.Opener
@@ -121,38 +111,18 @@ import ir.solina.files.feature.explorer.dnd.DragLayer
 import ir.solina.files.feature.explorer.dnd.FileDragState
 import ir.solina.files.feature.explorer.dnd.LocalFileDrag
 import ir.solina.files.feature.explorer.dnd.dragHost
-import ir.solina.files.feature.apk.SignApkDialog
-import ir.solina.files.feature.explorer.components.BatchRenameDialog
-import ir.solina.files.feature.explorer.components.BookmarkActions
-import ir.solina.files.feature.explorer.components.BookmarksSheet
 import ir.solina.files.feature.explorer.components.BottomBarActions
-import ir.solina.files.feature.explorer.components.ChecksumDialog
-import ir.solina.files.feature.explorer.components.CreateArchiveDialog
-import ir.solina.files.feature.explorer.components.CreateLinkDialog
-import ir.solina.files.feature.explorer.components.DeleteDialog
-import ir.solina.files.feature.explorer.components.EncryptDialog
 import ir.solina.files.feature.explorer.components.ExplorerBottomBar
-import ir.solina.files.feature.explorer.components.InputDialog
-import ir.solina.files.feature.explorer.components.InputSelection
-import ir.solina.files.feature.explorer.components.ItemActionSheet
-import ir.solina.files.feature.explorer.components.ItemActions
-import ir.solina.files.feature.explorer.components.MergeDialog
 import ir.solina.files.feature.explorer.components.PaneColumn
-import ir.solina.files.feature.explorer.components.PasswordDialog
-import ir.solina.files.feature.explorer.components.SortSheet
-import ir.solina.files.feature.explorer.components.SplitDialog
 import ir.solina.files.feature.explorer.components.TaskOverlay
-import ir.solina.files.feature.props.PropertiesSheet
 import ir.solina.files.feature.settings.ToolbarTab
-import ir.solina.files.feature.termux.NewProjectSheet
-import ir.solina.files.feature.termux.ProjectRunSheet
 import ir.solina.files.feature.termux.TerminalGate
 import ir.solina.files.feature.termux.TermuxViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private sealed interface Dialog {
+internal sealed interface Dialog {
     data object None : Dialog
     data class NewFolder(val pane: Pane) : Dialog
     data class NewFile(val pane: Pane, val initial: String = "") : Dialog
@@ -829,182 +799,21 @@ fun ExplorerScreen(
     DragLayer(drag) { host[0]?.positionInRoot() ?: Offset.Zero }
     }
 
-    when (val d = dialog) {
-        Dialog.None -> Unit
-        is Dialog.NewFolder -> InputDialog(
-            title = stringResource(R.string.common_new_folder), label = stringResource(R.string.explorer_folder_name),
-            onConfirm = { vm.newFolder(d.pane, it); dialog = Dialog.None },
-            onDismiss = { dialog = Dialog.None },
-        )
-        is Dialog.NewFile -> InputDialog(
-            title = stringResource(R.string.common_new_file), label = stringResource(R.string.explorer_file_name), initial = d.initial,
-            onConfirm = { vm.newFile(d.pane, it); dialog = Dialog.None },
-            onDismiss = { dialog = Dialog.None },
-        )
-        Dialog.Bookmarks -> BookmarksSheet(
-            bookmarks = ui.bookmarks,
-            actions = BookmarkActions(
-                onOpen = { vm.openBookmark(ui.active, it); dialog = Dialog.None },
-                onAddCurrent = { vm.addBookmarks(listOf(ui.activePane.path)) },
-                onUpdate = { path, edited -> vm.updateBookmark(path, edited) },
-                onMove = { path, offset -> vm.moveBookmark(path, offset) },
-                onDelete = { vm.removeBookmark(it) },
-                onRenameGroup = { from, to -> vm.renameBookmarkGroup(from, to) },
-                onDeleteGroup = { vm.deleteBookmarkGroup(it) },
-            ),
-            onDismiss = { dialog = Dialog.None },
-        )
-        is Dialog.CreateArchive -> CreateArchiveDialog(
-            items = d.items,
-            defaultName = archiveName(d.items, ui.pane(d.pane).path),
-            onConfirm = { name, options, independent ->
-                vm.createArchive(d.pane, d.items, name, options, independent)
-                dialog = Dialog.None
-            },
-            onDismiss = { dialog = Dialog.None },
-        )
-        is Dialog.BatchRename -> BatchRenameDialog(
-            items = d.items,
-            history = ui.renameHistory,
-            preview = { rule, order, descending -> vm.previewRename(d.pane, d.items, rule, order, descending) },
-            onApply = { plan, rule -> vm.applyRename(d.pane, plan, rule); dialog = Dialog.None },
-            onDismiss = { dialog = Dialog.None },
-        )
-        is Dialog.CreateLink -> CreateLinkDialog(
-            items = d.items,
-            defaultParent = linkParent(d.pane),
-            onConfirm = { parent, requests -> vm.createLinks(d.pane, parent, requests); dialog = Dialog.None },
-            onDismiss = { dialog = Dialog.None },
-        )
-        is Dialog.Split -> SplitDialog(
-            item = d.item,
-            onConfirm = { method, pattern -> vm.splitFile(d.pane, d.item, method, pattern); dialog = Dialog.None },
-            onDismiss = { dialog = Dialog.None },
-        )
-        is Dialog.Merge -> MergeDialog(
-            parts = d.items,
-            existingNames = ui.pane(d.pane).items.mapTo(HashSet()) { it.name },
-            onConfirm = { ordered, output, pdf -> vm.mergeFiles(d.pane, ordered, output, pdf); dialog = Dialog.None },
-            onDismiss = { dialog = Dialog.None },
-        )
-        is Dialog.Encrypt -> EncryptDialog(
-            item = d.item,
-            onConfirm = { pw -> vm.encryptFile(d.pane, d.item, pw); dialog = Dialog.None },
-            onDismiss = { dialog = Dialog.None },
-        )
-        is Dialog.Decrypt -> PasswordDialog(
-            title = stringResource(R.string.explorer_decrypt_file),
-            fileName = d.item.name,
-            wrong = false,
-            onConfirm = { pw -> vm.decryptFile(d.pane, d.item, pw); dialog = Dialog.None },
-            onDismiss = { dialog = Dialog.None },
-        )
-        is Dialog.SignApk -> SignApkDialog(
-            item = d.item,
-            onConfirm = { request -> vm.signApk(d.item, request); dialog = Dialog.None },
-            onDismiss = { dialog = Dialog.None },
-        )
-        is Dialog.JumpTo -> InputDialog(
-            title = stringResource(R.string.explorer_jump_to_path), label = stringResource(R.string.common_path), initial = ui.pane(d.pane).path,
-            confirmText = stringResource(R.string.explorer_go), select = InputSelection.ALL, ltr = true,
-            onConfirm = { vm.openPath(d.pane, it.trim()); dialog = Dialog.None },
-            onDismiss = { dialog = Dialog.None },
-        )
-        is Dialog.Rename -> InputDialog(
-            title = stringResource(R.string.common_rename), label = stringResource(R.string.explorer_new_name), initial = d.item.name,
-            select = if (d.item.isDirectory) InputSelection.ALL else InputSelection.BASE_NAME,
-            onConfirm = { vm.rename(d.pane, d.item, it); vm.clearSelection(d.pane); dialog = Dialog.None },
-            onDismiss = { dialog = Dialog.None },
-        )
-        is Dialog.Transfer -> Unit
-        Dialog.Delete -> DeleteDialog(
-            count = ui.activePane.selected.size,
-            recycleByDefault = ui.settings.trashByDefault,
-            allowRecycle = remember(ui.active, ui.activePane.path, ui.activePane.viaRoot) { vm.canRecycle(ui.active) },
-            onConfirm = { toBin -> vm.deleteSelection(ui.active, toBin); dialog = Dialog.None },
-            onDismiss = { dialog = Dialog.None },
-        )
-        Dialog.Sort -> {
-            val folder = ui.activePane.path
-            var own by remember(folder) { mutableStateOf(ui.settings.folderSorts.containsKey(FolderSorts.key(folder))) }
-            var order by remember(folder) { mutableStateOf(ui.settings.sortFor(folder)) }
-            SortSheet(
-                current = order,
-                showHidden = ui.settings.showHidden,
-                onChange = { o ->
-                    order = o
-                    if (own) vm.setFolderSort(folder, o) else vm.setSort(o)
-                },
-                onToggleHidden = vm::setShowHidden,
-                onDismiss = { dialog = Dialog.None },
-                thisFolderOnly = own,
-                folderName = ui.displayPath(folder).substringAfterLast('/').ifBlank { ui.displayPath(folder) },
-                onThisFolderOnly = { on ->
-                    own = on
-                    vm.setFolderSort(folder, if (on) order else null)
-                    if (!on) order = ui.settings.sortOrder
-                },
-            )
-        }
-        is Dialog.ItemSheet -> ItemActionSheet(
-            item = d.item,
-            smaliFolder = produceState(false, d.item.path) { value = d.item.isDirectory && vm.hasSmali(d.pane, d.item) }.value,
-            actions = ItemActions(
-                onSelect = { vm.setActive(d.pane); vm.toggleSelect(d.pane, d.item); dialog = Dialog.None },
-                onOpen = {
-                    dialog = Dialog.None
-                    handleOpen(d.pane, d.item)
-                },
-                onOpenWith = { dialog = Dialog.None; withLocal(d.item) { onOpenWith(it) } },
-                onOpenAsText = { dialog = Dialog.None; withLocal(d.item) { onOpenWithOpener(it, Opener.TEXT_EDITOR) } },
-                onHex = { dialog = Dialog.None; withLocal(d.item) { onOpenWithOpener(it, Opener.HEX_EDITOR) } },
-                onRename = { dialog = Dialog.Rename(d.pane, d.item) },
-                onShare = { dialog = Dialog.None; withLocal(d.item) { IntentUtils.share(context, listOf(it)) } },
-                onChecksum = { dialog = Dialog.None; withLocal(d.item) { dialog = Dialog.Checksum(it) } },
-                onExtract = { localOnly(d.item) { vm.extractArchive(d.pane, d.item); dialog = Dialog.None } },
-                onApkInfo = { dialog = Dialog.None; withLocal(d.item) { onOpenWithOpener(it, Opener.APK_VIEWER) } },
-                onView = { dialog = Dialog.None; withLocal(d.item) { onOpenWithOpener(it, Opener.ARCHIVE_VIEWER) } },
-                onSignApk = { localOnly(d.item) { dialog = Dialog.SignApk(d.item) } },
-                onCompress = { localOnly(d.item) { dialog = Dialog.CreateArchive(d.pane, listOf(d.item)) } },
-                onAddBookmark = { vm.addBookmarks(listOf(d.item.path)); dialog = Dialog.None },
-                onCreateLink = { localOnly(d.item) { dialog = Dialog.CreateLink(d.pane, listOf(d.item)) } },
-                onSplit = { localOnly(d.item) { dialog = Dialog.Split(d.pane, d.item) } },
-                onEncrypt = { localOnly(d.item) { dialog = Dialog.Encrypt(d.pane, d.item) } },
-                onDecrypt = { localOnly(d.item) { dialog = Dialog.Decrypt(d.pane, d.item) } },
-                onProperties = { localOnly(d.item) { dialog = Dialog.Properties(listOf(d.item)) } },
-                onDelete = {
-                    vm.setActive(d.pane)
-                    vm.clearSelection(d.pane)
-                    vm.toggleSelect(d.pane, d.item, sound = false)
-                    dialog = Dialog.Delete
-                },
-                onSmaliToDex = { localOnly(d.item) { dialog = Dialog.None; vm.smaliToDex(d.pane, d.item) } },
-                onJarToDex = { localOnly(d.item) { dialog = Dialog.None; vm.jarToDex(d.pane, d.item) } },
-                onMoveToVault = { localOnly(d.item) { dialog = Dialog.None; vm.moveToVault(d.pane, listOf(d.item)) } },
-                onRestore = { dialog = Dialog.None; vm.restoreFromVault(d.pane, listOf(d.item)) },
-            ),
-            onDismiss = { dialog = Dialog.None },
-            layout = ui.settings.actions.sheet,
-            onCustomize = { dialog = Dialog.None; onCustomize(ToolbarTab.SHEET) },
-        )
-        is Dialog.Checksum -> ChecksumDialog(item = d.item, onDismiss = { dialog = Dialog.None })
-        is Dialog.Properties -> PropertiesSheet(
-            items = d.items,
-            rootEnabled = ui.settings.rootAccess,
-            onDismiss = { dialog = Dialog.None },
-            onChanged = { vm.refreshAll() },
-        )
-        is Dialog.NewProject -> NewProjectSheet(
-            parentDir = d.dir,
-            session = termux,
-            onCreated = { path ->
-                dialog = Dialog.None
-                vm.revealCreated(d.dir, path)
-            },
-            onDismiss = { dialog = Dialog.None },
-        )
-        is Dialog.RunProject -> ProjectRunSheet(d.project, onDismiss = { dialog = Dialog.None }, session = termux)
-    }
+    ExplorerDialogs(
+        dialog = dialog,
+        onDialog = { dialog = it },
+        vm = vm,
+        ui = ui,
+        termux = termux,
+        handleOpen = ::handleOpen,
+        withLocal = ::withLocal,
+        localOnly = ::localOnly,
+        archiveName = ::archiveName,
+        linkParent = ::linkParent,
+        onOpenWith = onOpenWith,
+        onOpenWithOpener = onOpenWithOpener,
+        onCustomize = onCustomize,
+    )
 
     RemoteEditsPrompt(vm, ui, visible = dialog == Dialog.None)
     TerminalGate(termux, appSnackbar ?: snackbar)

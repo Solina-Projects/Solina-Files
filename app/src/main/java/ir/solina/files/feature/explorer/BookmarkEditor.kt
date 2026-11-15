@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
  * Bookmark persistence operations, split out of [ExplorerViewModel].
  * Messages are reported through [post]; the view model keeps the public API unchanged.
  */
-internal class BookmarkActions(
+internal class BookmarkEditor(
     private val repo: BookmarkRepository,
     private val scope: CoroutineScope,
     private val post: (String?) -> Unit,
