@@ -284,61 +284,16 @@ fun ExplorerScreen(
             )
         },
     ) { padding ->
-        val panes = if (dual) listOf(Pane.LEFT, Pane.RIGHT) else listOf(ui.active)
-        @Composable
-        fun PaneContent(pane: Pane, modifier: Modifier) {
-            val state by vm.paneState(pane).collectAsStateWithLifecycle()
-            val visible = remember(state.items, ui.settings, ui.query) { visibleItems(state, ui.settings, ui.query) }
-            PaneColumn(
-                state = state,
-                visible = visible,
-                isActive = ui.active == pane,
-                showActive = dual,
-                rootPath = rootPath,
-                onActivate = { vm.setActive(pane) },
-                onUp = { vm.setActive(pane); vm.navigateUp(pane) },
-                onOpen = { handleOpen(pane, it) },
-                onToggleSelect = { vm.toggleSelect(pane, it) },
-                onItemMenu = { dialog = Dialog.ItemSheet(pane, it) },
-                onJumpTo = { dialog = Dialog.JumpTo(pane) },
-                onRefresh = { vm.setActive(pane); vm.refresh(pane) },
-                modifier = modifier,
-                displayPath = if (RemoteUri.isRemote(state.path)) ui.displayPath(state.path) else null,
-                pane = pane,
-                horizontalItems = dual && horizontalSplit,
-                singlePane = !dual,
-            )
-        }
-        AnimatedContent(
-            targetState = dual to horizontalSplit,
-            transitionSpec = {
-                (fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.92f))
-                    .togetherWith(fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.96f))
-            },
-            label = "singleDualPaneTransition",
-            modifier = Modifier.fillMaxSize().padding(padding),
-        ) { (showDual, splitHorizontal) ->
-            if (showDual && splitHorizontal) {
-                Column(
-                    Modifier.fillMaxSize().padding(horizontal = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(3.dp),
-                ) {
-                    PaneContent(Pane.LEFT, Modifier.weight(1f).fillMaxWidth())
-                    PaneContent(Pane.RIGHT, Modifier.weight(1f).fillMaxWidth())
-                }
-            } else if (!showDual) {
-                PaneContent(ui.active, Modifier.fillMaxSize().padding(horizontal = 4.dp))
-            } else {
-                Row(
-                    Modifier.fillMaxSize().padding(horizontal = 4.dp),
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    listOf(Pane.LEFT, Pane.RIGHT).forEach { pane ->
-                        PaneContent(pane, Modifier.weight(1f).fillMaxSize())
-                    }
-                }
-            }
-        }
+        ExplorerPaneArea(
+            padding = padding,
+            ui = ui,
+            vm = vm,
+            dual = dual,
+            horizontalSplit = horizontalSplit,
+            rootPath = rootPath,
+            onOpen = ::handleOpen,
+            onDialog = { dialog = it },
+        )
     }
     }
     ExplorerFloatingActions(
