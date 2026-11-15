@@ -53,7 +53,7 @@ Solina Files is licensed under the **GNU AGPL v3.0 or later** (see `LICENSE`). I
 | `com.mikepenz:multiplatform-markdown-renderer-code` | 0.45.0 | Apache-2.0 |
 | `com.mikepenz:multiplatform-markdown-renderer-coil3` | 0.45.0 | Apache-2.0 |
 | `com.mikepenz:multiplatform-markdown-renderer-m3` | 0.45.0 | Apache-2.0 |
-| `com.rapid7.client:dcerpc` | 0.12.13 | Upstream lists \"other\" (custom `LICENSE.txt`); text not yet reviewed — must be reviewed before release |
+| `com.rapid7.client:dcerpc` | 0.12.13 | Upstream lists "other" (custom `LICENSE.txt`); text not yet reviewed — must be reviewed before release |
 | `com.squareup.okhttp3:okhttp` | 5.5.0 | Apache-2.0 |
 | `commons-net:commons-net` | 3.11.1 | Apache-2.0 |
 | `de.femtopedia.dex2jar:dex-tools` | 2.4.38 | Apache-2.0 |
