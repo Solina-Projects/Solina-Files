@@ -57,7 +57,7 @@
 دستورهای زیر را از پوشهٔ اصلی مخزن اجرا کنید:
 
 ```bash
-rustup target add aarch64-linux-android armv7-linux-androideabi x86_64-linux-android
+rustup target add aarch64-linux-android
 cargo install cargo-ndk --locked
 native/fetch-pdfium.sh
 native/build.sh
