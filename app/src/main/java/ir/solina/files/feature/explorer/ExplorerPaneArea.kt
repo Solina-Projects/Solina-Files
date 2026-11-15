@@ -47,7 +47,7 @@ internal fun ExplorerPaneArea(
             rootPath = rootPath,
             onActivate = { vm.setActive(pane) },
             onUp = { vm.setActive(pane); vm.navigateUp(pane) },
-            onOpen = { handleOpen(pane, it) },
+            onOpen = { onOpen(pane, it) },
             onToggleSelect = { vm.toggleSelect(pane, it) },
             onItemMenu = { onDialog(Dialog.ItemSheet(pane, it)) },
             onJumpTo = { onDialog(Dialog.JumpTo(pane)) },
