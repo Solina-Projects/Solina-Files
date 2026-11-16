@@ -123,7 +123,10 @@ fun FileRow(
     val listIconScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 1f }
     val listSpacingScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 0.5f }
     val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
-    val iconSize = density.iconDp.dp * layoutScale * listIconScale
+    // Redesign v2: in dual-pane the icons are a fixed 1.5x the normal size
+    // (COMFORTABLE 36dp -> 54dp), independent of density and of single-pane
+    // settings. The font is untouched (fontScale is already 1f in dual-pane).
+    val iconSize = if (!singlePane) 54.dp else density.iconDp.dp * layoutScale * listIconScale
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.96f else 1f, motion.fastSpatialSpec(), label = "press")
