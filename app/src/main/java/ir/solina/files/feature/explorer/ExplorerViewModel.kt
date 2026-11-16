@@ -34,6 +34,7 @@ import ir.solina.files.core.bookmarks.Bookmarks
 import ir.solina.files.core.crypto.FileCipher
 import ir.solina.files.core.crypto.IncorrectPasswordException
 import ir.solina.files.core.data.SettingsRepository
+import ir.solina.files.core.data.SolinaSettings
 import ir.solina.files.core.data.StartFolders
 import ir.solina.files.core.fs.DropRules
 import ir.solina.files.core.fs.DropVerdict
@@ -138,6 +139,40 @@ class ExplorerViewModel(
 
     private val navJobs = mutableMapOf<Pane, Job>()
 
+    // Scroll-lag fix: folder size/count used to be computed inside every
+    // visible FileRow (a full recursive walk per folder, re-run each time
+    // the row scrolled back into view). Now it is computed once per
+    // directory visit, sequentially on IO, and cached in PaneState; the
+    // rows only read the cache. Navigating away cancels the job and clears
+    // the cache, so re-entering recomputes it fully.
+    private val statsJobs = mutableMapOf<Pane, Job>()
+
+    private fun folderStatsApplicable(settings: SolinaSettings): Boolean =
+        !settings.dualPanePreferred && settings.list.viewMode == ViewMode.LIST
+
+    private fun startFolderStats(pane: Pane, dirPath: String, items: List<FileItem>) {
+        statsJobs[pane]?.cancel()
+        if (!folderStatsApplicable(_state.value.settings)) return
+        statsJobs[pane] = viewModelScope.launch {
+            for (item in items) {
+                if (!item.isDirectory || !item.canRead || "://" in item.path) continue
+                val stats = calculateFolderStats(item.path) ?: continue
+                if (_state.value.pane(pane).path != dirPath) return@launch
+                updatePane(pane) { state ->
+                    if (state.path != dirPath) state else state.copy(folderStats = state.folderStats + (item.path to stats))
+                }
+            }
+        }
+    }
+
+    private suspend fun calculateFolderStats(path: String): Pair<Long, Int>? = withContext(Dispatchers.IO) {
+        runCatching {
+            File(path).walkTopDown()
+                .filter { it.isFile && !FsUtil.isSymlink(it) }
+                .fold(0L to 0) { (bytes, count), f -> (bytes + f.length()) to (count + 1) }
+        }.getOrNull()
+    }
+
     private val rootEnabled: Boolean get() = _state.value.settings.rootAccess
     private val shizukuEnabled: Boolean get() = _state.value.settings.shizukuAccess
 
@@ -155,10 +190,26 @@ class ExplorerViewModel(
     init {
         viewModelScope.launch {
             var previousRoot: Boolean? = null
+            var previousStats: Boolean? = null
             settingsRepo.settings.collect { s ->
                 _state.update { it.copy(settings = s) }
                 if (previousRoot != null && previousRoot != s.rootAccess) onRootModeChanged(s.rootAccess)
                 previousRoot = s.rootAccess
+                val applicable = folderStatsApplicable(s)
+                if (previousStats != null && previousStats != applicable) {
+                    if (applicable) {
+                        listOf(Pane.LEFT, Pane.RIGHT).forEach { pane ->
+                            val state = _state.value.pane(pane)
+                            startFolderStats(pane, state.path, state.items)
+                        }
+                    } else {
+                        listOf(Pane.LEFT, Pane.RIGHT).forEach { pane ->
+                            statsJobs[pane]?.cancel()
+                            updatePane(pane) { it.copy(folderStats = emptyMap()) }
+                        }
+                    }
+                }
+                previousStats = applicable
             }
         }
         viewModelScope.launch { bookmarkRepo.bookmarks.collect { b -> _state.update { it.copy(bookmarks = b) } } }
@@ -285,7 +336,8 @@ class ExplorerViewModel(
         fallbacks: List<String> = emptyList(),
     ) {
         navJobs[pane]?.cancel()
-        updatePane(pane) { it.copy(loading = true) }
+        statsJobs[pane]?.cancel()
+        updatePane(pane) { it.copy(loading = true, folderStats = emptyMap()) }
         navJobs[pane] = viewModelScope.launch {
             var opened = path
             val listing = try {
@@ -324,6 +376,7 @@ class ExplorerViewModel(
                 )
             }
             refreshMountState(pane, opened, listing.viaRoot)
+            startFolderStats(pane, opened, items)
         }
     }
 
