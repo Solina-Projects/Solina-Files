@@ -42,7 +42,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -65,9 +64,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
 import coil3.compose.AsyncImage
 import coil3.decode.BitmapFactoryDecoder
 import coil3.request.ImageRequest
@@ -106,19 +102,17 @@ fun FileRow(
     onDragStart: ((Offset, PointerId) -> Boolean)? = null,
     singlePane: Boolean = false,
     showSelectionCheckbox: Boolean = false,
+    folderStats: Pair<Long, Int>? = null,
 ) {
     val motion = MaterialTheme.motionScheme
     val colors = MaterialTheme.colorScheme
     val density = LocalUiDensity.current
     val settings = LocalSettings.current
     val list = settings.list
-    val folderStats by produceState<Pair<Long, Int>?>(initialValue = null, item.path, item.isDirectory, singlePane) {
-        if (!singlePane || !item.isDirectory || "://" in item.path || !item.canRead) {
-            value = null
-        } else {
-            value = calculateFolderStats(item.path)
-        }
-    }
+    // Scroll-lag fix: folder size/count is NOT computed here anymore.
+    // A recursive walk per visible row, re-run every time the row scrolled
+    // back into view, is what made single-pane scrolling stutter. The
+    // ViewModel computes it once per directory visit and passes it in.
     val layoutScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.5f; UiDensity.COMFORTABLE -> 2.5f; UiDensity.LARGE -> 3.5f }
     val listIconScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 1f }
     val listSpacingScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 0.5f }
@@ -370,15 +364,6 @@ private const val FLASH_OUT_MS = 280
 private const val FLASH_FADE_MS = 520
 
 fun flashDurationMs(pulses: Int): Long = (pulses * (FLASH_IN_MS + FLASH_OUT_MS) + FLASH_FADE_MS).toLong()
-
-private suspend fun calculateFolderStats(path: String): Pair<Long, Int>? = withContext(Dispatchers.IO) {
-    runCatching {
-        val files = File(path).walkTopDown()
-            .filter { it.isFile && !ir.solina.files.core.fs.FsUtil.isSymlink(it) }
-            .toList()
-        files.sumOf { it.length() } to files.size
-    }.getOrNull()
-}
 
 @Composable
 private fun trailingInfo(item: FileItem, list: ListPrefs, singlePane: Boolean, folderStats: Pair<Long, Int>?): Pair<String, String?>? = when {
