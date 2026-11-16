@@ -274,7 +274,7 @@ fun ExplorerScreen(
         vm.state.map { it.incoming }.distinctUntilChanged()
     }.collectAsStateWithLifecycle(vm.state.value.incoming)
     fun paneState(p: Pane) = if (p == Pane.LEFT) leftPane else rightPane
-    val activePane: PaneState get() = paneState(active)
+    val activePane = paneState(active)
     fun isRemotePane(p: Pane) = RemoteUri.isRemote(paneState(p).path)
     fun isVaultPane(p: Pane) = Vault.isVault(paneState(p).path)
     // Same logic as ExplorerUiState.displayPath, but over the slices above.
@@ -438,7 +438,7 @@ fun ExplorerScreen(
         )
     }
     val onToggleOrientation = remember { { horizontalSplit = !horizontalSplit } }
-    val onToggleViewLayout = remember(vm) { vm::toggleViewMode }
+    val onToggleViewLayout: () -> Unit = remember(vm) { { vm.toggleViewMode() } }
     val onTogglePaneMode = remember(dual, settings.list.viewMode) {
         {
             if (!dual && settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) vm.toggleViewMode()
