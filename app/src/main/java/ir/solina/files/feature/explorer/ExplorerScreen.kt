@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.fillMaxSize
@@ -468,6 +470,25 @@ fun ExplorerScreen(
             )
         },
     ) { padding ->
+        Column(Modifier.fillMaxSize().padding(padding)) {
+        PaneModeBar(
+            dual = dual,
+            onSelectDual = {
+                if (!dual) {
+                    if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) vm.toggleViewMode()
+                    vm.setDualPanePreferred(true)
+                    quickCreateExpanded = false
+                    layoutMenuExpanded = false
+                }
+            },
+            onSelectSingle = {
+                if (dual) {
+                    vm.setDualPanePreferred(false)
+                    quickCreateExpanded = false
+                    layoutMenuExpanded = false
+                }
+            },
+        )
         val panes = if (dual) listOf(Pane.LEFT, Pane.RIGHT) else listOf(ui.active)
         @Composable
         fun PaneContent(pane: Pane, modifier: Modifier) {
@@ -491,7 +512,8 @@ fun ExplorerScreen(
                 pane = pane,
                 horizontalItems = dual && horizontalSplit,
                 singlePane = !dual,
-                onLayoutClick = { layoutMenuExpanded = !layoutMenuExpanded; quickCreateExpanded = false },
+                // Redesign v2: no grid/layout button in dual-pane.
+                onLayoutClick = if (!dual) { { layoutMenuExpanded = !layoutMenuExpanded; quickCreateExpanded = false } } else null,
                 isGrid = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID,
             )
         }
@@ -502,7 +524,7 @@ fun ExplorerScreen(
                     .togetherWith(fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.96f))
             },
             label = "singleDualPaneTransition",
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier.weight(1f),
         ) { (showDual, splitHorizontal) ->
             if (showDual && splitHorizontal) {
                 Column(
@@ -525,11 +547,11 @@ fun ExplorerScreen(
                 }
             }
         }
+        }
     }
     }
     // Redesign v2: the layout menu opens from the path header's button.
-    // The invisible scrim closes it on any tap or scroll outside it, and
-    // choosing an option closes it too — it must never trap the user.
+    // The invisible scrim closes it on any tap or scroll outside it.
     if (layoutMenuExpanded && !ui.searchActive) {
         Box(
             Modifier.fillMaxSize().dismissMenuOnOutsideGesture { layoutMenuExpanded = false },
@@ -537,7 +559,7 @@ fun ExplorerScreen(
         // The panel sits below the path header, so the header's layout
         // button stays visible while the menu is open.
         Box(
-            Modifier.align(androidx.compose.ui.Alignment.TopEnd).padding(top = 132.dp, end = 16.dp),
+            Modifier.align(androidx.compose.ui.Alignment.TopEnd).padding(top = 180.dp, end = 16.dp),
         ) {
             LayoutMenuPanel(
                 dual = dual,
@@ -562,6 +584,9 @@ fun ExplorerScreen(
                 // Redesign v2: the layout toggle lives in the path header now,
                 // not floating over the file list.
                 .filterNot { it == FloatingAction.VIEW_LAYOUT }
+                // Redesign v2: the pane switch lives in the new mode bar now,
+                // not floating over the file list.
+                .filterNot { it == FloatingAction.PANE_MODE }
             floatingVisibleActions.forEach { action ->
                 when (action) {
                 FloatingAction.HOME -> {
@@ -1031,6 +1056,75 @@ private fun FilterBar(query: String, onQuery: (String) -> Unit, onClose: () -> U
 
 
 
+
+// Redesign v2: fixed pane-mode switch bar above the path header, always
+// visible in both modes. RTL row order puts dual-pane on the right and
+// single-pane on the left, as requested.
+@Composable
+private fun PaneModeBar(
+    dual: Boolean,
+    onSelectDual: () -> Unit,
+    onSelectSingle: () -> Unit,
+) {
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        color = colors.surfaceContainerHigh,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 4.dp),
+    ) {
+        Row(Modifier.fillMaxWidth().padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            PaneModeSegment(
+                selected = dual,
+                icon = Icons.Rounded.ViewColumn,
+                label = "دوپنله",
+                contentDescription = "دو پنل کنار هم",
+                onClick = onSelectDual,
+                modifier = Modifier.weight(1f),
+            )
+            PaneModeSegment(
+                selected = !dual,
+                icon = Icons.Rounded.ViewAgenda,
+                label = "تک‌پنله",
+                contentDescription = "تک پنل",
+                onClick = onSelectSingle,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
+}
+
+@Composable
+private fun PaneModeSegment(
+    selected: Boolean,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    contentDescription: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = if (selected) colors.primaryContainer else androidx.compose.ui.graphics.Color.Transparent,
+        contentColor = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
+        modifier = modifier.height(40.dp),
+    ) {
+        Row(
+            Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(icon, contentDescription = contentDescription, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.width(6.dp))
+            Text(
+                label,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+            )
+        }
+    }
+}
 
 // Redesign v2: closes the layout menu on a tap or a scroll anywhere outside
 // it, without swallowing the scroll itself — the gesture is only observed,
