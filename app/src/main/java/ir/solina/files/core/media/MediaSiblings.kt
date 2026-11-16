@@ -24,5 +24,5 @@ object MediaSiblings {
     }
 
     private fun kindOf(name: String): FileKind =
-        FileKinds.of(FileItem(name, name, isDirectory = false, size = 0, lastModified = 0, isHidden = false, canRead = true, canWrite = true))
+        FileKinds.of(FileItem(name, name, isDirectory = false, size = 0, lastModified = 0, isHidden = false, canRead = true))
 }
