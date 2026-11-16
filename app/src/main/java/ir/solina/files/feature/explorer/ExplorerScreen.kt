@@ -534,8 +534,10 @@ fun ExplorerScreen(
         Box(
             Modifier.fillMaxSize().dismissMenuOnOutsideGesture { layoutMenuExpanded = false },
         )
+        // The panel sits below the path header, so the header's layout
+        // button stays visible while the menu is open.
         Box(
-            Modifier.align(androidx.compose.ui.Alignment.TopEnd).padding(top = 72.dp, end = 16.dp),
+            Modifier.align(androidx.compose.ui.Alignment.TopEnd).padding(top = 132.dp, end = 16.dp),
         ) {
             LayoutMenuPanel(
                 dual = dual,
