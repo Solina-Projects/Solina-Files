@@ -31,7 +31,6 @@ import androidx.compose.material.icons.rounded.Security
 import androidx.compose.material.icons.rounded.Translate
 import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material.icons.rounded.TouchApp
-import androidx.compose.material.icons.rounded.VolunteerActivism
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -101,14 +100,11 @@ enum class SettingsPage(@StringRes val title: Int, val icon: ImageVector, val ti
     SECURITY(R.string.security_title, Icons.Rounded.Security, Tint.TERTIARY),
     BACKUP(R.string.settings_page_backup, Icons.Rounded.Restore, Tint.PRIMARY),
     ABOUT(R.string.settings_page_about, Icons.Rounded.Info, Tint.NEUTRAL),
-    SUPPORT(R.string.settings_support_title, Icons.Rounded.VolunteerActivism, Tint.TERTIARY),
 }
 
 data class SettingEntry(@StringRes val title: Int, val page: SettingsPage, @StringRes val keywords: Int)
 
 object SettingsIndex {
-    val featured = SettingsPage.SUPPORT
-
     val home = listOf(
         R.string.settings_home_look to listOf(SettingsPage.LANGUAGE, SettingsPage.APPEARANCE, SettingsPage.FILE_LIST, SettingsPage.TOOLBAR),
         R.string.settings_home_files to listOf(SettingsPage.BEHAVIOR, SettingsPage.OPERATIONS, SettingsPage.OPENING, SettingsPage.EDITOR, SettingsPage.READER, SettingsPage.APPS),
@@ -116,7 +112,6 @@ object SettingsIndex {
     )
 
     val entries = listOf(
-        SettingEntry(R.string.settings_support_title, SettingsPage.SUPPORT, R.string.settings_kw_support),
         SettingEntry(R.string.language_title, SettingsPage.LANGUAGE, R.string.settings_kw_language),
         SettingEntry(R.string.settings_entry_solar_hijri, SettingsPage.LANGUAGE, R.string.settings_kw_solar_hijri),
         SettingEntry(R.string.settings_entry_theme_mode, SettingsPage.APPEARANCE, R.string.settings_kw_theme_mode),
@@ -242,7 +237,6 @@ fun SettingsScreen(
             SettingsPage.SECURITY -> SecurityPage(settings, act, onOpenVault, back)
             SettingsPage.BACKUP -> BackupPage(act, activeFolder, back)
             SettingsPage.ABOUT -> AboutPage(back)
-            SettingsPage.SUPPORT -> SupportPage(back)
         }
     }
 }
@@ -297,7 +291,6 @@ private fun summary(page: SettingsPage, s: SolinaSettings, rootState: RootState)
     ).joinToString(separator())
     SettingsPage.BACKUP -> tr(R.string.settings_summary_backup)
     SettingsPage.ABOUT -> tr(R.string.settings_summary_version, BuildConfig.VERSION_NAME)
-    SettingsPage.SUPPORT -> tr(R.string.settings_support_summary)
 }
 
 private fun englishStrings(context: Context): (Int) -> String {
@@ -345,7 +338,6 @@ private fun SettingsHome(settings: SolinaSettings, rootState: RootState, onOpen:
             }
             return@SettingsPageScaffold
         }
-        SupportCard { onOpen(SettingsIndex.featured) }
         SettingsIndex.home.forEach { (group, pages) ->
             SettingsGroup(stringResource(group)) {
                 pages.forEach { p ->
