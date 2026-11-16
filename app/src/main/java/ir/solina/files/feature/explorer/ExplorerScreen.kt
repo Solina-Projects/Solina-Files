@@ -103,6 +103,7 @@ import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDirection
@@ -1056,7 +1057,7 @@ private fun FilterBar(query: String, onQuery: (String) -> Unit, onClose: () -> U
 // smaller icon than the old extended FAB, with tighter padding.
 @Composable
 private fun QuickCreateButton(
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: androidx.compose.ui.graphics.painter.Painter,
     label: String,
     onClick: () -> Unit,
 ) {
@@ -1104,7 +1105,7 @@ private fun PaneModeBar(
         Row(Modifier.fillMaxWidth().padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             PaneModeSegment(
                 selected = dual,
-                icon = androidx.compose.ui.res.vectorResource(R.drawable.ic_pane_dual),
+                icon = painterResource(R.drawable.ic_pane_dual),
                 label = stringResource(R.string.explorer_pane_dual),
                 contentDescription = stringResource(R.string.explorer_pane_dual_desc),
                 onClick = onSelectDual,
@@ -1112,7 +1113,7 @@ private fun PaneModeBar(
             )
             PaneModeSegment(
                 selected = !dual,
-                icon = androidx.compose.ui.res.vectorResource(R.drawable.ic_pane_single),
+                icon = painterResource(R.drawable.ic_pane_single),
                 label = stringResource(R.string.explorer_pane_single),
                 contentDescription = stringResource(R.string.explorer_pane_single_desc),
                 onClick = onSelectSingle,
@@ -1144,7 +1145,7 @@ private fun PaneModeSegment(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Icon(icon, contentDescription = contentDescription, modifier = Modifier.size(20.dp))
+            Icon(painter = icon, contentDescription = contentDescription, modifier = Modifier.size(20.dp))
             Spacer(Modifier.width(6.dp))
             Text(
                 label,
