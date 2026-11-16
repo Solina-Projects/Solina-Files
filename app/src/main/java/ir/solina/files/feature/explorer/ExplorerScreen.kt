@@ -688,6 +688,10 @@ fun ExplorerScreen(
                 }
             
                 }
+                // Redesign v2: no floating button for the layout toggle any
+                // more — it lives in the path header. Kept so the `when`
+                // stays exhaustive over FloatingAction.
+                FloatingAction.VIEW_LAYOUT -> Unit
                 FloatingAction.PANE_MODE -> {
                 FloatingActionButton(
                     onClick = {
