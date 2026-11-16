@@ -293,9 +293,9 @@ private fun BrowseActions(
                         expanded = layoutMenu,
                         onDismiss = { layoutMenu = false },
                         groups = listOf(buildList {
-                            if (!dual) add(MenuEntry("نمای شبکه‌ای", Icons.Rounded.GridView) { layoutMenu = false; if (!gridView) onToggleViewLayout() })
-                            add(MenuEntry("نمای فهرستی", Icons.Rounded.ViewList) { layoutMenu = false; if (gridView) onToggleViewLayout() })
-                            add(MenuEntry("تنظیم نوار", Icons.Rounded.DashboardCustomize) { layoutMenu = false; a.onCustomize(ToolbarTab.BROWSE) })
+                            if (!dual) add(MenuEntry(stringResource(R.string.explorer_view_grid), Icons.Rounded.GridView) { layoutMenu = false; if (!gridView) onToggleViewLayout() })
+                            add(MenuEntry(stringResource(R.string.explorer_view_list), Icons.Rounded.ViewList) { layoutMenu = false; if (gridView) onToggleViewLayout() })
+                            add(MenuEntry(stringResource(R.string.explorer_customize_bar), Icons.Rounded.DashboardCustomize) { layoutMenu = false; a.onCustomize(ToolbarTab.BROWSE) })
                         }),
                     )
                 }
