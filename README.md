@@ -12,9 +12,9 @@
 
 ## English
 
-**Solina Files** is an open-source file manager for Android, developed under the **Solin** project identity. It is built for everyday file work — and for the advanced jobs that usually need several different apps: browsing and organising files, working with archives and APKs, editing code, connecting to remote storage, and keeping private files in an encrypted vault.
+**Solina Files** is an open-source file manager for Android, developed by **Solina**. It is built for everyday file work — and for the advanced jobs that usually need several different apps: browsing and organising files, working with archives and APKs, editing code, connecting to remote storage, and keeping private files in an encrypted vault.
 
-- **Project:** Solin
+- **Project:** Solina
 - **Application:** Solina Files
 - **Android application ID:** `ir.solina.files`
 - **License:** GNU AGPL v3.0 or later
@@ -125,9 +125,9 @@ Solina Files is distributed under the [GNU Affero General Public License v3.0 or
 
 ## فارسی
 
-**مدیریت فایل سولینا (Solina Files)** یک فایل‌منیجر متن‌باز برای اندروید است که در چارچوب پروژهٔ **Solin** توسعه داده می‌شود. این برنامه برای کارهای روزمره با فایل ساخته شده — و برای کارهای پیشرفته‌ای که معمولاً به چند برنامهٔ جدا نیاز دارند: مرور و مرتب‌کردن فایل‌ها، کار با آرشیو و فایل‌های APK، ویرایش کد، اتصال به حافظه‌های راه‌دور، و نگهداری فایل‌های خصوصی در یک گاوصندوق رمزنگاری‌شده.
+**مدیریت فایل سولینا (Solina Files)** یک فایل‌منیجر متن‌باز برای اندروید است که توسط **Solina** توسعه داده می‌شود. این برنامه برای کارهای روزمره با فایل ساخته شده — و برای کارهای پیشرفته‌ای که معمولاً به چند برنامهٔ جدا نیاز دارند: مرور و مرتب‌کردن فایل‌ها، کار با آرشیو و فایل‌های APK، ویرایش کد، اتصال به حافظه‌های راه‌دور، و نگهداری فایل‌های خصوصی در یک گاوصندوق رمزنگاری‌شده.
 
-- **پروژه:** Solin
+- **پروژه:** Solina
 - **برنامه:** Solina Files
 - **شناسهٔ برنامه در اندروید:** `ir.solina.files`
 - **مجوز:** GNU AGPL نسخهٔ ۳ یا جدیدتر
@@ -240,9 +240,9 @@ Solina Files تحت [مجوز GNU Affero General Public License نسخهٔ ۳ ی
 
 ## العربية
 
-**مدير ملفات سولينا (Solina Files)** هو مدير ملفات مفتوح المصدر لنظام أندرويد، تم تطويره ضمن هوية مشروع **Solin**. صُمم للأعمال اليومية مع الملفات — وللمهام المتقدمة التي تتطلب عادةً عدة تطبيقات مختلفة: تصفح الملفات وتنظيمها، والعمل مع الأرشيفات وملفات APK، وتحرير الشيفرات، والاتصال بالتخزين البعيد، وحفظ الملفات الخاصة في خزنة مشفّرة.
+**مدير ملفات سولينا (Solina Files)** هو مدير ملفات مفتوح المصدر لنظام أندرويد، طوّرته **Solina**. صُمم للأعمال اليومية مع الملفات — وللمهام المتقدمة التي تتطلب عادةً عدة تطبيقات مختلفة: تصفح الملفات وتنظيمها، والعمل مع الأرشيفات وملفات APK، وتحرير الشيفرات، والاتصال بالتخزين البعيد، وحفظ الملفات الخاصة في خزنة مشفّرة.
 
-- **المشروع:** Solin
+- **المشروع:** Solina
 - **التطبيق:** Solina Files
 - **معرّف التطبيق في أندرويد:** `ir.solina.files`
 - **الترخيص:** GNU AGPL الإصدار 3 أو أحدث
