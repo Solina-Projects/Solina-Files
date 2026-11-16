@@ -44,6 +44,12 @@ enum class HistoryOp { VISIT, BACK, FORWARD, NONE }
 data class PaneState(
     val path: String,
     val items: List<FileItem> = emptyList(),
+    // Scroll-lag fix: folder size/count is computed once per directory
+    // visit in the ViewModel (see ExplorerViewModel.startFolderStats),
+    // never inside the row — a row that scrolls back into view only reads
+    // this cache. Cleared on every navigation out of the directory, so
+    // re-entering recomputes it fully.
+    val folderStats: Map<String, Pair<Long, Int>> = emptyMap(),
     val loading: Boolean = false,
     val error: String? = null,
     val selected: Set<String> = emptySet(),
