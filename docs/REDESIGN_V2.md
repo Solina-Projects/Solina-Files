@@ -43,6 +43,25 @@ mockups.html).
 - **Not done yet:** launcher icon is still the copied JPG, and the stray
   root images (`Polish_*`, `179289*.jpg`) are still in the repo — Phase 4.
 
+## Screenshot fixes (2026-11-16, from the user's single-pane screenshot)
+- **Theme defaults really applied:** `SettingsRepository.readAppearance` used
+  the OLD fallbacks (wallpaper on, green seed, TonalSpot, Standard), so the
+  Phase 1 purple never reached a fresh install — the screenshot was still
+  washed-out pale pink. Fallbacks now match SolinaDesign.
+- **Folders:** `FileRow` tinted folders with the theme primary (brown under
+  the wallpaper palette); now they use their KindPalette colour like files.
+- **Layout toggle moved:** the grid/list button left the floating column and
+  lives in the path header's end corner (`PaneColumn.PathHeader`), with its
+  list/grid + density menu floating under the header. The other two floating
+  buttons stay where they were.
+- **Language:** the app is Persian-first — a fresh install now defaults to
+  Persian (first launch only, `AppLocales.applyDefaultIfUnset`); Settings →
+  Language still switches to English/System.
+- **Path header redesigned** (same size): leading storage mark, title/path,
+  badges, layout button.
+- **Dates:** Gregorian short dates now spell the month ("Nov 8, 2026" /
+  "۸ نوامبر ۲۰۲۶") instead of the ambiguous "26-11-08".
+
 ## Next phases
 - **Phase 3:** Explorer — single pane by default on phone portrait
   (dual pane stays a setting for tablets/landscape; its default was already
