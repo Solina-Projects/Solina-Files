@@ -228,6 +228,7 @@ fun PaneColumn(
             val selected = if (folder.path == state.path) state.selected else emptySet()
             FolderList(
                 folder = folder,
+                folderStats = state.folderStats,
                 selected = selected,
                 scrollMemory = scrollMemory,
                 refreshing = state.loading && folder.path == state.path,
@@ -285,6 +286,7 @@ private fun FolderList(
     drag: FileDragState?,
     horizontalItems: Boolean = false,
     singlePane: Boolean = false,
+    folderStats: Map<String, Pair<Long, Int>> = emptyMap(),
 ) {
     if (horizontalItems) {
         FolderHorizontalList(folder, selected, scrollMemory, refreshing, onRefresh, onUp, onOpen, onToggleSelect, onItemMenu, pane, drag)
@@ -385,6 +387,7 @@ private fun FolderList(
                 onDragStart = links.start(item),
                 singlePane = singlePane,
                 showSelectionCheckbox = false,
+                folderStats = folderStats[item.path],
             )
         }
     }
