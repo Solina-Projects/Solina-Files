@@ -105,13 +105,14 @@ object FsUtil {
         overwrite: Boolean = false,
         to: FileAccess = from,
         keepTime: Boolean = true,
+        onBytesCopied: ((Long) -> Unit)? = null,
     ): Boolean {
         if (src.isDirectory) {
             if (!dst.isDirectory && !dst.mkdirs()) return false
             val children = src.listFiles() ?: return false
             var ok = true
             for (child in children) {
-                if (!copyTree(child, to.child(dst, child.name), from, overwrite, to, keepTime)) ok = false
+                if (!copyTree(child, to.child(dst, child.name), from, overwrite, to, keepTime, onBytesCopied)) ok = false
             }
             if (keepTime) dst.setLastModified(src.lastModified())
             return ok
@@ -120,16 +121,30 @@ object FsUtil {
             if (!overwrite || dst.isDirectory) return false
         }
         dst.parentFile?.let { if (!it.isDirectory) it.mkdirs() }
-        from.openInput(src).use { input ->
+        val copiedBytes = from.openInput(src).use { input ->
             to.openOutput(dst).use { output -> input.copyTo(output, 64 * 1024) }
         }
+        onBytesCopied?.invoke(copiedBytes)
         if (keepTime) dst.setLastModified(src.lastModified())
         return true
     }
 
-    fun move(src: File, dst: File, from: FileAccess = LocalFileAccess, to: FileAccess = from): Boolean {
-        if (from.sameProcessAs(to) && src.renameTo(dst)) return true
-        val copied = runCatching { copyTree(src, dst, from, overwrite = false, to = to) }.getOrDefault(false)
+    fun move(
+        src: File,
+        dst: File,
+        from: FileAccess = LocalFileAccess,
+        to: FileAccess = from,
+        onBytesCopied: ((Long) -> Unit)? = null,
+    ): Boolean {
+        if (from.sameProcessAs(to) && src.renameTo(dst)) {
+            // Fast path: nothing was copied, but the caller still needs the
+            // moved byte count for progress. The target tree is the moved
+            // tree, so one walk over it reports the same count the old
+            // post-move sizeOf(target) did.
+            onBytesCopied?.invoke(sizeOf(dst, to))
+            return true
+        }
+        val copied = runCatching { copyTree(src, dst, from, overwrite = false, to = to, onBytesCopied = onBytesCopied) }.getOrDefault(false)
         if (!copied) return false
         return deleteRecursively(src, from)
     }
