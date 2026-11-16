@@ -431,13 +431,5 @@
         <item quantity="one">Quick buttons hold %1$d, so %2$s moved to the menu</item>
         <item quantity="other">Quick buttons hold %1$d, so %2$s moved to the menu</item>
     </plurals>
-    <string name="settings_support_title">Support the developer</string>
-    <string name="settings_support_summary">Solina Files is free and open source. Your support helps it keep growing.</string>
-    <string name="settings_support_body">Solina Files is free, open source and has no ads or tracking. If it makes your work easier and you\'d like to help it grow, you can send a donation to one of these addresses. Every bit of support is appreciated — thank you!</string>
-    <string name="settings_support_wallets">Wallets</string>
-    <string name="settings_support_network_hint">Send each coin only on the network named above its address. Coins sent on another network can\'t be recovered.</string>
-    <string name="settings_support_copy">Copy the %1$s address</string>
-    <string name="settings_support_copied">Address copied</string>
-    <string name="settings_kw_support">donate donation support sponsor tip crypto wallet usdt trx tron bnb ton gram</string>
     <string name="settings_backup_not_solina">This is not a valid Solina Files settings backup.</string>
 </resources>
