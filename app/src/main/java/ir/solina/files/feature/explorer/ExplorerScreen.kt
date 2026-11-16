@@ -543,7 +543,6 @@ fun ExplorerScreen(
                 onToggleViewMode = { vm.toggleViewMode() },
                 density = ui.settings.uiDensity,
                 onDensity = { vm.setItemDensity(it) },
-                onClose = { layoutMenuExpanded = false },
             )
         }
     }
@@ -1051,7 +1050,6 @@ private fun LayoutMenuPanel(
     onToggleViewMode: () -> Unit,
     density: ir.solina.files.core.model.UiDensity,
     onDensity: (ir.solina.files.core.model.UiDensity) -> Unit,
-    onClose: () -> Unit,
 ) {
                             Surface(
                                 modifier = Modifier.width(240.dp),
@@ -1078,7 +1076,7 @@ private fun LayoutMenuPanel(
                                                 color = if (isList) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
                                             ) {
                                                 IconButton(
-                                                    onClick = { if (!isList) onToggleViewMode(); onClose() },
+                                                    onClick = { if (!isList) onToggleViewMode() },
                                                     modifier = Modifier.size(48.dp),
                                                 ) {
                                                     Icon(
@@ -1094,7 +1092,7 @@ private fun LayoutMenuPanel(
                                             color = if (isGrid) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
                                         ) {
                                             IconButton(
-                                                onClick = { if (!isGrid) onToggleViewMode(); onClose() },
+                                                onClick = { if (!isGrid) onToggleViewMode() },
                                                 modifier = Modifier.size(48.dp),
                                             ) {
                                                 Icon(
@@ -1132,7 +1130,7 @@ private fun LayoutMenuPanel(
                                                         .size(if (selectedDensity) 28.dp else 24.dp)
                                                         .clip(CircleShape)
                                                         .background(if (selectedDensity) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
-                                                        .clickable { onDensity(densityOption); onClose() },
+                                                        .clickable { onDensity(densityOption) },
                                                     contentAlignment = androidx.compose.ui.Alignment.Center,
                                                 ) {
                                                     if (selectedDensity) {
