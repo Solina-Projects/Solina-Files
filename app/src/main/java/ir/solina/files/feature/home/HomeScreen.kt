@@ -50,7 +50,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -62,13 +61,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import ir.solina.files.core.util.FileKind
 import ir.solina.files.ui.theme.KindPalette
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import java.util.Locale
 
 private data class HomeShortcut(val title: String, val path: String, val icon: ImageVector, val kind: FileKind)
-private data class StorageCategory(val title: String, val path: String, val icon: ImageVector, val kind: FileKind, val bytes: Long)
+private data class StorageCategory(val title: String, val path: String, val icon: ImageVector, val kind: FileKind, val bytes: Long, val sizeText: String)
 
 @Composable
 fun HomeScreen(
@@ -81,18 +78,17 @@ fun HomeScreen(
     onToggleTheme: () -> Unit = {},
 ) {
     val root = remember { Environment.getExternalStorageDirectory()?.absolutePath ?: "/storage/emulated/0" }
-    var refreshKey by remember { mutableIntStateOf(0) }
-    var categoryBytes by remember { mutableStateOf<Map<String, Long>>(emptyMap()) }
-    val storage = remember(root, refreshKey) {
+    // Perf item 3: category totals are cached in HomeCategoryCache for the
+    // session; this screen only triggers the first scan and refreshes.
+    val categoryBytes by HomeCategoryCache.bytes.collectAsStateWithLifecycle()
+    LaunchedEffect(root) { HomeCategoryCache.ensureScanned(root) }
+    val storage = remember(root) {
         runCatching {
             val stat = StatFs(root)
             val total = stat.totalBytes.coerceAtLeast(1L)
             val free = stat.availableBytes.coerceAtLeast(0L)
             Triple(total, free, (total - free).coerceAtLeast(0L))
         }.getOrElse { Triple(0L, 0L, 0L) }
-    }
-    LaunchedEffect(root, refreshKey) {
-        categoryBytes = withContext(Dispatchers.IO) { scanCategoryBytes(File(root)) }
     }
     val shortcuts = remember(root) {
         listOf(
@@ -105,18 +101,27 @@ fun HomeScreen(
         )
     }
     // Redesign v2: category colours come from KindPalette (one hue per file
-    // kind) instead of hardcoded random colours.
+    // kind) instead of hardcoded random colours. Colours and formatted sizes
+    // are computed once per categoryBytes change, not per recomposition.
     val scheme = MaterialTheme.colorScheme
     val dark = isSystemInDarkTheme()
-    fun kindColor(kind: FileKind): Color = KindPalette.colors(kind, colorful = true, scheme = scheme, dark = dark).content
-    val categories = listOf(
-        StorageCategory("تصاویر", "$root/DCIM", Icons.Rounded.Image, FileKind.IMAGE, categoryBytes["images"] ?: 0L),
-        StorageCategory("فیلم‌ها", "$root/Movies", Icons.Rounded.Movie, FileKind.VIDEO, categoryBytes["videos"] ?: 0L),
-        StorageCategory("اسناد", "$root/Documents", Icons.Rounded.Description, FileKind.DOCUMENT, categoryBytes["documents"] ?: 0L),
-        StorageCategory("موزیک", "$root/Music", Icons.Rounded.MusicNote, FileKind.AUDIO, categoryBytes["music"] ?: 0L),
-        StorageCategory("برنامه‌ها / APK", "$root/Android", Icons.Rounded.Apps, FileKind.APK, categoryBytes["apps"] ?: 0L),
-    )
-    var query by remember { mutableStateOf("") }
+    val kindColors = remember(scheme, dark) {
+        FileKind.entries.associateWith { kind ->
+            KindPalette.colors(kind, colorful = true, scheme = scheme, dark = dark).content
+        }
+    }
+    fun kindColor(kind: FileKind): Color = kindColors.getValue(kind)
+    val categories = remember(categoryBytes) {
+        fun category(title: String, path: String, icon: ImageVector, kind: FileKind, bytes: Long) =
+            StorageCategory(title, path, icon, kind, bytes, fa(formatBytes(bytes)))
+        listOf(
+            category("تصاویر", "$root/DCIM", Icons.Rounded.Image, FileKind.IMAGE, categoryBytes["images"] ?: 0L),
+            category("فیلم‌ها", "$root/Movies", Icons.Rounded.Movie, FileKind.VIDEO, categoryBytes["videos"] ?: 0L),
+            category("اسناد", "$root/Documents", Icons.Rounded.Description, FileKind.DOCUMENT, categoryBytes["documents"] ?: 0L),
+            category("موزیک", "$root/Music", Icons.Rounded.MusicNote, FileKind.AUDIO, categoryBytes["music"] ?: 0L),
+            category("برنامه‌ها / APK", "$root/Android", Icons.Rounded.Apps, FileKind.APK, categoryBytes["apps"] ?: 0L),
+        )
+    }
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
             Modifier.fillMaxSize().padding(horizontal = 16.dp, vertical = 10.dp),
@@ -127,22 +132,15 @@ fun HomeScreen(
                     Text("سولینا فایلز", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold)
                     Text("مدیریت فایل‌ها", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                IconButton(onClick = { refreshKey++ }) { Icon(Icons.Rounded.Refresh, contentDescription = "تازه‌سازی حافظه") }
+                IconButton(onClick = { HomeCategoryCache.refresh(root) }) { Icon(Icons.Rounded.Refresh, contentDescription = "تازه‌سازی حافظه") }
                 IconButton(onClick = onToggleTheme) {
                     Icon(if (isDarkTheme) Icons.Rounded.LightMode else Icons.Rounded.DarkMode, contentDescription = "تغییر تم")
                 }
                 IconButton(onClick = onSettings) { Icon(Icons.Rounded.Settings, contentDescription = "تنظیمات") }
             }
-            OutlinedTextField(
-                value = query,
-                onValueChange = { query = it },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                placeholder = { Text("جست‌وجوی فایل‌ها و پوشه‌ها") },
-                leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
-                trailingIcon = { IconButton(onClick = onSearch) { Icon(Icons.Rounded.Search, contentDescription = "باز کردن جستجو") } },
-                shape = RoundedCornerShape(18.dp),
-            )
+            // Perf item 8: the search field owns its own query state, so a
+            // keystroke recomposes only the field, not the whole Home screen.
+            HomeSearchField(onOpenSearch = onSearch)
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
                 shape = RoundedCornerShape(24.dp),
@@ -182,7 +180,7 @@ fun HomeScreen(
                                 Icon(category.icon, contentDescription = null, tint = kindColor(category.kind), modifier = Modifier.size(18.dp))
                                 Spacer(Modifier.width(7.dp))
                                 Text(category.title, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
-                                Text("${fa(formatBytes(category.bytes))} · ${fa(percent.toString())}%", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text("${category.sizeText} · ${fa(percent.toString())}%", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                             Box(Modifier.fillMaxWidth().height(5.dp).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(99.dp))) {
                                 Box(Modifier.fillMaxWidth((category.bytes.toDouble() / storage.third.coerceAtLeast(1L)).toFloat().coerceIn(0f, 1f)).height(5.dp).background(kindColor(category.kind), RoundedCornerShape(99.dp)))
@@ -245,7 +243,7 @@ fun HomeScreen(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
-                items(categories) { category ->
+                items(categories, key = { it.path }) { category ->
                     Card(
                         modifier = Modifier.fillMaxWidth().clickable { onOpenFolder(category.path) },
                         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
@@ -256,7 +254,7 @@ fun HomeScreen(
                             Spacer(Modifier.width(8.dp))
                             Column(Modifier.weight(1f)) {
                                 Text(category.title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
-                                Text("${fa(formatBytes(category.bytes))}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(category.sizeText, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
@@ -266,32 +264,19 @@ fun HomeScreen(
     }
 }
 
-private fun scanCategoryBytes(root: File): Map<String, Long> {
-    val totals = mutableMapOf("images" to 0L, "videos" to 0L, "documents" to 0L, "music" to 0L, "apps" to 0L)
-    if (!root.exists() || !root.canRead()) return totals
-    val image = setOf("jpg", "jpeg", "png", "webp", "gif", "bmp", "heic", "tif", "tiff")
-    val video = setOf("mp4", "mkv", "avi", "mov", "webm", "3gp", "m4v", "ts")
-    val docs = setOf("pdf", "doc", "docx", "txt", "rtf", "odt", "xls", "xlsx", "ppt", "pptx", "csv", "epub")
-    val music = setOf("mp3", "flac", "wav", "ogg", "m4a", "aac", "opus", "wma")
-    runCatching {
-        root.walkTopDown().onEnter { dir ->
-            val path = dir.absolutePath.replace('\\', '/')
-            !path.contains("/Android/data") && !path.contains("/Android/obb") && !path.contains("/.thumbnails")
-        }.forEach { file ->
-            if (!file.isFile) return@forEach
-            val ext = file.extension.lowercase(Locale.ROOT)
-            val key = when {
-                ext in image -> "images"
-                ext in video -> "videos"
-                ext in docs -> "documents"
-                ext in music -> "music"
-                ext in setOf("apk", "apks", "xapk") -> "apps"
-                else -> null
-            }
-            if (key != null) totals[key] = (totals[key] ?: 0L) + file.length().coerceAtLeast(0L)
-        }
-    }
-    return totals
+@Composable
+private fun HomeSearchField(onOpenSearch: () -> Unit) {
+    var query by remember { mutableStateOf("") }
+    OutlinedTextField(
+        value = query,
+        onValueChange = { query = it },
+        modifier = Modifier.fillMaxWidth(),
+        singleLine = true,
+        placeholder = { Text("جست‌وجوی فایل‌ها و پوشه‌ها") },
+        leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+        trailingIcon = { IconButton(onClick = onOpenSearch) { Icon(Icons.Rounded.Search, contentDescription = "باز کردن جستجو") } },
+        shape = RoundedCornerShape(18.dp),
+    )
 }
 
 private fun fa(value: String): String = value.map { if (it in '0'..'9') ('۰'.code + (it.code - '0'.code)).toChar() else it }.joinToString("")
