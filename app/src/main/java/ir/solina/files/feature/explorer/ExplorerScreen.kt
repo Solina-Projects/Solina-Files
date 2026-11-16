@@ -1057,7 +1057,7 @@ private fun FilterBar(query: String, onQuery: (String) -> Unit, onClose: () -> U
 // smaller icon than the old extended FAB, with tighter padding.
 @Composable
 private fun QuickCreateButton(
-    icon: androidx.compose.ui.graphics.painter.Painter,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
     label: String,
     onClick: () -> Unit,
 ) {
@@ -1126,7 +1126,7 @@ private fun PaneModeBar(
 @Composable
 private fun PaneModeSegment(
     selected: Boolean,
-    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    icon: androidx.compose.ui.graphics.painter.Painter,
     label: String,
     contentDescription: String,
     onClick: () -> Unit,
