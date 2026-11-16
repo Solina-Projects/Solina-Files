@@ -430,13 +430,5 @@
         <item quantity="one">فقط %1$d دکمه سریع جا می‌شود، برای همین \u2068%2$s\u2069 به منو رفت</item>
         <item quantity="other">فقط %1$d دکمه سریع جا می‌شود، برای همین \u2068%2$s\u2069 به منو رفت</item>
     </plurals>
-    <string name="settings_support_title">حمایت از توسعه‌دهنده</string>
-    <string name="settings_support_summary">این برنامه رایگان و متن‌باز است و حمایت شما به ادامه‌ی ساختنش کمک می‌کند.</string>
-    <string name="settings_support_body">این برنامه رایگان و متن‌باز است و هیچ تبلیغ یا ردیابی‌ای ندارد. اگر به کارتان آمده و دوست دارید به رشدش کمک کنید، می‌توانید به یکی از این آدرس‌ها کمک مالی بفرستید. هر حمایتی ارزشمند است؛ سپاس!</string>
-    <string name="settings_support_wallets">کیف‌پول‌ها</string>
-    <string name="settings_support_network_hint">هر ارز را فقط روی شبکه‌ای بفرستید که بالای آدرسش نوشته شده؛ ارزی که روی شبکه‌ی دیگری فرستاده شود، قابل برگشت نیست.</string>
-    <string name="settings_support_copy">کپی آدرس \u2068%1$s\u2069</string>
-    <string name="settings_support_copied">آدرس کپی شد</string>
-    <string name="settings_kw_support">حمایت کمک مالی دونیت اهدا کیف پول رمزارز ارز دیجیتال تتر ترون</string>
     <string name="settings_backup_not_solina">این فایل، پشتیبان معتبر تنظیمات سولینا فایلز نیست.</string>
 </resources>
