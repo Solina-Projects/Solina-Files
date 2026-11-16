@@ -123,9 +123,14 @@ class ExplorerViewModel(
 
     private data class RemoteOpened(val uri: String, val stamp: Long, val length: Long)
 
+    // Set once the settings flow has delivered its first value into _state.
+    // Read from the IO thread by DirectoryLister.local, so it must be volatile.
+    @Volatile
+    private var settingsLoaded = false
+
     private val lister = DirectoryLister(
         storageRoot = rootPath,
-        local = { p -> withContext(Dispatchers.IO) { val currentSettings = settingsRepo.settings.first(); val calculateChildCount = !currentSettings.dualPanePreferred && currentSettings.list.viewMode == ViewMode.LIST; File(p).takeIf { it.isDirectory }?.listFiles()?.map { FileItem.of(it, calculateChildCount) } } },
+        local = { p -> withContext(Dispatchers.IO) { val currentSettings = if (settingsLoaded) _state.value.settings else settingsRepo.settings.first(); val calculateChildCount = !currentSettings.dualPanePreferred && currentSettings.list.viewMode == ViewMode.LIST; File(p).takeIf { it.isDirectory }?.listFiles()?.map { FileItem.of(it, calculateChildCount) } } },
         root = { p -> privilegedAccess()?.let { a -> withContext(Dispatchers.IO) { a.list(p) } } },
         missing = { p -> isMissing(p) },
         fallback = { p -> if (p == "/") withContext(Dispatchers.IO) { TopLevel.probe() } else null },
@@ -192,6 +197,7 @@ class ExplorerViewModel(
             var previousRoot: Boolean? = null
             var previousStats: Boolean? = null
             settingsRepo.settings.collect { s ->
+                settingsLoaded = true
                 _state.update { it.copy(settings = s) }
                 if (previousRoot != null && previousRoot != s.rootAccess) onRootModeChanged(s.rootAccess)
                 previousRoot = s.rootAccess
@@ -1219,7 +1225,7 @@ class ExplorerViewModel(
         val (id, path) = RemoteUri.parse(uri) ?: throw IOException(tr(R.string.explorer_not_network))
         sessions.use(id) { fs ->
             fs.list(path).map { e ->
-                FileItem(e.name, RemoteUri.of(id, e.path), e.isDirectory, e.size, e.modified, e.name.startsWith("."), canRead = true, canWrite = true, isSymlink = e.isSymlink)
+                FileItem(e.name, RemoteUri.of(id, e.path), e.isDirectory, e.size, e.modified, e.name.startsWith("."), canRead = true, isSymlink = e.isSymlink)
             }
         }
     }
