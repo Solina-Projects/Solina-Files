@@ -34,6 +34,7 @@ import ir.solina.files.ui.security.AppLock
 import ir.solina.files.ui.security.AppLockGate
 import ir.solina.files.ui.security.DeviceAuth
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import ir.solina.files.ui.theme.SolinaTheme
 
@@ -101,7 +102,15 @@ class MainActivity : FragmentActivity() {
         val incomingFile = if (incoming == null && savedInstanceState == null) incomingFile(intent) else null
         setContent {
             // Start each fresh app session in the simpler single-pane workspace.
-            LaunchedEffect(Unit) { settingsRepo.setDualPanePreferred(false) }
+            // Only write when the persisted value is actually true: an
+            // unconditional write re-emits to every settings collector and
+            // forces a full settings re-decode + UI recomposition on every
+            // cold start, even when the value is already false.
+            LaunchedEffect(Unit) {
+                if (settingsFlow.first().dualPanePreferred) {
+                    settingsRepo.setDualPanePreferred(false)
+                }
+            }
             val settings by settingsFlow.collectAsStateWithLifecycle(initialValue = initial)
             val sounds = settings.appearance.sounds
             LaunchedEffect(sounds) { UiSounds.enabled = sounds }
