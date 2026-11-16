@@ -14,6 +14,10 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.foundation.gestures.awaitTouchSlopOrCancellation
+import androidx.compose.foundation.gestures.awaitFirstDown
+import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -523,6 +527,26 @@ fun ExplorerScreen(
         }
     }
     }
+    // Redesign v2: the layout menu opens from the path header's button.
+    // The invisible scrim closes it on any tap or scroll outside it, and
+    // choosing an option closes it too — it must never trap the user.
+    if (layoutMenuExpanded && !ui.searchActive) {
+        Box(
+            Modifier.fillMaxSize().dismissMenuOnOutsideGesture { layoutMenuExpanded = false },
+        )
+        Box(
+            Modifier.align(androidx.compose.ui.Alignment.TopEnd).padding(top = 72.dp, end = 16.dp),
+        ) {
+            LayoutMenuPanel(
+                dual = dual,
+                viewMode = ui.settings.list.viewMode,
+                onToggleViewMode = { vm.toggleViewMode() },
+                density = ui.settings.uiDensity,
+                onDensity = { vm.setItemDensity(it) },
+                onClose = { layoutMenuExpanded = false },
+            )
+        }
+    }
     if (!ui.searchActive) {
         Column(
             modifier = Modifier.align(androidx.compose.ui.Alignment.BottomEnd).padding(end = 16.dp, bottom = 84.dp),
@@ -712,20 +736,6 @@ fun ExplorerScreen(
                 }
                 }
             }
-        }
-    }
-    // Redesign v2: the layout menu opens from the path header's button.
-    if (layoutMenuExpanded && !ui.searchActive) {
-        Box(
-            Modifier.align(androidx.compose.ui.Alignment.TopEnd).padding(top = 72.dp, end = 16.dp),
-        ) {
-            LayoutMenuPanel(
-                dual = dual,
-                viewMode = ui.settings.list.viewMode,
-                onToggleViewMode = { vm.toggleViewMode() },
-                density = ui.settings.uiDensity,
-                onDensity = { vm.setItemDensity(it) },
-            )
         }
     }
     DragLayer(drag) { host[0]?.positionInRoot() ?: Offset.Zero }
@@ -1021,6 +1031,17 @@ private fun FilterBar(query: String, onQuery: (String) -> Unit, onClose: () -> U
 
 
 
+// Redesign v2: closes the layout menu on a tap or a scroll anywhere outside
+// it, without swallowing the scroll itself — the gesture is only observed,
+// never consumed, so the file list keeps scrolling underneath.
+private fun Modifier.dismissMenuOnOutsideGesture(onDismiss: () -> Unit): Modifier = pointerInput(onDismiss) {
+    awaitEachGesture {
+        val down = awaitFirstDown()
+        val up = awaitTouchSlopOrCancellation(down.id) { _, _ -> onDismiss() }
+        if (up != null) onDismiss()
+    }
+}
+
 // Redesign v2: layout menu (list/grid + density). Its trigger moved from
 // the floating button into the path header; the panel floats under the header.
 @Composable
@@ -1030,6 +1051,7 @@ private fun LayoutMenuPanel(
     onToggleViewMode: () -> Unit,
     density: ir.solina.files.core.model.UiDensity,
     onDensity: (ir.solina.files.core.model.UiDensity) -> Unit,
+    onClose: () -> Unit,
 ) {
                             Surface(
                                 modifier = Modifier.width(240.dp),
@@ -1056,7 +1078,7 @@ private fun LayoutMenuPanel(
                                                 color = if (isList) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
                                             ) {
                                                 IconButton(
-                                                    onClick = { if (!isList) onToggleViewMode() },
+                                                    onClick = { if (!isList) onToggleViewMode(); onClose() },
                                                     modifier = Modifier.size(48.dp),
                                                 ) {
                                                     Icon(
@@ -1072,7 +1094,7 @@ private fun LayoutMenuPanel(
                                             color = if (isGrid) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
                                         ) {
                                             IconButton(
-                                                onClick = { if (!isGrid) onToggleViewMode() },
+                                                onClick = { if (!isGrid) onToggleViewMode(); onClose() },
                                                 modifier = Modifier.size(48.dp),
                                             ) {
                                                 Icon(
@@ -1110,7 +1132,7 @@ private fun LayoutMenuPanel(
                                                         .size(if (selectedDensity) 28.dp else 24.dp)
                                                         .clip(CircleShape)
                                                         .background(if (selectedDensity) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
-                                                        .clickable { onDensity(densityOption) },
+                                                        .clickable { onDensity(densityOption); onClose() },
                                                     contentAlignment = androidx.compose.ui.Alignment.Center,
                                                 ) {
                                                     if (selectedDensity) {
