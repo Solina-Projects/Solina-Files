@@ -468,11 +468,13 @@ private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape, contentPaddingF
         contentAlignment = Alignment.Center,
     ) {
         if (item.isDirectory) {
-            // One-color folder glyph follows the active Material theme automatically.
+            // Redesign v2: folders take their own KindPalette colour (purple
+            // hue 265), like every other file kind — tinting with the theme
+            // primary turned them all the same washed-out brown.
             Icon(
                 Icons.Rounded.Folder,
                 contentDescription = stringResource(kind.label),
-                tint = colors.primary,
+                tint = tile.content,
                 modifier = Modifier.fillMaxSize().padding(iconSize * 0.08f),
             )
         } else {
