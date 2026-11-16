@@ -244,4 +244,20 @@
     <string name="explorer_incoming_hidden">Solina can\'t see where %1$s is stored</string>
     <string name="explorer_incoming_save">Save to Download</string>
     <string name="explorer_incoming_unreadable">The other app didn\'t let Solina read this file</string>
+    <string name="explorer_pane_dual">Dual pane</string>
+    <string name="explorer_pane_single">Single pane</string>
+    <string name="explorer_pane_dual_desc">Dual panes side by side</string>
+    <string name="explorer_pane_single_desc">Single pane</string>
+    <string name="explorer_quick_create_title">Create new item</string>
+    <string name="explorer_quick_new_folder">New folder</string>
+    <string name="explorer_quick_new_text_file">Text file</string>
+    <string name="explorer_quick_new_html_file">HTML file</string>
+    <string name="explorer_quick_new_project">New project</string>
+    <string name="explorer_quick_create_close">Close quick create</string>
+    <string name="explorer_quick_create_open">Create a file or folder</string>
+    <string name="explorer_layout_list">List layout</string>
+    <string name="explorer_layout_grid">Grid layout</string>
+    <string name="explorer_density_selected">Selected: %1$s</string>
+    <string name="explorer_view_grid">Grid view</string>
+    <string name="explorer_view_list">List view</string>
 </resources>
