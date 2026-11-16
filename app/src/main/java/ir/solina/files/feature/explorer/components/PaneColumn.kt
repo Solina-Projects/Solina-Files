@@ -49,7 +49,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.FolderOff
 import androidx.compose.material.icons.rounded.GridView
-import androidx.compose.material.icons.rounded.Storage
+import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.ViewList
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -671,7 +671,7 @@ private fun PathHeader(
                 Modifier.size(40.dp).clip(RoundedCornerShape(13.dp)).background(colors.primaryContainer),
                 contentAlignment = Alignment.Center,
             ) {
-                Icon(Icons.Rounded.Storage, contentDescription = null, tint = colors.onPrimaryContainer, modifier = Modifier.size(22.dp))
+                Icon(Icons.Rounded.Folder, contentDescription = null, tint = colors.onPrimaryContainer, modifier = Modifier.size(22.dp))
             }
             Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
@@ -711,11 +711,14 @@ private fun PathHeader(
             // Redesign v2: the grid/list layout toggle lives here now, in the
             // header's end corner — it used to float over the file list.
             if (onLayoutClick != null) {
+                // Redesign v2: the button has its own ground (surface + outline),
+                // separate from the storage bar's primary container.
                 Surface(
                     onClick = onLayoutClick,
                     shape = CircleShape,
-                    color = colors.primaryContainer,
-                    contentColor = colors.onPrimaryContainer,
+                    color = colors.surfaceContainerHighest,
+                    contentColor = colors.onSurfaceVariant,
+                    border = androidx.compose.foundation.BorderStroke(1.dp, colors.outlineVariant),
                     modifier = Modifier.padding(start = 8.dp).size(40.dp),
                 ) {
                     Box(contentAlignment = Alignment.Center) {
