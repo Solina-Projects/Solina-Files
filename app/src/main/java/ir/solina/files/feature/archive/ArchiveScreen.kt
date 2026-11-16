@@ -440,7 +440,6 @@ private fun ArchiveEntry.toFileItem() = FileItem(
     lastModified = if (time < FIRST_REAL_TIME) 0 else time,
     isHidden = false,
     canRead = true,
-    canWrite = false,
 )
 
 @Composable
