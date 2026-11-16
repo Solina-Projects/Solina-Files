@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.width
@@ -47,6 +48,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowUpward
 import androidx.compose.material.icons.rounded.FolderOff
+import androidx.compose.material.icons.rounded.GridView
+import androidx.compose.material.icons.rounded.Storage
+import androidx.compose.material.icons.rounded.ViewList
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
@@ -144,6 +148,10 @@ fun PaneColumn(
     pane: Pane = Pane.LEFT,
     horizontalItems: Boolean = false,
     singlePane: Boolean = false,
+    // Redesign v2: the grid/layout toggle moved here from the floating
+    // buttons, into the path header's end corner.
+    onLayoutClick: (() -> Unit)? = null,
+    isGrid: Boolean = false,
 ) {
     val motion = MaterialTheme.motionScheme
     val activate by rememberUpdatedState(onActivate)
@@ -187,6 +195,8 @@ fun PaneColumn(
             viaRoot = state.viaRoot,
             readOnly = state.readOnly,
             onLongPress = onJumpTo,
+            onLayoutClick = onLayoutClick,
+            isGrid = isGrid,
         )
 
         val page = FolderPage(
@@ -622,6 +632,8 @@ private fun PathHeader(
     viaRoot: Boolean,
     onLongPress: () -> Unit,
     readOnly: Boolean = false,
+    onLayoutClick: (() -> Unit)? = null,
+    isGrid: Boolean = false,
 ) {
     val motion = MaterialTheme.motionScheme
     val colors = MaterialTheme.colorScheme
@@ -653,6 +665,15 @@ private fun PathHeader(
             .combinedClickable(onClick = {}, onLongClick = onLongPress, onLongClickLabel = stringResource(R.string.explorer_jump_to_path)),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) {
+            // Redesign v2: a storage mark up front so the bar reads as a
+            // designed header. Same height as before.
+            Box(
+                Modifier.size(40.dp).clip(RoundedCornerShape(13.dp)).background(colors.primaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(Icons.Rounded.Storage, contentDescription = null, tint = colors.onPrimaryContainer, modifier = Modifier.size(22.dp))
+            }
+            Spacer(Modifier.width(10.dp))
             Column(Modifier.weight(1f)) {
                 Text(isolated(title), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(shownPath, style = MaterialTheme.typography.labelSmall.asPath(), maxLines = 1, overflow = TextOverflow.StartEllipsis)
@@ -686,6 +707,31 @@ private fun PathHeader(
             }
             AnimatedVisibility(visible = loading, enter = fadeIn(motion.fastEffectsSpec()), exit = fadeOut(motion.fastEffectsSpec())) {
                 CircularProgressIndicator(Modifier.padding(start = 6.dp).size(16.dp), strokeWidth = 2.dp)
+            }
+            // Redesign v2: the grid/list layout toggle lives here now, in the
+            // header's end corner — it used to float over the file list.
+            if (onLayoutClick != null) {
+                Surface(
+                    onClick = onLayoutClick,
+                    shape = CircleShape,
+                    color = colors.primaryContainer,
+                    contentColor = colors.onPrimaryContainer,
+                    modifier = Modifier.padding(start = 8.dp).size(40.dp),
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        androidx.compose.animation.AnimatedContent(
+                            targetState = isGrid,
+                            transitionSpec = { (fadeIn() + scaleIn(initialScale = 0.7f)).togetherWith(fadeOut() + scaleOut(targetScale = 0.7f)) },
+                            label = "header-layout-icon",
+                        ) { grid ->
+                            Icon(
+                                if (grid) Icons.Rounded.GridView else Icons.Rounded.ViewList,
+                                contentDescription = stringResource(R.string.settings_entry_view_mode),
+                                modifier = Modifier.size(22.dp),
+                            )
+                        }
+                    }
+                }
             }
         }
     }
