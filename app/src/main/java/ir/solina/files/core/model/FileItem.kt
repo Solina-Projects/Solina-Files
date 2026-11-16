@@ -1,5 +1,6 @@
 package ir.solina.files.core.model
 
+import android.os.Build
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.BasicFileAttributes
@@ -28,9 +29,13 @@ data class FileItem(
             // and mtime together. It throws if the file vanished between the
             // directory listing and this call, so fall back to the individual
             // File calls then (same values as before, just slower).
-            val attrs: BasicFileAttributes? = runCatching {
-                Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
-            }.getOrNull()
+            // File.toPath() / Files.readAttributes need API 26+; minSdk is 24,
+            // so on Android 7.x fall back to the individual File calls.
+            val attrs: BasicFileAttributes? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                runCatching {
+                    Files.readAttributes(file.toPath(), BasicFileAttributes::class.java)
+                }.getOrNull()
+            } else null
             val isDirectory = attrs?.isDirectory ?: file.isDirectory
             val childCount = if (isDirectory && calculateChildCount) file.list()?.size ?: -1 else -1
             return FileItem(
