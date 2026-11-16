@@ -123,9 +123,13 @@ fun FileRow(
     val listIconScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 1f }
     val listSpacingScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 0.5f }
     val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
+    // Redesign v2: in dual-pane the font is fixed at the normal size too
+    // (COMFORTABLE 14/11), independent of the single-pane density setting.
+    val nameSp = if (!singlePane) 14 else density.nameSp
+    val metaSp = if (!singlePane) 11 else density.metaSp
     // Redesign v2: in dual-pane the icons are a fixed 1.5x the normal size
     // (COMFORTABLE 36dp -> 54dp), independent of density and of single-pane
-    // settings. The font is untouched (fontScale is already 1f in dual-pane).
+    // settings.
     val iconSize = if (!singlePane) 54.dp else density.iconDp.dp * layoutScale * listIconScale
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
@@ -174,7 +178,7 @@ fun FileRow(
             Text(
                 isolated(Formatters.displayName(item.name, item.isDirectory, list.showExtensions)),
                 style = MaterialTheme.typography.bodyMedium,
-                fontSize = (density.nameSp * fontScale).sp,
+                fontSize = (nameSp * fontScale).sp,
                 maxLines = if (list.wrapNames) 3 else density.nameMaxLines,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -185,7 +189,7 @@ fun FileRow(
                     Text(
                         date.orEmpty(),
                         style = MaterialTheme.typography.labelSmall,
-                        fontSize = (density.metaSp * fontScale).sp,
+                        fontSize = (metaSp * fontScale).sp,
                         color = colors.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -194,11 +198,11 @@ fun FileRow(
                     if (info != null) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 6.dp)) {
                             Icon(Icons.Rounded.DataUsage, contentDescription = "حجم", modifier = Modifier.size(12.dp), tint = colors.onSurfaceVariant)
-                            Text(info.first, style = MaterialTheme.typography.labelSmall, fontSize = (density.metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
+                            Text(info.first, style = MaterialTheme.typography.labelSmall, fontSize = (metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
                             info.second?.let { count ->
                                 Spacer(Modifier.width(6.dp))
                                 Icon(Icons.Rounded.FolderOpen, contentDescription = "تعداد فایل‌های پوشه", modifier = Modifier.size(12.dp), tint = colors.onSurfaceVariant)
-                                Text(count, style = MaterialTheme.typography.labelSmall, fontSize = (density.metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
+                                Text(count, style = MaterialTheme.typography.labelSmall, fontSize = (metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
                             }
                         }
                     }
@@ -255,6 +259,8 @@ fun FileTile(
     val list = settings.list
     val density = LocalUiDensity.current
     val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
+    // Redesign v2: fixed normal font size in dual-pane, like the list rows.
+    val nameSp = if (!singlePane) 14 else density.nameSp
     val tileDensityScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.2f; UiDensity.LARGE -> 1.4f }
     val tileIconSize = density.iconDp.dp * (if (horizontalPane) 1.125f else 1.75f) * tileDensityScale
     val interaction = remember { MutableInteractionSource() }
@@ -332,7 +338,7 @@ fun FileTile(
         Text(
             isolated(Formatters.displayName(item.name, item.isDirectory, list.showExtensions)),
             style = MaterialTheme.typography.labelMedium,
-            fontSize = ((if (horizontalPane) density.nameSp * 0.85f else density.nameSp * fontScale)).sp,
+            fontSize = ((if (horizontalPane) nameSp * 0.85f else nameSp * fontScale)).sp,
             maxLines = if (list.wrapNames) 3 else 2,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
