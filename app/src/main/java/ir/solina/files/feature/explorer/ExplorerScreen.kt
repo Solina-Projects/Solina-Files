@@ -65,7 +65,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
@@ -560,7 +559,7 @@ fun ExplorerScreen(
         // The panel sits below the path header, so the header's layout
         // button stays visible while the menu is open.
         Box(
-            Modifier.align(androidx.compose.ui.Alignment.TopEnd).padding(top = 180.dp, end = 16.dp),
+            Modifier.align(androidx.compose.ui.Alignment.TopEnd).padding(top = 212.dp, end = 16.dp),
         ) {
             LayoutMenuPanel(
                 dual = dual,
@@ -568,6 +567,7 @@ fun ExplorerScreen(
                 onToggleViewMode = { vm.toggleViewMode() },
                 density = ui.settings.uiDensity,
                 onDensity = { vm.setItemDensity(it) },
+                onClose = { layoutMenuExpanded = false },
             )
         }
     }
@@ -645,7 +645,7 @@ fun ExplorerScreen(
                         ) {
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
-                                shape = RoundedCornerShape(24.dp),
+                                shape = RoundedCornerShape(20.dp),
                                 color = MaterialTheme.colorScheme.surfaceContainerHighest,
                                 contentColor = MaterialTheme.colorScheme.onSurface,
                                 border = androidx.compose.foundation.BorderStroke(
@@ -658,43 +658,37 @@ fun ExplorerScreen(
                                 Column(
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 12.dp, vertical = 12.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                        .padding(horizontal = 8.dp, vertical = 8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp),
                                 ) {
                                     Text(
-                                        text = "ایجاد مورد جدید",
-                                        style = MaterialTheme.typography.titleSmall,
+                                        text = stringResource(R.string.explorer_quick_create_title),
+                                        style = MaterialTheme.typography.titleSmall.copy(
+                                            fontSize = MaterialTheme.typography.titleSmall.fontSize * 0.8f,
+                                        ),
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                                     )
-                                    ExtendedFloatingActionButton(
-                                        modifier = Modifier.fillMaxWidth(),
+                                    QuickCreateButton(
+                                        icon = Icons.Rounded.CreateNewFolder,
+                                        label = stringResource(R.string.explorer_quick_new_folder),
                                         onClick = { quickCreateExpanded = false; dialog = Dialog.NewFolder(ui.active) },
-                                        icon = { Icon(Icons.Rounded.CreateNewFolder, contentDescription = null) },
-                                        text = { Text("پوشه جدید", maxLines = 1) },
-                                        expanded = true,
                                     )
-                                    ExtendedFloatingActionButton(
-                                        modifier = Modifier.fillMaxWidth(),
+                                    QuickCreateButton(
+                                        icon = Icons.Rounded.Description,
+                                        label = stringResource(R.string.explorer_quick_new_text_file),
                                         onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "untitled.txt") },
-                                        icon = { Icon(Icons.Rounded.Description, contentDescription = null) },
-                                        text = { Text("فایل متنی", maxLines = 1) },
-                                        expanded = true,
                                     )
-                                    ExtendedFloatingActionButton(
-                                        modifier = Modifier.fillMaxWidth(),
+                                    QuickCreateButton(
+                                        icon = Icons.Rounded.Code,
+                                        label = stringResource(R.string.explorer_quick_new_html_file),
                                         onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "index.html") },
-                                        icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
-                                        text = { Text("فایل HTML", maxLines = 1) },
-                                        expanded = true,
                                     )
                                     if (!ui.isRemote(ui.active)) {
-                                        ExtendedFloatingActionButton(
-                                            modifier = Modifier.fillMaxWidth(),
+                                        QuickCreateButton(
+                                            icon = Icons.Rounded.Code,
+                                            label = stringResource(R.string.explorer_quick_new_project),
                                             onClick = { quickCreateExpanded = false; dialog = Dialog.NewProject(ui.activePane.path) },
-                                            icon = { Icon(Icons.Rounded.Code, contentDescription = null) },
-                                            text = { Text("پروژه جدید", maxLines = 1) },
-                                            expanded = true,
                                         )
                                     }
                                 }
@@ -719,7 +713,7 @@ fun ExplorerScreen(
                             ) {
                                 Icon(
                                     Icons.Rounded.Add,
-                                    contentDescription = if (quickCreateExpanded) "بستن ایجاد سریع" else "ایجاد فایل یا پوشه",
+                                    contentDescription = if (quickCreateExpanded) stringResource(R.string.explorer_quick_create_close) else stringResource(R.string.explorer_quick_create_open),
                                     modifier = Modifier.graphicsLayer { rotationZ = createIconRotation },
                                 )
                             }
@@ -1058,6 +1052,40 @@ private fun FilterBar(query: String, onQuery: (String) -> Unit, onClose: () -> U
 
 
 
+// Redesign v2: compact quick-create row — 20% smaller font and 10%
+// smaller icon than the old extended FAB, with tighter padding.
+@Composable
+private fun QuickCreateButton(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    onClick: () -> Unit,
+) {
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(16.dp),
+        color = colors.primaryContainer,
+        contentColor = colors.onPrimaryContainer,
+        modifier = Modifier.fillMaxWidth().height(44.dp),
+    ) {
+        Row(
+            Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(22.dp))
+            Spacer(Modifier.width(8.dp))
+            Text(
+                label,
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontSize = MaterialTheme.typography.labelLarge.fontSize * 0.8f,
+                ),
+                maxLines = 1,
+            )
+        }
+    }
+}
+
 // Redesign v2: fixed pane-mode switch bar above the path header, always
 // visible in both modes. RTL row order puts dual-pane on the right and
 // single-pane on the left, as requested.
@@ -1076,17 +1104,17 @@ private fun PaneModeBar(
         Row(Modifier.fillMaxWidth().padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
             PaneModeSegment(
                 selected = dual,
-                icon = Icons.Rounded.ViewColumn,
-                label = "دوپنله",
-                contentDescription = "دو پنل کنار هم",
+                icon = androidx.compose.ui.res.vectorResource(R.drawable.ic_pane_dual),
+                label = stringResource(R.string.explorer_pane_dual),
+                contentDescription = stringResource(R.string.explorer_pane_dual_desc),
                 onClick = onSelectDual,
                 modifier = Modifier.weight(1f),
             )
             PaneModeSegment(
                 selected = !dual,
-                icon = Icons.Rounded.ViewAgenda,
-                label = "تک‌پنله",
-                contentDescription = "تک پنل",
+                icon = androidx.compose.ui.res.vectorResource(R.drawable.ic_pane_single),
+                label = stringResource(R.string.explorer_pane_single),
+                contentDescription = stringResource(R.string.explorer_pane_single_desc),
                 onClick = onSelectSingle,
                 modifier = Modifier.weight(1f),
             )
@@ -1147,9 +1175,10 @@ private fun LayoutMenuPanel(
     onToggleViewMode: () -> Unit,
     density: ir.solina.files.core.model.UiDensity,
     onDensity: (ir.solina.files.core.model.UiDensity) -> Unit,
+    onClose: () -> Unit,
 ) {
                             Surface(
-                                modifier = Modifier.width(240.dp),
+                                modifier = Modifier.width(220.dp),
                                 shape = MaterialTheme.shapes.extraLarge,
                                 color = MaterialTheme.colorScheme.surfaceContainerHighest,
                                 contentColor = MaterialTheme.colorScheme.onSurface,
@@ -1161,10 +1190,27 @@ private fun LayoutMenuPanel(
                                 shadowElevation = 12.dp,
                             ) {
                                 Column(
-                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 10.dp),
+                                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp),
                                     horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
-                                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp),
                                 ) {
+                                    // Redesign v2: a close button of its own, so the
+                                    // menu never traps the user.
+                                    Row(
+                                        Modifier.fillMaxWidth(),
+                                        horizontalArrangement = Arrangement.End,
+                                    ) {
+                                        IconButton(
+                                            onClick = onClose,
+                                            modifier = Modifier.size(32.dp),
+                                        ) {
+                                            Icon(
+                                                Icons.Rounded.Close,
+                                                contentDescription = stringResource(R.string.common_close),
+                                                modifier = Modifier.size(20.dp),
+                                            )
+                                        }
+                                    }
                                     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                                         if (!dual) {
                                             val isList = viewMode == ir.solina.files.core.model.ViewMode.LIST
@@ -1174,11 +1220,11 @@ private fun LayoutMenuPanel(
                                             ) {
                                                 IconButton(
                                                     onClick = { if (!isList) onToggleViewMode() },
-                                                    modifier = Modifier.size(48.dp),
+                                                    modifier = Modifier.size(44.dp),
                                                 ) {
                                                     Icon(
                                                         Icons.Rounded.ViewList,
-                                                        contentDescription = "چیدمان فهرستی",
+                                                        contentDescription = stringResource(R.string.explorer_layout_list),
                                                         tint = if (isList) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                                                     )
                                                 }
@@ -1190,11 +1236,11 @@ private fun LayoutMenuPanel(
                                         ) {
                                             IconButton(
                                                 onClick = { if (!isGrid) onToggleViewMode() },
-                                                modifier = Modifier.size(48.dp),
+                                                modifier = Modifier.size(44.dp),
                                             ) {
                                                 Icon(
                                                     Icons.Rounded.GridView,
-                                                    contentDescription = "چیدمان شبکه‌ای",
+                                                    contentDescription = stringResource(R.string.explorer_layout_grid),
                                                     tint = if (isGrid) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                                                 )
                                             }
@@ -1202,16 +1248,17 @@ private fun LayoutMenuPanel(
 
                                         }
                                     }
-                                    androidx.compose.foundation.layout.Spacer(Modifier.height(4.dp))
+                                    androidx.compose.foundation.layout.Spacer(Modifier.height(2.dp))
                                     Row(
-                                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                        horizontalArrangement = Arrangement.spacedBy(10.dp),
                                         verticalAlignment = androidx.compose.ui.Alignment.Bottom,
                                     ) {
                                         listOf(
-                                            ir.solina.files.core.model.UiDensity.COMPACT to "فشرده",
-                                            ir.solina.files.core.model.UiDensity.COMFORTABLE to "معمولی",
-                                            ir.solina.files.core.model.UiDensity.LARGE to "بزرگ",
-                                        ).forEach { (densityOption, label) ->
+                                            ir.solina.files.core.model.UiDensity.COMPACT,
+                                            ir.solina.files.core.model.UiDensity.COMFORTABLE,
+                                            ir.solina.files.core.model.UiDensity.LARGE,
+                                        ).forEach { densityOption ->
+                                            val label = stringResource(densityOption.label)
                                             val selectedDensity = density == densityOption
                                             Column(
                                                 horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally,
@@ -1224,14 +1271,14 @@ private fun LayoutMenuPanel(
                                                 )
                                                 Box(
                                                     Modifier
-                                                        .size(if (selectedDensity) 28.dp else 24.dp)
+                                                        .size(if (selectedDensity) 24.dp else 20.dp)
                                                         .clip(CircleShape)
                                                         .background(if (selectedDensity) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant)
                                                         .clickable { onDensity(densityOption) },
                                                     contentAlignment = androidx.compose.ui.Alignment.Center,
                                                 ) {
                                                     if (selectedDensity) {
-                                                        Icon(Icons.Rounded.Check, contentDescription = "انتخاب شده: $label", tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(16.dp))
+                                                        Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.explorer_density_selected, label), tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(14.dp))
                                                     }
                                                 }
                                             }
