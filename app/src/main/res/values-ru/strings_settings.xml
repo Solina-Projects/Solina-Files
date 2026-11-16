@@ -445,12 +445,4 @@
         <item quantity="many">Помещается только %1$d быстрых кнопок, поэтому в меню перемещено: %2$s</item>
         <item quantity="other">Помещается только %1$d быстрой кнопки, поэтому в меню перемещено: %2$s</item>
     </plurals>
-    <string name="settings_support_title">Поддержать разработчика</string>
-    <string name="settings_support_summary">Solina бесплатна и с открытым кодом. Ваша поддержка помогает ей развиваться.</string>
-    <string name="settings_support_body">Solina бесплатна, с открытым исходным кодом, без рекламы и слежки. Если она вам пригодилась и вы хотите помочь её развитию, можно отправить пожертвование на один из этих адресов. Спасибо за любую поддержку!</string>
-    <string name="settings_support_wallets">Кошельки</string>
-    <string name="settings_support_network_hint">Отправляйте каждую монету только в сети, указанной над её адресом: средства, отправленные через другую сеть, вернуть нельзя.</string>
-    <string name="settings_support_copy">Скопировать адрес %1$s</string>
-    <string name="settings_support_copied">Адрес скопирован</string>
-    <string name="settings_kw_support">пожертвование поддержка донат спонсор криптовалюта кошелёк usdt trx tron bnb ton</string>
 </resources>
