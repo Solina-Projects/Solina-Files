@@ -161,7 +161,6 @@ object FileOperations {
                 lastModified = f.lastModified(),
                 isHidden = f.name.startsWith('.'),
                 canRead = f.canRead(),
-                canWrite = f.canWrite(),
                 isSymlink = access.isSymlink(f),
             )
         }
@@ -221,10 +220,10 @@ object FileOperations {
                 }
             }
 
-            val ok = runCatching { transferOne(src, target, move, merge, from, to, keepTime) }.getOrDefault(false)
-            if (ok) {
+            val bytesCopied = runCatching { transferOne(src, target, move, merge, from, to, keepTime) }.getOrDefault(-1)
+            if (bytesCopied >= 0) {
                 done++
-                doneBytes += FsUtil.sizeOf(target, to)
+                doneBytes += bytesCopied
                 created += target.absolutePath
             } else {
                 failed += item.name
@@ -233,12 +232,24 @@ object FileOperations {
         emit(OpProgress.Finished(done, failed, skipped, created))
     }.flowOn(Dispatchers.IO)
 
-    private fun transferOne(src: File, target: File, move: Boolean, merge: Boolean, from: FileAccess, to: FileAccess, keepTime: Boolean): Boolean {
-        if (merge) {
-            val copied = FsUtil.copyTree(src, target, from, overwrite = true, to = to, keepTime = move || keepTime)
-            return if (move) copied && FsUtil.deleteRecursively(src, from) else copied
+    /**
+     * Copies/moves one top-level item. Returns the number of bytes actually
+     * copied/moved, or -1 on failure. The byte count is accumulated by
+     * [FsUtil.copyTree]/[FsUtil.move] while the transfer runs, so callers no
+     * longer need a second [FsUtil.sizeOf] walk over the just-written tree.
+     */
+    private fun transferOne(src: File, target: File, move: Boolean, merge: Boolean, from: FileAccess, to: FileAccess, keepTime: Boolean): Long {
+        var bytes = 0L
+        val onBytesCopied: (Long) -> Unit = { bytes += it }
+        val ok = if (merge) {
+            val copied = FsUtil.copyTree(src, target, from, overwrite = true, to = to, keepTime = move || keepTime, onBytesCopied = onBytesCopied)
+            if (move) copied && FsUtil.deleteRecursively(src, from) else copied
+        } else if (move) {
+            FsUtil.move(src, target, from, to, onBytesCopied = onBytesCopied)
+        } else {
+            FsUtil.copyTree(src, target, from, overwrite = false, to = to, keepTime = keepTime, onBytesCopied = onBytesCopied)
         }
-        return if (move) FsUtil.move(src, target, from, to) else FsUtil.copyTree(src, target, from, overwrite = false, to = to, keepTime = keepTime)
+        return if (ok) bytes else -1
     }
 
     private suspend fun <T> io(block: suspend CoroutineScope.() -> T): T =

@@ -114,7 +114,11 @@ object Formatters {
             val year = if (full) digits(s, j.year, 4) else digits(s, j.year % 100, 2)
             return "$year/${digits(s, j.month, 2)}/${digits(s, j.day, 2)}"
         }
-        return format(s, if (full) "yyyy-MM-dd" else "yy-MM-dd", epochMillis, zone)
+        // Redesign v2: Gregorian short dates use the spelled-out month
+        // ("Nov 8, 2026" / "۸ نوامبر ۲۰۲۶") instead of the ambiguous
+        // "26-11-08". The full ISO form stays machine-readable.
+        if (!full) return longDay(s, epochMillis, zone)
+        return format(s, "yyyy-MM-dd", epochMillis, zone)
     }
 
     private fun longDay(s: Style, epochMillis: Long, zone: TimeZone): String {

@@ -55,6 +55,8 @@ data class ThemeSeed(@StringRes val name: Int, val argb: Int)
 
 object ThemeSeeds {
     const val SOLINA = 0xFF2D6A4F.toInt()
+    // Redesign v2 (design/redesign-v2): expressive purple, the winner from Solina-Player.
+    const val SOLINA_EXPRESSIVE = 0xFF6750A4.toInt()
 
     val presets = listOf(
         ThemeSeed(R.string.model_seed_solina, SOLINA),
@@ -76,10 +78,12 @@ object ThemeSeeds {
 
 data class AppearancePrefs(
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
-    val wallpaperColors: Boolean = true,
-    val seed: Int = ThemeSeeds.SOLINA,
-    val style: ThemeStyle = ThemeStyle.TONAL_SPOT,
-    val contrast: ContrastLevel = ContrastLevel.STANDARD,
+    // Redesign v2: wallpaper colours off by default — they were the reason the
+    // UI came out washed-out pale pink on most phones. The Solina seed owns the palette now.
+    val wallpaperColors: Boolean = false,
+    val seed: Int = ThemeSeeds.SOLINA_EXPRESSIVE,
+    val style: ThemeStyle = ThemeStyle.EXPRESSIVE,
+    val contrast: ContrastLevel = ContrastLevel.MEDIUM,
     val pureBlack: Boolean = false,
     val textScale: Float = 1f,
     val corners: CornerStyle = CornerStyle.ROUND,

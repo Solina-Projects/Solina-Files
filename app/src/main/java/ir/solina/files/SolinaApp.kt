@@ -27,6 +27,7 @@ class SolinaFilesApp : Application(), SingletonImageLoader.Factory {
     override fun onCreate() {
         super.onCreate()
         AppLocales.install(this)
+        AppLocales.applyDefaultIfUnset(this)
         Formatters.locale = resources.configuration.locales[0]
         Vault.init(filesDir, cacheDir)
         AppLock.track(this)

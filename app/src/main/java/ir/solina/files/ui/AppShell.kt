@@ -44,6 +44,7 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,7 +56,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -170,6 +170,10 @@ private sealed interface OpenDialog {
     data class ImportKey(val path: String) : OpenDialog
 }
 
+// Perf item 7: @Immutable so receivers can skip when the instance is reused;
+// the single instance is created once with remember below, keyed on the
+// values the callbacks depend on.
+@Immutable
 private class ShellActions(
     val push: (Route) -> Unit,
     val pop: () -> Unit,
@@ -291,21 +295,25 @@ fun AppShell(
         vm.showInFolder(vm.state.value.active, folder, reveal)
     }
 
-    val actions = ShellActions(
-        push = { stack.push(it) },
-        pop = { stack.pop() },
-        replace = { stack.replace(it) },
-        openFile = { openFile(it) },
-        openWith = { openDialog = OpenDialog.OpenWith(it) },
-        openWithOpener = { item, opener -> openWith(item, opener) },
-        signApk = { openDialog = OpenDialog.SignApk(it) },
-        locate = { folder, reveal -> locate(folder, reveal) },
-        finish = onIncomingDone,
-        openVault = {
-            stack.clear()
-            vm.openVault()
-        },
-    )
+    // Perf item 7: one remembered instance (keyed on the values the
+    // callbacks read) so every Screen() receiver can skip when it is reused.
+    val actions = remember(stack, vm, settings, onIncomingDone) {
+        ShellActions(
+            push = { stack.push(it) },
+            pop = { stack.pop() },
+            replace = { stack.replace(it) },
+            openFile = { openFile(it) },
+            openWith = { openDialog = OpenDialog.OpenWith(it) },
+            openWithOpener = { item, opener -> openWith(item, opener) },
+            signApk = { openDialog = OpenDialog.SignApk(it) },
+            locate = { folder, reveal -> locate(folder, reveal) },
+            finish = onIncomingDone,
+            openVault = {
+                stack.clear()
+                vm.openVault()
+            },
+        )
+    }
 
     BackHandler(enabled = drawerState.isOpen) { scope.launch { drawerState.close() } }
     BackHandler(
@@ -333,14 +341,11 @@ fun AppShell(
                     scope.launch { drawerState.close() }
                     stack.push(r)
                 }
-                SolinaDrawerContent(
-                    root = root,
-                    rootMode = settings.rootAccess,
-                    bookmarks = sidebarBookmarks,
-                    storages = storages,
-                    open = drawerState.targetValue == DrawerValue.Open,
-                    closed = drawerState.currentValue == DrawerValue.Closed && drawerState.targetValue == DrawerValue.Closed,
-                    actions = DrawerActions(
+                // Perf item 7: one remembered instance — every callback here
+                // only reads stable values (vm, scope, drawerState, stack)
+                // or vm.state at call time, so the instance never goes stale.
+                val drawerActions = remember {
+                    DrawerActions(
                         onShortcut = ::go,
                         onBookmark = { b ->
                             vm.openBookmark(vm.state.value.active, b)
@@ -366,13 +371,25 @@ fun AppShell(
                             scope.launch { drawerState.close() }
                             stack.clear()
                         },
-                    ),
+                    )
+                }
+                SolinaDrawerContent(
+                    root = root,
+                    rootMode = settings.rootAccess,
+                    bookmarks = sidebarBookmarks,
+                    storages = storages,
+                    open = drawerState.targetValue == DrawerValue.Open,
+                    closed = drawerState.currentValue == DrawerValue.Closed && drawerState.targetValue == DrawerValue.Closed,
+                    actions = drawerActions,
                 )
             }
         },
     ) {
         Box(Modifier.fillMaxSize()) {
-            Box(if (route != Route.Files) Modifier.clearAndSetSemantics { } else Modifier) {
+            // Perf item 4: ExplorerScreen is composed only on the Files route.
+            // The ViewModel stays hoisted above (created at the top of
+            // AppShell), so its state survives; only the UI leaves the tree.
+            if (route == Route.Files) {
                 ExplorerScreen(
                     vm = vm,
                     onOpenFile = { openFile(it) },
@@ -382,8 +399,7 @@ fun AppShell(
                     onOpenSearch = { stack.push(Route.Search(it)) },
                     onOpenDrawer = { scope.launch { drawerState.open() } },
                     onCustomize = { tab -> stack.push(Route.Customize(tab)) },
-                    drawerOpen = drawerState.isOpen || route != Route.Files,
-                    appSnackbar = snackbar.takeIf { route != Route.Files },
+                    drawerOpen = drawerState.isOpen,
                 )
             }
             AnimatedContent(

@@ -244,4 +244,20 @@
     <string name="explorer_incoming_hidden">\u200FSolina محل ذخیره‌ی \u2068%1$s\u2069 را نمی‌بیند</string>
     <string name="explorer_incoming_save">ذخیره در Download</string>
     <string name="explorer_incoming_unreadable">برنامه‌ی دیگر اجازه‌ی خواندن این فایل را نداد</string>
+    <string name="explorer_pane_dual">دوپنله</string>
+    <string name="explorer_pane_single">تک‌پنله</string>
+    <string name="explorer_pane_dual_desc">دو پنل کنار هم</string>
+    <string name="explorer_pane_single_desc">تک پنل</string>
+    <string name="explorer_quick_create_title">ایجاد مورد جدید</string>
+    <string name="explorer_quick_new_folder">پوشه جدید</string>
+    <string name="explorer_quick_new_text_file">فایل متنی</string>
+    <string name="explorer_quick_new_html_file">فایل HTML</string>
+    <string name="explorer_quick_new_project">پروژه جدید</string>
+    <string name="explorer_quick_create_close">بستن ایجاد سریع</string>
+    <string name="explorer_quick_create_open">ایجاد فایل یا پوشه</string>
+    <string name="explorer_layout_list">چیدمان فهرستی</string>
+    <string name="explorer_layout_grid">چیدمان شبکه‌ای</string>
+    <string name="explorer_density_selected">انتخاب شده: %1$s</string>
+    <string name="explorer_view_grid">نمای شبکه‌ای</string>
+    <string name="explorer_view_list">نمای فهرستی</string>
 </resources>

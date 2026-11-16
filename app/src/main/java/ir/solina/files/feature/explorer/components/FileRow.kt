@@ -42,7 +42,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -65,9 +64,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.File
 import coil3.compose.AsyncImage
 import coil3.decode.BitmapFactoryDecoder
 import coil3.request.ImageRequest
@@ -106,24 +102,29 @@ fun FileRow(
     onDragStart: ((Offset, PointerId) -> Boolean)? = null,
     singlePane: Boolean = false,
     showSelectionCheckbox: Boolean = false,
+    folderStats: Pair<Long, Int>? = null,
 ) {
     val motion = MaterialTheme.motionScheme
     val colors = MaterialTheme.colorScheme
     val density = LocalUiDensity.current
     val settings = LocalSettings.current
     val list = settings.list
-    val folderStats by produceState<Pair<Long, Int>?>(initialValue = null, item.path, item.isDirectory, singlePane) {
-        if (!singlePane || !item.isDirectory || "://" in item.path || !item.canRead) {
-            value = null
-        } else {
-            value = calculateFolderStats(item.path)
-        }
-    }
+    // Scroll-lag fix: folder size/count is NOT computed here anymore.
+    // A recursive walk per visible row, re-run every time the row scrolled
+    // back into view, is what made single-pane scrolling stutter. The
+    // ViewModel computes it once per directory visit and passes it in.
     val layoutScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.5f; UiDensity.COMFORTABLE -> 2.5f; UiDensity.LARGE -> 3.5f }
     val listIconScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1.1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 1f }
     val listSpacingScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE, UiDensity.LARGE -> 0.5f }
     val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
-    val iconSize = density.iconDp.dp * layoutScale * listIconScale
+    // Redesign v2: in dual-pane the font is fixed at the normal size too
+    // (COMFORTABLE 14/11), independent of the single-pane density setting.
+    val nameSp = if (!singlePane) 14 else density.nameSp
+    val metaSp = if (!singlePane) 11 else density.metaSp
+    // Redesign v2: in dual-pane the icons are a fixed 1.5x the normal size
+    // (COMFORTABLE 36dp -> 54dp), independent of density and of single-pane
+    // settings.
+    val iconSize = if (!singlePane) 54.dp else density.iconDp.dp * layoutScale * listIconScale
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.96f else 1f, motion.fastSpatialSpec(), label = "press")
@@ -171,7 +172,7 @@ fun FileRow(
             Text(
                 isolated(Formatters.displayName(item.name, item.isDirectory, list.showExtensions)),
                 style = MaterialTheme.typography.bodyMedium,
-                fontSize = (density.nameSp * fontScale).sp,
+                fontSize = (nameSp * fontScale).sp,
                 maxLines = if (list.wrapNames) 3 else density.nameMaxLines,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -182,7 +183,7 @@ fun FileRow(
                     Text(
                         date.orEmpty(),
                         style = MaterialTheme.typography.labelSmall,
-                        fontSize = (density.metaSp * fontScale).sp,
+                        fontSize = (metaSp * fontScale).sp,
                         color = colors.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -191,11 +192,11 @@ fun FileRow(
                     if (info != null) {
                         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 6.dp)) {
                             Icon(Icons.Rounded.DataUsage, contentDescription = "حجم", modifier = Modifier.size(12.dp), tint = colors.onSurfaceVariant)
-                            Text(info.first, style = MaterialTheme.typography.labelSmall, fontSize = (density.metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
+                            Text(info.first, style = MaterialTheme.typography.labelSmall, fontSize = (metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
                             info.second?.let { count ->
                                 Spacer(Modifier.width(6.dp))
                                 Icon(Icons.Rounded.FolderOpen, contentDescription = "تعداد فایل‌های پوشه", modifier = Modifier.size(12.dp), tint = colors.onSurfaceVariant)
-                                Text(count, style = MaterialTheme.typography.labelSmall, fontSize = (density.metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
+                                Text(count, style = MaterialTheme.typography.labelSmall, fontSize = (metaSp * fontScale).sp, color = colors.onSurfaceVariant, maxLines = 1)
                             }
                         }
                     }
@@ -252,6 +253,8 @@ fun FileTile(
     val list = settings.list
     val density = LocalUiDensity.current
     val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
+    // Redesign v2: fixed normal font size in dual-pane, like the list rows.
+    val nameSp = if (!singlePane) 14 else density.nameSp
     val tileDensityScale = if (!singlePane) 1f else when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.2f; UiDensity.LARGE -> 1.4f }
     val tileIconSize = density.iconDp.dp * (if (horizontalPane) 1.125f else 1.75f) * tileDensityScale
     val interaction = remember { MutableInteractionSource() }
@@ -329,7 +332,7 @@ fun FileTile(
         Text(
             isolated(Formatters.displayName(item.name, item.isDirectory, list.showExtensions)),
             style = MaterialTheme.typography.labelMedium,
-            fontSize = ((if (horizontalPane) density.nameSp * 0.85f else density.nameSp * fontScale)).sp,
+            fontSize = ((if (horizontalPane) nameSp * 0.85f else nameSp * fontScale)).sp,
             maxLines = if (list.wrapNames) 3 else 2,
             overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
@@ -361,15 +364,6 @@ private const val FLASH_OUT_MS = 280
 private const val FLASH_FADE_MS = 520
 
 fun flashDurationMs(pulses: Int): Long = (pulses * (FLASH_IN_MS + FLASH_OUT_MS) + FLASH_FADE_MS).toLong()
-
-private suspend fun calculateFolderStats(path: String): Pair<Long, Int>? = withContext(Dispatchers.IO) {
-    runCatching {
-        val files = File(path).walkTopDown()
-            .filter { it.isFile && !ir.solina.files.core.fs.FsUtil.isSymlink(it) }
-            .toList()
-        files.sumOf { it.length() } to files.size
-    }.getOrNull()
-}
 
 @Composable
 private fun trailingInfo(item: FileItem, list: ListPrefs, singlePane: Boolean, folderStats: Pair<Long, Int>?): Pair<String, String?>? = when {
@@ -468,11 +462,13 @@ private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape, contentPaddingF
         contentAlignment = Alignment.Center,
     ) {
         if (item.isDirectory) {
-            // One-color folder glyph follows the active Material theme automatically.
+            // Redesign v2: folders take their own KindPalette colour (purple
+            // hue 265), like every other file kind — tinting with the theme
+            // primary turned them all the same washed-out brown.
             Icon(
                 Icons.Rounded.Folder,
                 contentDescription = stringResource(kind.label),
-                tint = colors.primary,
+                tint = tile.content,
                 modifier = Modifier.fillMaxSize().padding(iconSize * 0.08f),
             )
         } else {

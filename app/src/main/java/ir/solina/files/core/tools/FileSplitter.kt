@@ -63,7 +63,7 @@ object FileSplitter {
         if (!numberToken.containsMatchIn(pattern)) {
             return Result.failure(IllegalArgumentException(tr(R.string.files_split_need_number)))
         }
-        val item = FileItem(fileName, fileName, isDirectory = false, size = 0, lastModified = 0, isHidden = false, canRead = true, canWrite = true)
+        val item = FileItem(fileName, fileName, isDirectory = false, size = 0, lastModified = 0, isHidden = false, canRead = true)
         val dates = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
         val names = (0 until count).map { i -> BatchRename.expand(pattern, item, i, count, RenameInfo.NONE, dates) { it } }
         names.firstNotNullOfOrNull { FileOperations.validateName(it) }?.let { return Result.failure(IllegalArgumentException(it)) }

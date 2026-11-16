@@ -21,6 +21,8 @@ object SearchEngine {
         var stoppedEarly = false
         val root = File(query.root)
         val exclude = query.excludePaths.map { File(it).absolutePath }
+        // Compile the name pattern once per query instead of once per file.
+        val nameRegex = compileNameRegex(query)
 
         val stack = ArrayDeque<Pair<File, Int>>()
         stack.addLast(root to 0)
@@ -38,9 +40,11 @@ object SearchEngine {
                 scanned++
                 if (scanned % 64 == 0) emit(SearchEvent.Progress(scanned, child.absolutePath))
 
-                val item = FileItem.of(child)
+                // The child count is never displayed for search results, so
+                // skip the extra readdir per directory (audit item 27).
+                val item = FileItem.of(child, calculateChildCount = false)
                 val typeOk = !(query.onlyFiles && item.isDirectory) && !(query.onlyDirs && !item.isDirectory)
-                if (typeOk && passesFilters(item, query) && matchesName(item.name, query)) {
+                if (typeOk && passesFilters(item, query) && matchesName(item.name, query, nameRegex)) {
                     if (query.content.isBlank()) {
                         emit(SearchEvent.Found(SearchResult(item)))
                         found++
@@ -65,13 +69,28 @@ object SearchEngine {
         emit(SearchEvent.Finished(found, stoppedEarly))
     }.flowOn(Dispatchers.IO)
 
-    fun matchesName(name: String, query: SearchQuery): Boolean {
+    fun matchesName(name: String, query: SearchQuery): Boolean =
+        matchesName(name, query, compileNameRegex(query))
+
+    fun matchesName(name: String, query: SearchQuery, nameRegex: Regex?): Boolean {
         if (query.namePattern.isBlank()) return true
+        return when (query.nameMode) {
+            NameMatchMode.GLOB -> nameRegex?.matches(name) ?: false
+            // An invalid REGEX compiles to null and matches nothing, exactly
+            // as the old per-file runCatching { Regex(...) } did.
+            NameMatchMode.REGEX -> nameRegex?.containsMatchIn(name) ?: false
+            NameMatchMode.PLAIN -> name.contains(query.namePattern, ignoreCase = !query.caseSensitive)
+        }
+    }
+
+    /** Compiles the query's name pattern once, or null when there is no regex to compile (blank pattern, PLAIN mode, or an invalid REGEX). */
+    fun compileNameRegex(query: SearchQuery): Regex? {
+        if (query.namePattern.isBlank()) return null
         val opts = if (query.caseSensitive) emptySet() else setOf(RegexOption.IGNORE_CASE)
         return when (query.nameMode) {
-            NameMatchMode.GLOB -> globToRegex(query.namePattern, query.caseSensitive).matches(name)
-            NameMatchMode.REGEX -> runCatching { Regex(query.namePattern, opts).containsMatchIn(name) }.getOrDefault(false)
-            NameMatchMode.PLAIN -> name.contains(query.namePattern, ignoreCase = !query.caseSensitive)
+            NameMatchMode.GLOB -> globToRegex(query.namePattern, query.caseSensitive)
+            NameMatchMode.REGEX -> runCatching { Regex(query.namePattern, opts) }.getOrNull()
+            NameMatchMode.PLAIN -> null
         }
     }
 

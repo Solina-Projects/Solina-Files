@@ -15,8 +15,12 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.lerp
@@ -36,6 +40,8 @@ import ir.solina.files.core.model.ContrastLevel
 import ir.solina.files.core.model.MotionStyle
 import ir.solina.files.core.model.ThemeMode
 import ir.solina.files.core.model.ThemeStyle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 val LocalAppearance = staticCompositionLocalOf { AppearancePrefs() }
 
@@ -51,9 +57,23 @@ fun SolinaTheme(
         ThemeMode.DARK -> true
     }
     val context = LocalContext.current
-    val colorScheme = remember(appearance.wallpaperColors, appearance.seed, appearance.style, appearance.contrast, appearance.pureBlack, dark) {
-        SolinaColors.scheme(context, appearance, dark)
+    // The scheme (materialkolor HCT generation + a WallpaperManager IPC) is
+    // built off the main thread. Until the first build finishes, the seed
+    // scheme renders the first frame, so there is no blank/flashing screen;
+    // later appearance changes keep showing the last scheme until the new one
+    // is ready.
+    val appContext = remember(context) { context.applicationContext }
+    val fallbackScheme = remember {
+        SolinaColors.generate(appearance.seed, appearance.style, appearance.contrast, dark)
+            .let { if (dark && appearance.pureBlack) it.pureBlack() else it }
     }
+    var colorScheme by remember { mutableStateOf<ColorScheme?>(null) }
+    LaunchedEffect(appearance.wallpaperColors, appearance.seed, appearance.style, appearance.contrast, appearance.pureBlack, dark) {
+        colorScheme = withContext(Dispatchers.Default) {
+            SolinaColors.scheme(appContext, appearance, dark)
+        }
+    }
+    val scheme = colorScheme ?: fallbackScheme
 
     val view = LocalView.current
     if (!view.isInEditMode) {
@@ -74,7 +94,7 @@ fun SolinaTheme(
     val shapes = remember(appearance.corners) { solinaShapes(appearance.corners.scale) }
 
     MaterialExpressiveTheme(
-        colorScheme = colorScheme,
+        colorScheme = scheme,
         motionScheme = motionScheme(appearance.motion),
         shapes = shapes,
         typography = SolinaTypography,
@@ -119,9 +139,24 @@ object SolinaColors {
         } else {
             null
         }
+        // The wallpaper palette is fetched at most once per scheme build and
+        // its primary colour is reused as the seed below. dynamic*ColorScheme()
+        // reads the system tonal palette from resources, so this is the only
+        // WallpaperManager call on this path. It is only fetched when a style
+        // other than TONAL_SPOT/STANDARD actually needs the seed.
+        val wallpaperPrimary: Int? = if (wallpaper != null &&
+            !(a.style == ThemeStyle.TONAL_SPOT && a.contrast == ContrastLevel.STANDARD)
+        ) {
+            runCatching {
+                WallpaperManager.getInstance(context)
+                    .getWallpaperColors(WallpaperManager.FLAG_SYSTEM)?.primaryColor?.toArgb()
+            }.getOrNull()
+        } else {
+            null
+        }
         val base = when {
             wallpaper != null && a.style == ThemeStyle.TONAL_SPOT && a.contrast == ContrastLevel.STANDARD -> wallpaper
-            wallpaper != null -> generate(wallpaperSeed(context) ?: wallpaper.primary.toArgb(), a.style, a.contrast, dark)
+            wallpaper != null -> generate(wallpaperPrimary ?: wallpaper.primary.toArgb(), a.style, a.contrast, dark)
             else -> generate(a.seed, a.style, a.contrast, dark)
         }
         return if (dark && a.pureBlack) base.pureBlack() else base
@@ -135,10 +170,6 @@ object SolinaColors {
             style = style.palette,
             contrastLevel = contrast.level,
         )
-
-    private fun wallpaperSeed(context: Context): Int? = runCatching {
-        WallpaperManager.getInstance(context).getWallpaperColors(WallpaperManager.FLAG_SYSTEM)?.primaryColor?.toArgb()
-    }.getOrNull()
 
     private val ThemeStyle.palette: PaletteStyle
         get() = when (this) {

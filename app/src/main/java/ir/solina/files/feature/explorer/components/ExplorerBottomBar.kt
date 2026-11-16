@@ -47,6 +47,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,6 +76,9 @@ import ir.solina.files.ui.expressive.ExpressiveMenu
 import ir.solina.files.ui.expressive.MenuEntry
 import ir.solina.files.ui.icon
 
+// Perf item 7: @Immutable so receivers can skip when the instance is reused;
+// the single instance is created once with remember at the call site.
+@Immutable
 class BottomBarActions(
     val onBack: () -> Unit,
     val onForward: () -> Unit,
@@ -293,16 +297,15 @@ private fun BrowseActions(
                         expanded = layoutMenu,
                         onDismiss = { layoutMenu = false },
                         groups = listOf(buildList {
-                            if (!dual) add(MenuEntry("نمای شبکه‌ای", Icons.Rounded.GridView) { layoutMenu = false; if (!gridView) onToggleViewLayout() })
-                            add(MenuEntry("نمای فهرستی", Icons.Rounded.ViewList) { layoutMenu = false; if (gridView) onToggleViewLayout() })
-                            add(MenuEntry("تنظیم نوار", Icons.Rounded.DashboardCustomize) { layoutMenu = false; a.onCustomize(ToolbarTab.BROWSE) })
+                            if (!dual) add(MenuEntry(stringResource(R.string.explorer_view_grid), Icons.Rounded.GridView) { layoutMenu = false; if (!gridView) onToggleViewLayout() })
+                            add(MenuEntry(stringResource(R.string.explorer_view_list), Icons.Rounded.ViewList) { layoutMenu = false; if (gridView) onToggleViewLayout() })
+                            add(MenuEntry(stringResource(R.string.explorer_customize_bar), Icons.Rounded.DashboardCustomize) { layoutMenu = false; a.onCustomize(ToolbarTab.BROWSE) })
                         }),
                     )
                 }
-                BrowseAction.PANE_MODE -> BarButton(
-                    icon = if (dual) Icons.Rounded.ViewAgenda else Icons.Rounded.ViewColumn,
-                    description = if (dual) "تبدیل به تک‌پنجره" else "تبدیل به دوپنجره",
-                ) { onTogglePaneMode() }
+                // Redesign v2: the pane switch lives in the new mode bar now —
+                // no pane button in the bottom bar.
+                BrowseAction.PANE_MODE -> Unit
                 BrowseAction.ORIENTATION -> if (dual) BarButton(
                     icon = if (horizontalSplit) Icons.Rounded.ViewColumn else Icons.Rounded.ViewAgenda,
                     description = if (horizontalSplit) "چیدن پنل‌ها کنار هم" else "چیدن پنل‌ها روی هم",
@@ -332,8 +335,10 @@ private fun BrowseActions(
                     if (!action.available(context)) continue
                     when (action) {
                         BrowseAction.NEW -> addAll(newEntries)
-                        BrowseAction.VIEW_LAYOUT -> add(MenuEntry(actionText(action), actionIcon(action)) { more = false; layoutMenu = true })
-                        BrowseAction.PANE_MODE -> add(MenuEntry(actionText(action), actionIcon(action)) { more = false; onTogglePaneMode() })
+                        // Redesign v2: no layout menu in dual-pane, and the pane
+                        // switch lives in the new mode bar now.
+                        BrowseAction.VIEW_LAYOUT -> if (!dual) add(MenuEntry(actionText(action), actionIcon(action)) { more = false; layoutMenu = true })
+                        BrowseAction.PANE_MODE -> Unit
                         BrowseAction.ORIENTATION -> add(MenuEntry(actionText(action), actionIcon(action), enabled = dual) { more = false; if (dual) onToggleOrientation() })
                         BrowseAction.SWAP_PANES -> add(MenuEntry(actionText(action), actionIcon(action), enabled = dual) { more = false; if (dual) onSwapPane() })
                         else -> add(

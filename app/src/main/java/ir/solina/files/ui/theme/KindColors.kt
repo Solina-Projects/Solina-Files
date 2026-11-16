@@ -10,7 +10,11 @@ data class KindColors(val container: Color, val content: Color)
 object KindPalette {
 
     fun hue(kind: FileKind): Double? = when (kind) {
-        FileKind.FOLDER, FileKind.BINARY -> null
+        // Redesign v2: folders get their own hue (expressive purple, 265) instead
+        // of falling back to the seed's primary container — that was why every
+        // folder in the screenshots came out the same washed-out brown.
+        FileKind.FOLDER -> 265.0
+        FileKind.BINARY -> null
         FileKind.IMAGE -> 340.0
         FileKind.VIDEO -> 27.0
         FileKind.AUDIO -> 60.0
@@ -27,7 +31,6 @@ object KindPalette {
     private val cache = HashMap<Pair<FileKind, Boolean>, KindColors>()
 
     fun colors(kind: FileKind, colorful: Boolean, scheme: ColorScheme, dark: Boolean): KindColors {
-        if (kind == FileKind.FOLDER) return KindColors(scheme.primaryContainer, scheme.onPrimaryContainer)
         val hue = hue(kind)
         if (!colorful || hue == null) return KindColors(scheme.surfaceContainerHighest, scheme.onSurfaceVariant)
         return synchronized(cache) {

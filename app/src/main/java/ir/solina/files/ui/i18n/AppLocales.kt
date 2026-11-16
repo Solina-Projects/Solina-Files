@@ -62,6 +62,27 @@ object AppLocales {
         L10n.source = AndroidStrings(app)
     }
 
+    // Redesign v2: the app is Persian-first, but a fresh install followed the
+    // phone language, so on an English phone the whole UI came out English.
+    // On the very first launch (no language ever chosen) default to Persian;
+    // the user can still switch in Settings → Language, and that choice is
+    // never overridden again.
+    private const val KEY_DEFAULTED = "defaulted"
+
+    fun applyDefaultIfUnset(app: Context) {
+        val prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        if (prefs.getBoolean(KEY_DEFAULTED, false)) return
+        prefs.edit().putBoolean(KEY_DEFAULTED, true).apply()
+        if (current(app) != AppLanguage.SYSTEM) return
+        if (Build.VERSION.SDK_INT >= 33) {
+            app.getSystemService(LocaleManager::class.java)?.applicationLocales =
+                LocaleList.forLanguageTags(AppLanguage.PERSIAN.tag)
+        } else {
+            prefs.edit().putString(KEY, AppLanguage.PERSIAN.tag).commit()
+            applyTo(app)
+        }
+    }
+
     private fun stored(context: Context): String? =
         runCatching { context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getString(KEY, null) }.getOrNull()
 

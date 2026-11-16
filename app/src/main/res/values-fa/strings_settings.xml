@@ -387,6 +387,7 @@
     <string name="drawer_wifi_sharing">اشتراک‌گذاری با Wi-Fi (FTP / مرورگر)</string>
     <string name="drawer_languages">زبان‌های برنامه‌نویسی (Termux)</string>
     <string name="drawer_free_of">\u200F\u2068%1$s\u2069 آزاد از \u2068%2$s\u2069</string>
+    <string name="drawer_used">استفاده‌شده</string>
     <string name="ui_open_in_app_failed">در آن برنامه باز نشد</string>
     <string name="ui_default_no_extension">به‌عنوان پیش‌فرض فایل‌های بدون پسوند تنظیم شد</string>
     <string name="ui_default_for_ext">به‌عنوان پیش‌فرض فایل‌های \u2068.\u200E%1$s\u2069 تنظیم شد</string>
