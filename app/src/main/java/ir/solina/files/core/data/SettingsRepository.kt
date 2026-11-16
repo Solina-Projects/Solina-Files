@@ -404,12 +404,17 @@ class SettingsRepository(private val context: Context) {
             p[Keys.READER_KEEP_SCREEN] = r.keepScreenOn
         }
 
+        // Redesign v2: these fallbacks ARE the defaults a fresh install gets —
+        // the data-class defaults in AppearancePrefs never apply here, so they
+        // must match SolinaDesign (expressive purple, wallpaper colours off).
+        // The old fallbacks (wallpaper on, green seed, TonalSpot, Standard)
+        // were why the UI stayed washed-out pale pink after Phase 1.
         internal fun readAppearance(p: Preferences) = AppearancePrefs(
             themeMode = enumOf(p[Keys.THEME_MODE], ThemeMode.SYSTEM),
-            wallpaperColors = p[Keys.DYNAMIC] ?: true,
-            seed = p[Keys.SEED] ?: ThemeSeeds.SOLINA,
-            style = enumOf(p[Keys.THEME_STYLE], ThemeStyle.TONAL_SPOT),
-            contrast = enumOf(p[Keys.CONTRAST], ContrastLevel.STANDARD),
+            wallpaperColors = p[Keys.DYNAMIC] ?: false,
+            seed = p[Keys.SEED] ?: ThemeSeeds.SOLINA_EXPRESSIVE,
+            style = enumOf(p[Keys.THEME_STYLE], ThemeStyle.EXPRESSIVE),
+            contrast = enumOf(p[Keys.CONTRAST], ContrastLevel.MEDIUM),
             pureBlack = p[Keys.PURE_BLACK] ?: false,
             textScale = AppearancePrefs.textScale(p[Keys.TEXT_SCALE] ?: 1f),
             corners = enumOf(p[Keys.CORNERS], CornerStyle.ROUND),
