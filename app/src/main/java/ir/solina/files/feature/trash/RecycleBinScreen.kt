@@ -211,7 +211,6 @@ private fun TrashRow(
         lastModified = entry.info.deletedAt,
         isHidden = false,
         canRead = true,
-        canWrite = true,
     )
     ListItem(
         colors = ListItemDefaults.colors(
