@@ -47,6 +47,7 @@ import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -75,6 +76,9 @@ import ir.solina.files.ui.expressive.ExpressiveMenu
 import ir.solina.files.ui.expressive.MenuEntry
 import ir.solina.files.ui.icon
 
+// Perf item 7: @Immutable so receivers can skip when the instance is reused;
+// the single instance is created once with remember at the call site.
+@Immutable
 class BottomBarActions(
     val onBack: () -> Unit,
     val onForward: () -> Unit,
