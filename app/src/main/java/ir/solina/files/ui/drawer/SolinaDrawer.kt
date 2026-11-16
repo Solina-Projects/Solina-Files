@@ -16,11 +16,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.EaseOutBack
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.snap
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
@@ -80,6 +76,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -111,6 +108,9 @@ import kotlin.math.PI
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
+// Perf item 7: @Immutable so receivers can skip when the instance is reused;
+// the single instance is created once with remember at the call site.
+@Immutable
 class DrawerActions(
     val onShortcut: (String) -> Unit,
     val onBookmark: (Bookmark) -> Unit,
@@ -175,7 +175,7 @@ fun SolinaDrawerContent(
             .padding(top = 18.dp, bottom = 20.dp)
             .testTag("solina-files-drawer"),
     ) {
-        Brand(reduced, Modifier.stagger())
+        Brand(reduced, open, Modifier.stagger())
         StorageSolina(root, !closed, reduced, Modifier.stagger().padding(top = 16.dp)) { actions.onShortcut(root) }
 
         SectionTitle(stringResource(R.string.drawer_places), Modifier.stagger())
@@ -264,10 +264,10 @@ fun SolinaDrawerContent(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun Brand(reduced: Boolean, modifier: Modifier) {
+private fun Brand(reduced: Boolean, animate: Boolean, modifier: Modifier) {
     val colors = MaterialTheme.colorScheme
     Row(modifier.fillMaxWidth().padding(start = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-        SolinaMark(reduced, Modifier.size(40.dp))
+        SolinaMark(reduced, animate, Modifier.size(40.dp))
         Column(Modifier.padding(start = 12.dp)) {
             Text("Solina Files", style = MaterialTheme.typography.headlineSmallEmphasized, color = colors.onSurface)
             Text(stringResource(R.string.drawer_tagline), style = MaterialTheme.typography.labelMedium, color = colors.onSurfaceVariant)
@@ -276,15 +276,26 @@ private fun Brand(reduced: Boolean, modifier: Modifier) {
 }
 
 @Composable
-private fun SolinaMark(reduced: Boolean, modifier: Modifier) {
+private fun SolinaMark(reduced: Boolean, animate: Boolean, modifier: Modifier) {
     val colors = MaterialTheme.colorScheme
     val layers = listOf(colors.secondary, colors.tertiary, colors.primary)
-    val drift = if (reduced) {
-        0f
-    } else {
-        val t = rememberInfiniteTransition()
-        t.animateFloat(0f, 1f, infiniteRepeatable(tween(3200, easing = LinearEasing), RepeatMode.Reverse)).value
+    // Perf item 5: the logo drift runs ONLY while the drawer is open. The
+    // drawer content stays composed when closed, so the old infinite
+    // transition animated forever. An Animatable driven from LaunchedEffect
+    // reproduces the same 3200 ms reverse cycle, gated on `animate`; when
+    // closed (or reduced motion) the mark rests at drift 0, exactly as before.
+    val driftAnim = remember { Animatable(0f) }
+    LaunchedEffect(animate, reduced) {
+        if (animate && !reduced) {
+            while (true) {
+                driftAnim.animateTo(1f, tween(3200, easing = LinearEasing))
+                driftAnim.animateTo(0f, tween(3200, easing = LinearEasing))
+            }
+        } else {
+            driftAnim.snapTo(0f)
+        }
     }
+    val drift = driftAnim.value
     Canvas(modifier) {
         val h = size.height / 4.2f
         val gap = (size.height - 3 * h) / 2f
