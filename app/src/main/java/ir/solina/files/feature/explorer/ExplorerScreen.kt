@@ -128,6 +128,7 @@ import ir.solina.files.core.termux.TermuxProjects
 import ir.solina.files.core.util.FileKind
 import ir.solina.files.core.util.FileKinds
 import ir.solina.files.core.util.IntentUtils
+import ir.solina.files.core.vault.Vault
 import ir.solina.files.feature.explorer.dnd.DragLayer
 import ir.solina.files.feature.explorer.dnd.FileDragState
 import ir.solina.files.feature.explorer.dnd.LocalFileDrag
@@ -163,6 +164,9 @@ import ir.solina.files.feature.termux.ProjectRunSheet
 import ir.solina.files.feature.termux.TerminalGate
 import ir.solina.files.feature.termux.TermuxViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.sample
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -205,7 +209,87 @@ fun ExplorerScreen(
     drawerOpen: Boolean = false,
     appSnackbar: SnackbarHostState? = null,
 ) {
-    val ui by vm.state.collectAsStateWithLifecycle()
+    // Perf item 1: collect narrow slices of ExplorerUiState instead of the
+    // whole state, so a query keystroke, a selection change or a task tick
+    // only recomposes the readers of that slice. Slices are derived with
+    // map + distinctUntilChanged (data-class slices compare by value).
+    val active by remember(vm) {
+        vm.state.map { it.active }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.active)
+    val settings by remember(vm) {
+        vm.state.map { it.settings }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.settings)
+    val leftPane by remember(vm) {
+        vm.state.map { it.left }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.left)
+    val rightPane by remember(vm) {
+        vm.state.map { it.right }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.right)
+    val clipboard by remember(vm) {
+        vm.state.map { it.clipboard }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.clipboard)
+    // Task progress ticks arrive per file copied; sample them to at most one
+    // UI update per 100 ms (the overlay only shows title/detail/fraction).
+    // Throttling lives in this collector only — the ViewModel is untouched.
+    val task by remember(vm) {
+        vm.state.map { it.task }.sample(100).distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.task)
+    val build by remember(vm) {
+        vm.state.map { it.build }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.build)
+    val query by remember(vm) {
+        vm.state.map { it.query }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.query)
+    val searchActive by remember(vm) {
+        vm.state.map { it.searchActive }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.searchActive)
+    val message by remember(vm) {
+        vm.state.map { it.message }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.message)
+    val bookmarks by remember(vm) {
+        vm.state.map { it.bookmarks }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.bookmarks)
+    val renameHistory by remember(vm) {
+        vm.state.map { it.renameHistory }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.renameHistory)
+    val passwordPrompt by remember(vm) {
+        vm.state.map { it.passwordPrompt }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.passwordPrompt)
+    val transferPrompt by remember(vm) {
+        vm.state.map { it.transferPrompt }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.transferPrompt)
+    val storages by remember(vm) {
+        vm.state.map { it.storages }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.storages)
+    val remoteEdits by remember(vm) {
+        vm.state.map { it.remoteEdits }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.remoteEdits)
+    val storagePrompt by remember(vm) {
+        vm.state.map { it.storagePrompt }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.storagePrompt)
+    val undo by remember(vm) {
+        vm.state.map { it.undo }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.undo)
+    val incoming by remember(vm) {
+        vm.state.map { it.incoming }.distinctUntilChanged()
+    }.collectAsStateWithLifecycle(vm.state.value.incoming)
+    fun paneState(p: Pane) = if (p == Pane.LEFT) leftPane else rightPane
+    val activePane: PaneState get() = paneState(active)
+    fun isRemotePane(p: Pane) = RemoteUri.isRemote(paneState(p).path)
+    fun isVaultPane(p: Pane) = Vault.isVault(paneState(p).path)
+    // Same logic as ExplorerUiState.displayPath, but over the slices above.
+    fun displayPath(path: String): String = when {
+        Vault.isVault(path) -> RemoteUri.display(path, tr(R.string.model_protocol_vault))
+        RemoteUri.isRemote(path) -> RemoteUri.display(path, storages.firstOrNull { it.id == RemoteUri.id(path) }?.let { it.name.ifBlank { it.host } })
+        else -> path
+    }
+    // Perf item 2: the title used to recompute visibleItems (filter + sort)
+    // on every recomposition. Compute it once per (items, sort, hidden,
+    // query) and share it with the title; PaneContent keeps its own
+    // remembered copy per pane.
+    val activeVisible = remember(activePane.items, settings.sortFor(activePane.path), settings.showHidden, query) {
+        visibleItems(activePane, settings, query)
+    }
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
@@ -213,35 +297,35 @@ fun ExplorerScreen(
     var overflow by remember { mutableStateOf(false) }
     var lastBackPress by remember { mutableLongStateOf(0L) }
     val rootPath = vm.rootPath
-    val dual = ui.settings.dualPanePreferred
+    val dual = settings.dualPanePreferred
     var horizontalSplit by rememberSaveable { mutableStateOf(false) }
     var quickCreateExpanded by rememberSaveable { mutableStateOf(false) }
     var layoutMenuExpanded by remember { mutableStateOf(false) }
     val createIconRotation by animateFloatAsState(if (quickCreateExpanded) 45f else 0f, label = "createFabRotation")
     val paneIconRotation by animateFloatAsState(if (dual) 180f else 0f, label = "paneFabRotation")
     val termux = viewModel<TermuxViewModel>().session
-    val sshHere = RemoteUri.parse(ui.activePane.path)?.let { (id, dir) ->
-        ui.storages.firstOrNull { it.id == id && it.protocol == RemoteProtocol.SFTP }?.let { it to dir }
+    val sshHere = RemoteUri.parse(activePane.path)?.let { (id, dir) ->
+        storages.firstOrNull { it.id == id && it.protocol == RemoteProtocol.SFTP }?.let { it to dir }
     }
-    val activePath = ui.activePane.path
-    val project by produceState<Project?>(null, activePath, ui.activePane.items) {
+    val activePath = activePane.path
+    val project by produceState<Project?>(null, activePath, activePane.items) {
         value = if (RemoteUri.isRemote(activePath)) null else withContext(Dispatchers.IO) { TermuxProjects.detect(java.io.File(activePath)) }
     }
 
-    LaunchedEffect(ui.message) {
-        ui.message?.let {
+    LaunchedEffect(message) {
+        message?.let {
             vm.consumeMessage()
             (appSnackbar ?: snackbar).showSnackbar(it)
         }
     }
 
     BackHandler(enabled = !drawerOpen) {
-        val pane = ui.activePane
+        val pane = activePane
         when {
-            pane.hasSelection -> vm.clearSelection(ui.active)
-            ui.searchActive -> vm.setSearchActive(false)
-            pane.path != rootPath && pane.path != "/" -> vm.navigateUp(ui.active)
-            !ui.settings.behavior.doubleBackToExit -> (context as? Activity)?.finish()
+            pane.hasSelection -> vm.clearSelection(active)
+            searchActive -> vm.setSearchActive(false)
+            pane.path != rootPath && pane.path != "/" -> vm.navigateUp(active)
+            !settings.behavior.doubleBackToExit -> (context as? Activity)?.finish()
             else -> {
                 val now = SystemClock.uptimeMillis()
                 if (now - lastBackPress < 2000) {
@@ -275,23 +359,95 @@ fun ExplorerScreen(
         }
     }
 
-    fun visibleOfActive() = visibleItems(ui.activePane, ui.settings, ui.query).map { it.path }
+    fun visibleOfActive() = visibleItems(activePane, settings, query).map { it.path }
 
-    val selection = ui.activePane.items.filter { it.path in ui.activePane.selected }
+    val selection = activePane.items.filter { it.path in activePane.selected }
     val single = selection.singleOrNull()
-    val smaliFolder by produceState(false, single?.path, ui.active) {
-        value = single != null && single.isDirectory && vm.hasSmali(ui.active, single)
+    val smaliFolder by produceState(false, single?.path, active) {
+        value = single != null && single.isDirectory && vm.hasSmali(active, single)
     }
     val jarFile = single != null && !single.isDirectory && single.extension.equals("jar", ignoreCase = true)
 
-    fun selectionInOrder() = visibleItems(ui.activePane, ui.settings, ui.query).filter { it.path in ui.activePane.selected }
+    fun selectionInOrder() = visibleItems(activePane, settings, query).filter { it.path in activePane.selected }
 
     fun archiveName(items: List<FileItem>, folder: String): String =
         items.singleOrNull()?.let { ArchiveFormat.ZIP.defaultName(it).removeSuffix(ArchiveFormat.ZIP.extension) }
             ?: java.io.File(folder).name.ifEmpty { "archive" }
 
     fun linkParent(pane: Pane): String =
-        if (dual && ui.pane(pane.other).path != ui.pane(pane).path) ui.pane(pane.other).path else ui.pane(pane).path
+        if (dual && paneState(pane.other).path != paneState(pane).path) paneState(pane.other).path else paneState(pane).path
+
+    // Perf item 7: the bottom-bar callbacks are created once and remembered,
+    // keyed on exactly the values their behaviour depends on, so unrelated
+    // recompositions (query keystrokes, folder-stats ticks, task progress)
+    // reuse the same BottomBarActions instance and ExplorerBottomBar can skip.
+    // ViewModel callbacks are bound method references, created once here.
+    val bottomBarActions = remember(active, activePane.path, selection, single, project, dual, query, settings, onCustomize, onOpenSearch) {
+        BottomBarActions(
+            onBack = { vm.goBack(active) },
+            onForward = { vm.goForward(active) },
+            onUp = { vm.navigateUp(active) },
+            onHome = { vm.goHome(active) },
+            onSwap = vm::swapPanes,
+            onNewFolder = { dialog = Dialog.NewFolder(active) },
+            onNewFile = { dialog = Dialog.NewFile(active) },
+            onRefresh = { vm.refresh(active) },
+            onPaste = { vm.paste(active) },
+            onCancelClipboard = vm::clearClipboard,
+            onSelectAll = { vm.selectAll(active, visibleOfActive()) },
+            onClearSelection = { vm.clearSelection(active) },
+            onCopyToOther = { vm.beginTransfer(move = false) },
+            onMoveToOther = { vm.beginTransfer(move = true) },
+            onCopyToClipboard = { vm.copySelectionToClipboard(active, move = false) },
+            onCutToClipboard = { vm.copySelectionToClipboard(active, move = true) },
+            onDelete = { dialog = Dialog.Delete },
+            onRename = { selection.firstOrNull()?.let { dialog = Dialog.Rename(active, it) } },
+            onCompress = { dialog = Dialog.CreateArchive(active, selectionInOrder()) },
+            onShare = { IntentUtils.share(context, selection) },
+            onProperties = { dialog = Dialog.Properties(selection) },
+            onInvert = { vm.invertSelection(active, visibleOfActive()) },
+            onBookmarks = { dialog = Dialog.Bookmarks },
+            onBookmarkFolder = { vm.addBookmarks(listOf(activePane.path)) },
+            onBookmarkSelection = { vm.addSelectionToBookmarks(active) },
+            onBatchRename = { dialog = Dialog.BatchRename(active, selectionInOrder()) },
+            onCreateLinks = { dialog = Dialog.CreateLink(active, selectionInOrder()) },
+            onMerge = { dialog = Dialog.Merge(active, selectionInOrder().filterNot { it.isDirectory }) },
+            onCompare = {
+                val two = selectionInOrder().filterNot { it.isDirectory }
+                if (two.size == 2) onCompare(two[0], two[1])
+            },
+            onNewProject = { dialog = Dialog.NewProject(activePane.path) },
+            onOpenTerminal = { termux.openTerminal(activePane.path) },
+            onRunProject = { project?.let { dialog = Dialog.RunProject(it) } },
+            onSmaliToDex = { single?.let { vm.smaliToDex(active, it) } },
+            onJarToDex = { single?.let { vm.jarToDex(active, it) } },
+            onFilter = { vm.setSearchActive(true) },
+            onSearch = {
+                if (RemoteUri.isRemote(activePane.path)) {
+                    scope.launch { snackbar.showSnackbar(tr(R.string.explorer_search_local_only)) }
+                } else {
+                    onOpenSearch(activePane.path)
+                }
+            },
+            onSort = { dialog = Dialog.Sort },
+            onJump = { dialog = Dialog.JumpTo(active) },
+            onToggleHidden = { vm.setShowHidden(!settings.showHidden) },
+            onCustomize = onCustomize,
+            onMoveToVault = { vm.moveSelectionToVault(active) },
+            onRestore = { vm.restoreFromVault(active) },
+        )
+    }
+    val onToggleOrientation = remember { { horizontalSplit = !horizontalSplit } }
+    val onToggleViewLayout = remember(vm) { vm::toggleViewMode }
+    val onTogglePaneMode = remember(dual, settings.list.viewMode) {
+        {
+            if (!dual && settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) vm.toggleViewMode()
+            vm.setDualPanePreferred(!dual)
+            quickCreateExpanded = false
+            layoutMenuExpanded = false
+        }
+    }
+    val onSwapPane = remember(vm) { vm::swapPanes }
 
     val drag = remember { FileDragState() }
     drag.haptics = LocalHapticFeedback.current
@@ -299,14 +455,14 @@ fun ExplorerScreen(
     drag.onSpring = { spot -> Pane.entries.getOrNull(spot.pane)?.let { p -> vm.setActive(p); vm.openPath(p, spot.dir) } }
     val host = remember { arrayOfNulls<LayoutCoordinates>(1) }
 
-    LaunchedEffect(ui.undo?.seq) {
-        val u = ui.undo ?: return@LaunchedEffect
+    LaunchedEffect(undo?.seq) {
+        val u = undo ?: return@LaunchedEffect
         val result = (appSnackbar ?: snackbar).showSnackbar(u.message, actionLabel = tr(R.string.explorer_undo), duration = SnackbarDuration.Long)
         if (result == SnackbarResult.ActionPerformed) vm.undoMove(u) else vm.consumeUndo(u.seq)
     }
 
-    LaunchedEffect(ui.incoming?.seq) {
-        val c = ui.incoming ?: return@LaunchedEffect
+    LaunchedEffect(incoming?.seq) {
+        val c = incoming ?: return@LaunchedEffect
         val result = (appSnackbar ?: snackbar).showSnackbar(
             tr(R.string.explorer_incoming_hidden, c.name),
             actionLabel = tr(R.string.explorer_incoming_save),
@@ -326,8 +482,8 @@ fun ExplorerScreen(
     Scaffold(
         snackbarHost = { SnackbarHost(snackbar) },
         topBar = {
-            if (ui.searchActive) {
-                FilterBar(query = ui.query, onQuery = vm::setQuery, onClose = { vm.setSearchActive(false) })
+            if (searchActive) {
+                FilterBar(query = query, onQuery = vm::setQuery, onClose = { vm.setSearchActive(false) })
             } else {
                 TopAppBar(
                     navigationIcon = {
@@ -345,14 +501,14 @@ fun ExplorerScreen(
                             }
                         }
                     },
-                    title = { ExplorerTitle(ui.activePane, visibleItems(ui.activePane, ui.settings, ui.query)) },
+                    title = { ExplorerTitle(activePane, activeVisible) },
                     actions = {
                         IconButton(onClick = { vm.setSearchActive(true) }) { Icon(Icons.Rounded.Search, contentDescription = stringResource(R.string.explorer_filter)) }
                         IconButton(onClick = {
-                            if (RemoteUri.isRemote(ui.activePane.path)) {
+                            if (RemoteUri.isRemote(activePane.path)) {
                                 scope.launch { snackbar.showSnackbar(tr(R.string.explorer_search_local_only)) }
                             } else {
-                                onOpenSearch(ui.activePane.path)
+                                onOpenSearch(activePane.path)
                             }
                         }) {
                             Icon(Icons.AutoMirrored.Rounded.ManageSearch, contentDescription = stringResource(R.string.explorer_advanced_search))
@@ -362,16 +518,16 @@ fun ExplorerScreen(
                             IconButton(onClick = { overflow = true }) { Icon(Icons.Rounded.MoreVert, contentDescription = stringResource(R.string.explorer_options)) }
                             DropdownMenu(expanded = overflow, onDismissRequest = { overflow = false }) {
                                 DropdownMenuItem(text = { Text(stringResource(R.string.explorer_refresh_both)) }, onClick = { overflow = false; vm.refreshAll() })
-                                DropdownMenuItem(text = { Text(stringResource(R.string.explorer_jump_to_path_more)) }, onClick = { overflow = false; dialog = Dialog.JumpTo(ui.active) })
+                                DropdownMenuItem(text = { Text(stringResource(R.string.explorer_jump_to_path_more)) }, onClick = { overflow = false; dialog = Dialog.JumpTo(active) })
                                 DropdownMenuItem(
-                                    text = { Text(stringResource(if (ui.settings.showHidden) R.string.common_hide_hidden else R.string.common_show_hidden)) },
-                                    onClick = { overflow = false; vm.setShowHidden(!ui.settings.showHidden) },
+                                    text = { Text(stringResource(if (settings.showHidden) R.string.common_hide_hidden else R.string.common_show_hidden)) },
+                                    onClick = { overflow = false; vm.setShowHidden(!settings.showHidden) },
                                 )
-                                val mount = ui.activePane.mount
-                                if (ui.settings.rootAccess && mount != null && mount.point in Mounts.SYSTEM_POINTS) {
+                                val mount = activePane.mount
+                                if (settings.rootAccess && mount != null && mount.point in Mounts.SYSTEM_POINTS) {
                                     DropdownMenuItem(
                                         text = { Text(stringResource(if (mount.readOnly) R.string.explorer_mount_rw else R.string.explorer_mount_ro, mount.point)) },
-                                        onClick = { overflow = false; vm.remount(ui.active, writable = mount.readOnly) },
+                                        onClick = { overflow = false; vm.remount(active, writable = mount.readOnly) },
                                     )
                                 }
                                 sshHere?.let { (c, dir) ->
@@ -388,86 +544,29 @@ fun ExplorerScreen(
         },
         bottomBar = {
             ExplorerBottomBar(
-                selectionCount = ui.activePane.selected.size,
-                canBack = ui.activePane.history.canBack,
-                canForward = ui.activePane.history.canForward,
-                activeIsLeft = ui.active == Pane.LEFT,
+                selectionCount = activePane.selected.size,
+                canBack = activePane.history.canBack,
+                canForward = activePane.history.canForward,
+                activeIsLeft = active == Pane.LEFT,
                 dual = dual,
-                clipboardCount = ui.clipboard?.items?.size ?: 0,
-                clipboardIsMove = ui.clipboard?.move == true,
+                clipboardCount = clipboard?.items?.size ?: 0,
+                clipboardIsMove = clipboard?.move == true,
                 selectedFiles = selection.count { !it.isDirectory },
-                remote = ui.isRemote(ui.active),
+                remote = isRemotePane(active),
                 projectLabel = project?.kind?.label,
                 smaliFolder = smaliFolder,
                 jarFile = jarFile,
-                vault = ui.isVault(ui.active),
-                browse = ui.settings.actions.browse,
-                selection = ui.settings.actions.selection,
-                showHidden = ui.settings.showHidden,
+                vault = isVaultPane(active),
+                browse = settings.actions.browse,
+                selection = settings.actions.selection,
+                showHidden = settings.showHidden,
                 horizontalSplit = horizontalSplit,
-                onToggleOrientation = { horizontalSplit = !horizontalSplit },
-                gridView = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID,
-                onToggleViewLayout = { vm.toggleViewMode() },
-                onTogglePaneMode = {
-                    if (!dual && ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) vm.toggleViewMode()
-                    vm.setDualPanePreferred(!dual)
-                    quickCreateExpanded = false
-                    layoutMenuExpanded = false
-                },
-                onSwapPane = vm::swapPanes,
-                actions = BottomBarActions(
-                    onBack = { vm.goBack(ui.active) },
-                    onForward = { vm.goForward(ui.active) },
-                    onUp = { vm.navigateUp(ui.active) },
-                    onHome = { vm.goHome(ui.active) },
-                    onSwap = vm::swapPanes,
-                    onNewFolder = { dialog = Dialog.NewFolder(ui.active) },
-                    onNewFile = { dialog = Dialog.NewFile(ui.active) },
-                    onRefresh = { vm.refresh(ui.active) },
-                    onPaste = { vm.paste(ui.active) },
-                    onCancelClipboard = vm::clearClipboard,
-                    onSelectAll = { vm.selectAll(ui.active, visibleOfActive()) },
-                    onClearSelection = { vm.clearSelection(ui.active) },
-                    onCopyToOther = { vm.beginTransfer(move = false) },
-                    onMoveToOther = { vm.beginTransfer(move = true) },
-                    onCopyToClipboard = { vm.copySelectionToClipboard(ui.active, move = false) },
-                    onCutToClipboard = { vm.copySelectionToClipboard(ui.active, move = true) },
-                    onDelete = { dialog = Dialog.Delete },
-                    onRename = { selection.firstOrNull()?.let { dialog = Dialog.Rename(ui.active, it) } },
-                    onCompress = { dialog = Dialog.CreateArchive(ui.active, selectionInOrder()) },
-                    onShare = { IntentUtils.share(context, selection) },
-                    onProperties = { dialog = Dialog.Properties(selection) },
-                    onInvert = { vm.invertSelection(ui.active, visibleOfActive()) },
-                    onBookmarks = { dialog = Dialog.Bookmarks },
-                    onBookmarkFolder = { vm.addBookmarks(listOf(ui.activePane.path)) },
-                    onBookmarkSelection = { vm.addSelectionToBookmarks(ui.active) },
-                    onBatchRename = { dialog = Dialog.BatchRename(ui.active, selectionInOrder()) },
-                    onCreateLinks = { dialog = Dialog.CreateLink(ui.active, selectionInOrder()) },
-                    onMerge = { dialog = Dialog.Merge(ui.active, selectionInOrder().filterNot { it.isDirectory }) },
-                    onCompare = {
-                        val two = selectionInOrder().filterNot { it.isDirectory }
-                        if (two.size == 2) onCompare(two[0], two[1])
-                    },
-                    onNewProject = { dialog = Dialog.NewProject(ui.activePane.path) },
-                    onOpenTerminal = { termux.openTerminal(ui.activePane.path) },
-                    onRunProject = { project?.let { dialog = Dialog.RunProject(it) } },
-                    onSmaliToDex = { single?.let { vm.smaliToDex(ui.active, it) } },
-                    onJarToDex = { single?.let { vm.jarToDex(ui.active, it) } },
-                    onFilter = { vm.setSearchActive(true) },
-                    onSearch = {
-                        if (RemoteUri.isRemote(ui.activePane.path)) {
-                            scope.launch { snackbar.showSnackbar(tr(R.string.explorer_search_local_only)) }
-                        } else {
-                            onOpenSearch(ui.activePane.path)
-                        }
-                    },
-                    onSort = { dialog = Dialog.Sort },
-                    onJump = { dialog = Dialog.JumpTo(ui.active) },
-                    onToggleHidden = { vm.setShowHidden(!ui.settings.showHidden) },
-                    onCustomize = onCustomize,
-                    onMoveToVault = { vm.moveSelectionToVault(ui.active) },
-                    onRestore = { vm.restoreFromVault(ui.active) },
-                ),
+                onToggleOrientation = onToggleOrientation,
+                gridView = settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID,
+                onToggleViewLayout = onToggleViewLayout,
+                onTogglePaneMode = onTogglePaneMode,
+                onSwapPane = onSwapPane,
+                actions = bottomBarActions,
             )
         },
     ) { padding ->
@@ -476,7 +575,7 @@ fun ExplorerScreen(
             dual = dual,
             onSelectDual = {
                 if (!dual) {
-                    if (ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) vm.toggleViewMode()
+                    if (settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) vm.toggleViewMode()
                     vm.setDualPanePreferred(true)
                     quickCreateExpanded = false
                     layoutMenuExpanded = false
@@ -490,32 +589,43 @@ fun ExplorerScreen(
                 }
             },
         )
-        val panes = if (dual) listOf(Pane.LEFT, Pane.RIGHT) else listOf(ui.active)
+        val panes = if (dual) listOf(Pane.LEFT, Pane.RIGHT) else listOf(active)
         @Composable
         fun PaneContent(pane: Pane, modifier: Modifier) {
-            val state = ui.pane(pane)
-            val visible = remember(state.items, ui.settings, ui.query) { visibleItems(state, ui.settings, ui.query) }
+            val state = paneState(pane)
+            val visible = remember(state.items, settings, query) { visibleItems(state, settings, query) }
+            // Perf item 7: remember the per-pane callbacks (keyed on the pane
+            // and, for onOpen, on the parent callbacks) so PaneColumn can skip
+            // when nothing it depends on changed.
+            val onActivate = remember(pane) { { vm.setActive(pane) } }
+            val onUp = remember(pane) { { vm.setActive(pane); vm.navigateUp(pane) } }
+            val onOpen = remember(pane, onOpenFile, onOpenWithOpener, onOpenWith) { { item: FileItem -> handleOpen(pane, item) } }
+            val onToggleSelect = remember(pane) { { item: FileItem -> vm.toggleSelect(pane, item) } }
+            val onItemMenu = remember(pane) { { item: FileItem -> dialog = Dialog.ItemSheet(pane, item) } }
+            val onJumpTo = remember(pane) { { dialog = Dialog.JumpTo(pane) } }
+            val onRefresh = remember(pane) { { vm.setActive(pane); vm.refresh(pane) } }
+            val onLayoutClickLambda = remember { { layoutMenuExpanded = !layoutMenuExpanded; quickCreateExpanded = false } }
             PaneColumn(
                 state = state,
                 visible = visible,
-                isActive = ui.active == pane,
+                isActive = active == pane,
                 showActive = dual,
                 rootPath = rootPath,
-                onActivate = { vm.setActive(pane) },
-                onUp = { vm.setActive(pane); vm.navigateUp(pane) },
-                onOpen = { handleOpen(pane, it) },
-                onToggleSelect = { vm.toggleSelect(pane, it) },
-                onItemMenu = { dialog = Dialog.ItemSheet(pane, it) },
-                onJumpTo = { dialog = Dialog.JumpTo(pane) },
-                onRefresh = { vm.setActive(pane); vm.refresh(pane) },
+                onActivate = onActivate,
+                onUp = onUp,
+                onOpen = onOpen,
+                onToggleSelect = onToggleSelect,
+                onItemMenu = onItemMenu,
+                onJumpTo = onJumpTo,
+                onRefresh = onRefresh,
                 modifier = modifier,
-                displayPath = if (RemoteUri.isRemote(state.path)) ui.displayPath(state.path) else null,
+                displayPath = if (RemoteUri.isRemote(state.path)) displayPath(state.path) else null,
                 pane = pane,
                 horizontalItems = dual && horizontalSplit,
                 singlePane = !dual,
                 // Redesign v2: no grid/layout button in dual-pane.
-                onLayoutClick = if (!dual) { { layoutMenuExpanded = !layoutMenuExpanded; quickCreateExpanded = false } } else null,
-                isGrid = ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID,
+                onLayoutClick = if (!dual) onLayoutClickLambda else null,
+                isGrid = settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID,
             )
         }
         AnimatedContent(
@@ -536,7 +646,7 @@ fun ExplorerScreen(
                     PaneContent(Pane.RIGHT, Modifier.weight(1f).fillMaxWidth())
                 }
             } else if (!showDual) {
-                PaneContent(ui.active, Modifier.fillMaxSize().padding(horizontal = 4.dp))
+                PaneContent(active, Modifier.fillMaxSize().padding(horizontal = 4.dp))
             } else {
                 Row(
                     Modifier.fillMaxSize().padding(horizontal = 4.dp),
@@ -553,7 +663,7 @@ fun ExplorerScreen(
     }
     // Redesign v2: the layout menu opens from the path header's button.
     // The invisible scrim closes it on any tap or scroll outside it.
-    if (layoutMenuExpanded && !ui.searchActive) {
+    if (layoutMenuExpanded && !searchActive) {
         Box(
             Modifier.fillMaxSize().dismissMenuOnOutsideGesture { layoutMenuExpanded = false },
         )
@@ -564,21 +674,21 @@ fun ExplorerScreen(
         ) {
             LayoutMenuPanel(
                 dual = dual,
-                viewMode = ui.settings.list.viewMode,
+                viewMode = settings.list.viewMode,
                 onToggleViewMode = { vm.toggleViewMode() },
-                density = ui.settings.uiDensity,
+                density = settings.uiDensity,
                 onDensity = { vm.setItemDensity(it) },
                 onClose = { layoutMenuExpanded = false },
             )
         }
     }
-    if (!ui.searchActive) {
+    if (!searchActive) {
         Column(
             modifier = Modifier.align(androidx.compose.ui.Alignment.BottomEnd).padding(end = 16.dp, bottom = 84.dp),
             horizontalAlignment = androidx.compose.ui.Alignment.End,
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
-            val floatingZones = ui.settings.actions.floating.zones
+            val floatingZones = settings.actions.floating.zones
             // Only actions assigned to Quick are rendered as floating buttons; the other
             // stored zones are intentionally not surfaced in an overflow/menu.
             val floatingVisibleActions = floatingZones.getOrNull(0).orEmpty()
@@ -593,7 +703,7 @@ fun ExplorerScreen(
                 when (action) {
                 FloatingAction.HOME -> {
                 FloatingActionButton(
-                    onClick = { vm.goHome(ui.active); quickCreateExpanded = false; layoutMenuExpanded = false },
+                    onClick = { vm.goHome(active); quickCreateExpanded = false; layoutMenuExpanded = false },
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     contentColor = MaterialTheme.colorScheme.onSurface,
                 ) {
@@ -603,7 +713,7 @@ fun ExplorerScreen(
                 }
                 FloatingAction.REFRESH -> {
                 FloatingActionButton(
-                    onClick = { vm.refresh(ui.active); quickCreateExpanded = false; layoutMenuExpanded = false },
+                    onClick = { vm.refresh(active); quickCreateExpanded = false; layoutMenuExpanded = false },
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                     contentColor = MaterialTheme.colorScheme.onSurface,
                 ) {
@@ -673,23 +783,23 @@ fun ExplorerScreen(
                                     QuickCreateButton(
                                         icon = Icons.Rounded.CreateNewFolder,
                                         label = stringResource(R.string.explorer_quick_new_folder),
-                                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFolder(ui.active) },
+                                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFolder(active) },
                                     )
                                     QuickCreateButton(
                                         icon = Icons.Rounded.Description,
                                         label = stringResource(R.string.explorer_quick_new_text_file),
-                                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "untitled.txt") },
+                                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(active, "untitled.txt") },
                                     )
                                     QuickCreateButton(
                                         icon = Icons.Rounded.Code,
                                         label = stringResource(R.string.explorer_quick_new_html_file),
-                                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(ui.active, "index.html") },
+                                        onClick = { quickCreateExpanded = false; dialog = Dialog.NewFile(active, "index.html") },
                                     )
-                                    if (!ui.isRemote(ui.active)) {
+                                    if (!isRemotePane(active)) {
                                         QuickCreateButton(
                                             icon = Icons.Rounded.Code,
                                             label = stringResource(R.string.explorer_quick_new_project),
-                                            onClick = { quickCreateExpanded = false; dialog = Dialog.NewProject(ui.activePane.path) },
+                                            onClick = { quickCreateExpanded = false; dialog = Dialog.NewProject(activePane.path) },
                                         )
                                     }
                                 }
@@ -741,7 +851,7 @@ fun ExplorerScreen(
                 FloatingAction.PANE_MODE -> {
                 FloatingActionButton(
                     onClick = {
-                        if (!dual && ui.settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) vm.toggleViewMode()
+                        if (!dual && settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID) vm.toggleViewMode()
                         vm.setDualPanePreferred(!dual)
                         quickCreateExpanded = false
                         layoutMenuExpanded = false
@@ -776,10 +886,10 @@ fun ExplorerScreen(
             onDismiss = { dialog = Dialog.None },
         )
         Dialog.Bookmarks -> BookmarksSheet(
-            bookmarks = ui.bookmarks,
+            bookmarks = bookmarks,
             actions = BookmarkActions(
-                onOpen = { vm.openBookmark(ui.active, it); dialog = Dialog.None },
-                onAddCurrent = { vm.addBookmarks(listOf(ui.activePane.path)) },
+                onOpen = { vm.openBookmark(active, it); dialog = Dialog.None },
+                onAddCurrent = { vm.addBookmarks(listOf(activePane.path)) },
                 onUpdate = { path, edited -> vm.updateBookmark(path, edited) },
                 onMove = { path, offset -> vm.moveBookmark(path, offset) },
                 onDelete = { vm.removeBookmark(it) },
@@ -790,7 +900,7 @@ fun ExplorerScreen(
         )
         is Dialog.CreateArchive -> CreateArchiveDialog(
             items = d.items,
-            defaultName = archiveName(d.items, ui.pane(d.pane).path),
+            defaultName = archiveName(d.items, paneState(d.pane).path),
             onConfirm = { name, options, independent ->
                 vm.createArchive(d.pane, d.items, name, options, independent)
                 dialog = Dialog.None
@@ -799,7 +909,7 @@ fun ExplorerScreen(
         )
         is Dialog.BatchRename -> BatchRenameDialog(
             items = d.items,
-            history = ui.renameHistory,
+            history = renameHistory,
             preview = { rule, order, descending -> vm.previewRename(d.pane, d.items, rule, order, descending) },
             onApply = { plan, rule -> vm.applyRename(d.pane, plan, rule); dialog = Dialog.None },
             onDismiss = { dialog = Dialog.None },
@@ -817,7 +927,7 @@ fun ExplorerScreen(
         )
         is Dialog.Merge -> MergeDialog(
             parts = d.items,
-            existingNames = ui.pane(d.pane).items.mapTo(HashSet()) { it.name },
+            existingNames = paneState(d.pane).items.mapTo(HashSet()) { it.name },
             onConfirm = { ordered, output, pdf -> vm.mergeFiles(d.pane, ordered, output, pdf); dialog = Dialog.None },
             onDismiss = { dialog = Dialog.None },
         )
@@ -839,7 +949,7 @@ fun ExplorerScreen(
             onDismiss = { dialog = Dialog.None },
         )
         is Dialog.JumpTo -> InputDialog(
-            title = stringResource(R.string.explorer_jump_to_path), label = stringResource(R.string.common_path), initial = ui.pane(d.pane).path,
+            title = stringResource(R.string.explorer_jump_to_path), label = stringResource(R.string.common_path), initial = paneState(d.pane).path,
             confirmText = stringResource(R.string.explorer_go), select = InputSelection.ALL, ltr = true,
             onConfirm = { vm.openPath(d.pane, it.trim()); dialog = Dialog.None },
             onDismiss = { dialog = Dialog.None },
@@ -852,19 +962,19 @@ fun ExplorerScreen(
         )
         is Dialog.Transfer -> Unit
         Dialog.Delete -> DeleteDialog(
-            count = ui.activePane.selected.size,
-            recycleByDefault = ui.settings.trashByDefault,
-            allowRecycle = remember(ui.active, ui.activePane.path, ui.activePane.viaRoot) { vm.canRecycle(ui.active) },
-            onConfirm = { toBin -> vm.deleteSelection(ui.active, toBin); dialog = Dialog.None },
+            count = activePane.selected.size,
+            recycleByDefault = settings.trashByDefault,
+            allowRecycle = remember(active, activePane.path, activePane.viaRoot) { vm.canRecycle(active) },
+            onConfirm = { toBin -> vm.deleteSelection(active, toBin); dialog = Dialog.None },
             onDismiss = { dialog = Dialog.None },
         )
         Dialog.Sort -> {
-            val folder = ui.activePane.path
-            var own by remember(folder) { mutableStateOf(ui.settings.folderSorts.containsKey(FolderSorts.key(folder))) }
-            var order by remember(folder) { mutableStateOf(ui.settings.sortFor(folder)) }
+            val folder = activePane.path
+            var own by remember(folder) { mutableStateOf(settings.folderSorts.containsKey(FolderSorts.key(folder))) }
+            var order by remember(folder) { mutableStateOf(settings.sortFor(folder)) }
             SortSheet(
                 current = order,
-                showHidden = ui.settings.showHidden,
+                showHidden = settings.showHidden,
                 onChange = { o ->
                     order = o
                     if (own) vm.setFolderSort(folder, o) else vm.setSort(o)
@@ -872,11 +982,11 @@ fun ExplorerScreen(
                 onToggleHidden = vm::setShowHidden,
                 onDismiss = { dialog = Dialog.None },
                 thisFolderOnly = own,
-                folderName = ui.displayPath(folder).substringAfterLast('/').ifBlank { ui.displayPath(folder) },
+                folderName = displayPath(folder).substringAfterLast('/').ifBlank { displayPath(folder) },
                 onThisFolderOnly = { on ->
                     own = on
                     vm.setFolderSort(folder, if (on) order else null)
-                    if (!on) order = ui.settings.sortOrder
+                    if (!on) order = settings.sortOrder
                 },
             )
         }
@@ -918,13 +1028,13 @@ fun ExplorerScreen(
                 onRestore = { dialog = Dialog.None; vm.restoreFromVault(d.pane, listOf(d.item)) },
             ),
             onDismiss = { dialog = Dialog.None },
-            layout = ui.settings.actions.sheet,
+            layout = settings.actions.sheet,
             onCustomize = { dialog = Dialog.None; onCustomize(ToolbarTab.SHEET) },
         )
         is Dialog.Checksum -> ChecksumDialog(item = d.item, onDismiss = { dialog = Dialog.None })
         is Dialog.Properties -> PropertiesSheet(
             items = d.items,
-            rootEnabled = ui.settings.rootAccess,
+            rootEnabled = settings.rootAccess,
             onDismiss = { dialog = Dialog.None },
             onChanged = { vm.refreshAll() },
         )
@@ -940,8 +1050,8 @@ fun ExplorerScreen(
         is Dialog.RunProject -> ProjectRunSheet(d.project, onDismiss = { dialog = Dialog.None }, session = termux)
     }
 
-    if (ui.remoteEdits.isNotEmpty() && dialog == Dialog.None) {
-        val edits = ui.remoteEdits
+    if (remoteEdits.isNotEmpty() && dialog == Dialog.None) {
+        val edits = remoteEdits
         AlertDialog(
             onDismissRequest = vm::keepRemoteEdits,
             title = { Text(stringResource(R.string.explorer_upload_title)) },
@@ -951,7 +1061,7 @@ fun ExplorerScreen(
                         stringResource(
                             R.string.explorer_upload_one,
                             RemoteUri.name(edits[0].uri),
-                            ui.displayPath(RemoteUri.parent(edits[0].uri) ?: edits[0].uri),
+                            displayPath(RemoteUri.parent(edits[0].uri) ?: edits[0].uri),
                         )
                     } else {
                         pluralStringResource(R.plurals.explorer_upload_many, edits.size, edits.size)
@@ -963,7 +1073,7 @@ fun ExplorerScreen(
         )
     }
     TerminalGate(termux, appSnackbar ?: snackbar)
-    when (val prompt = ui.storagePrompt) {
+    when (val prompt = storagePrompt) {
         null -> Unit
         is StoragePrompt.Password -> StoragePasswordDialog(prompt.connection, onConfirm = vm::unlockStorage, onDismiss = vm::dismissStoragePrompt)
         is StoragePrompt.HostKey -> HostKeyChangedDialog(
@@ -977,7 +1087,7 @@ fun ExplorerScreen(
         }
     }
 
-    ui.transferPrompt?.let { prompt ->
+    transferPrompt?.let { prompt ->
         TransferDialog(
             move = prompt.move,
             count = prompt.count,
@@ -988,7 +1098,7 @@ fun ExplorerScreen(
         )
     }
 
-    ui.passwordPrompt?.let { p ->
+    passwordPrompt?.let { p ->
         PasswordDialog(
             title = stringResource(if (p.purpose == PasswordPurpose.EXTRACT) R.string.explorer_encrypted_archive else R.string.explorer_decrypt_file),
             fileName = p.item.name,
@@ -998,9 +1108,9 @@ fun ExplorerScreen(
         )
     }
 
-    ui.task?.let { TaskOverlay(it) }
-    ui.build?.let { ir.solina.files.feature.build.BuildDialog(it, onClose = vm::closeBuild) }
-    if ((ui.task != null || ui.build?.finished == false) && ui.settings.behavior.keepScreenOnTasks) {
+    task?.let { TaskOverlay(it) }
+    build?.let { ir.solina.files.feature.build.BuildDialog(it, onClose = vm::closeBuild) }
+    if ((task != null || build?.finished == false) && settings.behavior.keepScreenOnTasks) {
         val view = LocalView.current
         DisposableEffect(view) {
             view.keepScreenOn = true
