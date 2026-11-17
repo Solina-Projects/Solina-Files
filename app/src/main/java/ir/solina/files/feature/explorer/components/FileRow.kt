@@ -2,11 +2,10 @@ package ir.solina.files.feature.explorer.components
 
 import ir.solina.files.ui.isolated
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -82,6 +81,8 @@ import ir.solina.files.feature.explorer.dnd.fileGestures
 import ir.solina.files.feature.explorer.dnd.rememberDropAnimation
 import ir.solina.files.ui.LocalSettings
 import ir.solina.files.ui.LocalUiDensity
+import ir.solina.files.ui.expressive.checkPopEnter
+import ir.solina.files.ui.expressive.checkPopExit
 import ir.solina.files.ui.theme.KindPalette
 import ir.solina.files.ui.theme.toShape
 import okio.Path.Companion.toPath
@@ -216,7 +217,13 @@ fun FileRow(
                 .clickable(onClickLabel = stringResource(R.string.common_select)) { onIconClick() },
             contentAlignment = Alignment.Center,
         ) {
-            if (selected) {
+            // Boolean flip only: the check pops in/out on the shared
+            // motion-scheme spec, so REDUCED motion snaps it.
+            AnimatedVisibility(
+                visible = selected,
+                enter = motion.checkPopEnter(),
+                exit = motion.checkPopExit(),
+            ) {
                 Icon(
                     Icons.Rounded.Check,
                     contentDescription = stringResource(R.string.explorer_selected),
@@ -320,11 +327,17 @@ fun FileTile(
                     .padding(4.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                if (selected) {
+                // Boolean flip only, same shared pop as the row checkbox.
+                AnimatedVisibility(
+                    visible = selected,
+                    enter = motion.checkPopEnter(),
+                    exit = motion.checkPopExit(),
+                ) {
                     Box(Modifier.fillMaxSize().clip(CircleShape).background(colors.primary), contentAlignment = Alignment.Center) {
                         Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.explorer_selected), tint = colors.onPrimary, modifier = Modifier.size(14.dp))
                     }
-                } else if (selecting) {
+                }
+                if (!selected && selecting) {
                     Box(Modifier.fillMaxSize().clip(CircleShape).border(2.dp, colors.outline, CircleShape).background(colors.surface.copy(alpha = 0.6f)))
                 }
             }
@@ -341,8 +354,14 @@ fun FileTile(
     }
 }
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun rememberFlash(flashKey: Int, pulses: Int): Animatable<Float, *> {
+    // The flash now rides the motion scheme's effects spec instead of
+    // hardcoded tweens, so REDUCED motion snaps it; the FLASH_*_MS
+    // constants stay because flashDurationMs() still times the reveal
+    // delay in PaneColumn.
+    val motion = MaterialTheme.motionScheme
     val flash = remember { Animatable(0f) }
     LaunchedEffect(flashKey) {
         if (flashKey == 0) {
@@ -350,10 +369,10 @@ private fun rememberFlash(flashKey: Int, pulses: Int): Animatable<Float, *> {
             return@LaunchedEffect
         }
         repeat(pulses) {
-            flash.animateTo(1f, tween(FLASH_IN_MS, easing = FastOutSlowInEasing))
-            flash.animateTo(0.25f, tween(FLASH_OUT_MS, easing = FastOutSlowInEasing))
+            flash.animateTo(1f, motion.defaultEffectsSpec())
+            flash.animateTo(0.25f, motion.defaultEffectsSpec())
         }
-        flash.animateTo(0f, tween(FLASH_FADE_MS))
+        flash.animateTo(0f, motion.defaultEffectsSpec())
     }
     return flash
 }
