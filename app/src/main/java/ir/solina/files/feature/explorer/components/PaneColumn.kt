@@ -727,7 +727,7 @@ private fun PathHeader(
                     Box(contentAlignment = Alignment.Center) {
                         androidx.compose.animation.AnimatedContent(
                             targetState = isGrid,
-                            transitionSpec = { (fadeIn() + scaleIn(initialScale = 0.7f)).togetherWith(fadeOut() + scaleOut(targetScale = 0.7f)) },
+                            transitionSpec = { (fadeIn(motion.fastEffectsSpec()) + scaleIn(motion.fastSpatialSpec(), initialScale = 0.7f)).togetherWith(fadeOut(motion.fastEffectsSpec()) + scaleOut(motion.fastSpatialSpec(), targetScale = 0.7f)) },
                             label = "header-layout-icon",
                         ) { grid ->
                             Icon(
