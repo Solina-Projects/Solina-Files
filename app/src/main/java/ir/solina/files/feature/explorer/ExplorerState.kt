@@ -96,6 +96,9 @@ data class TaskState(
     val detail: String = "",
     val fraction: Float = 0f,
     val indeterminate: Boolean = false,
+    // Set when the work finished: the overlay morphs into a checkmark and
+    // stays visible briefly instead of vanishing at once.
+    val done: Boolean = false,
 )
 
 fun taskState(title: String, p: OpProgress.Running): TaskState {
