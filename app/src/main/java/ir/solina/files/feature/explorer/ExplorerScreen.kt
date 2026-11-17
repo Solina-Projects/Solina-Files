@@ -64,6 +64,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -85,6 +86,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -101,13 +103,16 @@ import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDirection
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -163,6 +168,9 @@ import ir.solina.files.feature.termux.NewProjectSheet
 import ir.solina.files.feature.termux.ProjectRunSheet
 import ir.solina.files.feature.termux.TerminalGate
 import ir.solina.files.feature.termux.TermuxViewModel
+import ir.solina.files.ui.expressive.GlidingPill
+import ir.solina.files.ui.expressive.pillOffsetX
+import ir.solina.files.ui.expressive.rememberPillOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -195,7 +203,7 @@ private sealed interface Dialog {
     data class RunProject(val project: Project) : Dialog
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ExplorerScreen(
     vm: ExplorerViewModel,
@@ -209,6 +217,7 @@ fun ExplorerScreen(
     drawerOpen: Boolean = false,
     appSnackbar: SnackbarHostState? = null,
 ) {
+    val motion = MaterialTheme.motionScheme
     // Perf item 1: collect narrow slices of ExplorerUiState instead of the
     // whole state, so a query keystroke, a selection change or a task tick
     // only recomposes the readers of that slice. Slices are derived with
@@ -301,8 +310,8 @@ fun ExplorerScreen(
     var horizontalSplit by rememberSaveable { mutableStateOf(false) }
     var quickCreateExpanded by rememberSaveable { mutableStateOf(false) }
     var layoutMenuExpanded by remember { mutableStateOf(false) }
-    val createIconRotation by animateFloatAsState(if (quickCreateExpanded) 45f else 0f, label = "createFabRotation")
-    val paneIconRotation by animateFloatAsState(if (dual) 180f else 0f, label = "paneFabRotation")
+    val createIconRotation by animateFloatAsState(if (quickCreateExpanded) 45f else 0f, motion.defaultSpatialSpec(), label = "createFabRotation")
+    val paneIconRotation by animateFloatAsState(if (dual) 180f else 0f, motion.defaultSpatialSpec(), label = "paneFabRotation")
     val termux = viewModel<TermuxViewModel>().session
     val sshHere = RemoteUri.parse(activePane.path)?.let { (id, dir) ->
         storages.firstOrNull { it.id == id && it.protocol == RemoteProtocol.SFTP }?.let { it to dir }
@@ -631,8 +640,8 @@ fun ExplorerScreen(
         AnimatedContent(
             targetState = dual to horizontalSplit,
             transitionSpec = {
-                (fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.92f))
-                    .togetherWith(fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.96f))
+                (fadeIn(motion.defaultEffectsSpec()) + androidx.compose.animation.scaleIn(motion.defaultSpatialSpec(), initialScale = 0.92f))
+                    .togetherWith(fadeOut(motion.defaultEffectsSpec()) + androidx.compose.animation.scaleOut(motion.defaultSpatialSpec(), targetScale = 0.96f))
             },
             label = "singleDualPaneTransition",
             modifier = Modifier.weight(1f),
@@ -751,8 +760,8 @@ fun ExplorerScreen(
                     ) {
                         AnimatedVisibility(
                             visible = quickCreateExpanded,
-                            enter = fadeIn() + androidx.compose.animation.scaleIn(initialScale = 0.94f),
-                            exit = fadeOut() + androidx.compose.animation.scaleOut(targetScale = 0.96f),
+                            enter = fadeIn(motion.defaultEffectsSpec()) + androidx.compose.animation.scaleIn(motion.defaultSpatialSpec(), initialScale = 0.94f),
+                            exit = fadeOut(motion.defaultEffectsSpec()) + androidx.compose.animation.scaleOut(motion.defaultSpatialSpec(), targetScale = 0.96f),
                         ) {
                             Surface(
                                 modifier = Modifier.fillMaxWidth(),
@@ -1207,28 +1216,50 @@ private fun PaneModeBar(
     onSelectSingle: () -> Unit,
 ) {
     val colors = MaterialTheme.colorScheme
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val density = LocalDensity.current
+    // The pill glides between the two halves: its width is measured from
+    // the row itself, so it tracks any width change.
+    var rowWidthPx by remember { mutableIntStateOf(0) }
+    val spacingPx = with(density) { 4.dp.roundToPx() }
+    val segmentWidthPx = if (rowWidthPx > 0) (rowWidthPx - spacingPx) / 2 else 0
+    val pillOffset = rememberPillOffset(pillOffsetX(if (dual) 0 else 1, segmentWidthPx + spacingPx, rtl))
     Surface(
         color = colors.surfaceContainerHigh,
         shape = RoundedCornerShape(16.dp),
         modifier = Modifier.fillMaxWidth().padding(horizontal = 2.dp, vertical = 4.dp),
     ) {
-        Row(Modifier.fillMaxWidth().padding(4.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-            PaneModeSegment(
-                selected = dual,
-                icon = painterResource(R.drawable.ic_pane_dual),
-                label = stringResource(R.string.explorer_pane_dual),
-                contentDescription = stringResource(R.string.explorer_pane_dual_desc),
-                onClick = onSelectDual,
-                modifier = Modifier.weight(1f),
-            )
-            PaneModeSegment(
-                selected = !dual,
-                icon = painterResource(R.drawable.ic_pane_single),
-                label = stringResource(R.string.explorer_pane_single),
-                contentDescription = stringResource(R.string.explorer_pane_single_desc),
-                onClick = onSelectSingle,
-                modifier = Modifier.weight(1f),
-            )
+        Box(Modifier.fillMaxWidth().padding(4.dp)) {
+            if (segmentWidthPx > 0) {
+                GlidingPill(
+                    offset = pillOffset,
+                    width = with(density) { segmentWidthPx.toDp() },
+                    height = 40.dp,
+                    color = colors.primaryContainer,
+                    shape = RoundedCornerShape(12.dp),
+                )
+            }
+            Row(
+                Modifier.fillMaxWidth().onGloballyPositioned { rowWidthPx = it.size.width },
+                horizontalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                PaneModeSegment(
+                    selected = dual,
+                    icon = painterResource(R.drawable.ic_pane_dual),
+                    label = stringResource(R.string.explorer_pane_dual),
+                    contentDescription = stringResource(R.string.explorer_pane_dual_desc),
+                    onClick = onSelectDual,
+                    modifier = Modifier.weight(1f),
+                )
+                PaneModeSegment(
+                    selected = !dual,
+                    icon = painterResource(R.drawable.ic_pane_single),
+                    label = stringResource(R.string.explorer_pane_single),
+                    contentDescription = stringResource(R.string.explorer_pane_single_desc),
+                    onClick = onSelectSingle,
+                    modifier = Modifier.weight(1f),
+                )
+            }
         }
     }
 }
@@ -1246,7 +1277,9 @@ private fun PaneModeSegment(
     Surface(
         onClick = onClick,
         shape = RoundedCornerShape(12.dp),
-        color = if (selected) colors.primaryContainer else androidx.compose.ui.graphics.Color.Transparent,
+        // The gliding pill behind the segments carries the selected
+        // background now; the segment itself stays transparent.
+        color = androidx.compose.ui.graphics.Color.Transparent,
         contentColor = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
         modifier = modifier.height(40.dp),
     ) {
@@ -1322,41 +1355,55 @@ private fun LayoutMenuPanel(
                                             )
                                         }
                                     }
-                                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                        if (!dual) {
-                                            val isList = viewMode == ir.solina.files.core.model.ViewMode.LIST
-                                            Surface(
+                                    if (!dual) {
+                                        val isList = viewMode == ir.solina.files.core.model.ViewMode.LIST
+                                        val isGrid = viewMode == ir.solina.files.core.model.ViewMode.GRID
+                                        // Fixed 44dp buttons + 10dp gap, so the pill step
+                                        // is constant; mirrored in RTL like the bar above.
+                                        val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+                                        val density = LocalDensity.current
+                                        val stepPx = with(density) { (44.dp + 10.dp).roundToPx() }
+                                        val pillOffset = rememberPillOffset(pillOffsetX(if (isList) 0 else 1, stepPx, rtl))
+                                        Box {
+                                            GlidingPill(
+                                                offset = pillOffset,
+                                                width = 44.dp,
+                                                height = 44.dp,
+                                                color = MaterialTheme.colorScheme.primaryContainer,
                                                 shape = MaterialTheme.shapes.large,
-                                                color = if (isList) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
-                                            ) {
-                                                IconButton(
-                                                    onClick = { if (!isList) onToggleViewMode() },
-                                                    modifier = Modifier.size(44.dp),
+                                            )
+                                            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                                                Surface(
+                                                    shape = MaterialTheme.shapes.large,
+                                                    color = androidx.compose.ui.graphics.Color.Transparent,
                                                 ) {
-                                                    Icon(
-                                                        Icons.Rounded.ViewList,
-                                                        contentDescription = stringResource(R.string.explorer_layout_list),
-                                                        tint = if (isList) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
-                                                    )
+                                                    IconButton(
+                                                        onClick = { if (!isList) onToggleViewMode() },
+                                                        modifier = Modifier.size(44.dp),
+                                                    ) {
+                                                        Icon(
+                                                            Icons.Rounded.ViewList,
+                                                            contentDescription = stringResource(R.string.explorer_layout_list),
+                                                            tint = if (isList) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                                                        )
+                                                    }
+                                                }
+                                                Surface(
+                                                    shape = MaterialTheme.shapes.large,
+                                                    color = androidx.compose.ui.graphics.Color.Transparent,
+                                                ) {
+                                                    IconButton(
+                                                        onClick = { if (!isGrid) onToggleViewMode() },
+                                                        modifier = Modifier.size(44.dp),
+                                                    ) {
+                                                        Icon(
+                                                            Icons.Rounded.GridView,
+                                                            contentDescription = stringResource(R.string.explorer_layout_grid),
+                                                            tint = if (isGrid) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+                                                        )
+                                                    }
                                                 }
                                             }
-                                            val isGrid = viewMode == ir.solina.files.core.model.ViewMode.GRID
-                                        Surface(
-                                            shape = MaterialTheme.shapes.large,
-                                            color = if (isGrid) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow,
-                                        ) {
-                                            IconButton(
-                                                onClick = { if (!isGrid) onToggleViewMode() },
-                                                modifier = Modifier.size(44.dp),
-                                            ) {
-                                                Icon(
-                                                    Icons.Rounded.GridView,
-                                                    contentDescription = stringResource(R.string.explorer_layout_grid),
-                                                    tint = if (isGrid) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
-                                                )
-                                            }
-                                        }
-
                                         }
                                     }
                                     androidx.compose.foundation.layout.Spacer(Modifier.height(2.dp))
