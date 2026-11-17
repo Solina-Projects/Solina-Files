@@ -289,11 +289,9 @@ fun <T> ConnectedChoice(
     val selectedIndex = options.indexOf(selected).coerceAtLeast(0)
     val segmentWidthPx = if (rowSizePx.width > 0) (rowSizePx.width - spacingPx * (options.size - 1)) / options.size else 0
     val pillOffset = rememberPillOffset(pillOffsetX(selectedIndex, segmentWidthPx + spacingPx, rtl))
-    val pillShape = when (selectedIndex) {
-        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes().containerShape
-        options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes().containerShape
-        else -> ButtonGroupDefaults.connectedMiddleButtonShapes().containerShape
-    }
+    // The pill is the selected button's checked background, and the checked
+    // shape is the same full-rounded shape for every position in the group.
+    val pillShape = ButtonGroupDefaults.connectedButtonCheckedShape
     Box(modifier.fillMaxWidth()) {
         if (segmentWidthPx > 0) {
             GlidingPill(
@@ -319,7 +317,7 @@ fun <T> ConnectedChoice(
                     onCheckedChange = { onSelect(option) },
                     enabled = enabled,
                     shapes = shapes,
-                    colors = ToggleButtonDefaults.toggleButtonColors(
+                    colors = ToggleButtonDefaults.colors(
                         containerColor = Color.Transparent,
                         contentColor = colors.onSurfaceVariant,
                         checkedContainerColor = Color.Transparent,
