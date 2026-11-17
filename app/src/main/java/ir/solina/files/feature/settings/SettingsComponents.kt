@@ -42,6 +42,7 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.ToggleButton
+import androidx.compose.material3.ToggleButtonDefaults
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
@@ -56,6 +57,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
@@ -63,8 +67,13 @@ import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.solina.files.R
+import ir.solina.files.ui.expressive.GlidingPill
+import ir.solina.files.ui.expressive.pillOffsetX
+import ir.solina.files.ui.expressive.rememberPillOffset
 
 enum class Tint { PRIMARY, SECONDARY, TERTIARY, ERROR, NEUTRAL }
 
@@ -266,24 +275,63 @@ fun <T> ConnectedChoice(
     enabled: Boolean = true,
     icon: ((T) -> ImageVector)? = null,
 ) {
-    Row(modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)) {
-        options.forEachIndexed { i, option ->
-            val shapes = when (i) {
-                0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
-                options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
-                else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
-            }
-            ToggleButton(
-                checked = option == selected,
-                onCheckedChange = { onSelect(option) },
-                enabled = enabled,
-                shapes = shapes,
-                modifier = Modifier.weight(1f).semantics { role = Role.RadioButton },
-            ) {
-                if (icon != null && option == selected) {
-                    Icon(icon(option), contentDescription = null, modifier = Modifier.size(18.dp).padding(end = 2.dp))
+    // The selected button's background is a shared gliding pill behind the
+    // row, measured from the row itself: the buttons are transparent, so
+    // the pill is the only background. Its colour is secondaryContainer —
+    // the old M3 checked default — so the resting look is unchanged, and
+    // its shape is the selected button's connected outline.
+    val colors = MaterialTheme.colorScheme
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val density = LocalDensity.current
+    val spacing = ButtonGroupDefaults.ConnectedSpaceBetween
+    val spacingPx = with(density) { spacing.roundToPx() }
+    var rowSizePx by remember { mutableStateOf(IntSize.Zero) }
+    val selectedIndex = options.indexOf(selected).coerceAtLeast(0)
+    val segmentWidthPx = if (rowSizePx.width > 0) (rowSizePx.width - spacingPx * (options.size - 1)) / options.size else 0
+    val pillOffset = rememberPillOffset(pillOffsetX(selectedIndex, segmentWidthPx + spacingPx, rtl))
+    val pillShape = when (selectedIndex) {
+        0 -> ButtonGroupDefaults.connectedLeadingButtonShapes().containerShape
+        options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes().containerShape
+        else -> ButtonGroupDefaults.connectedMiddleButtonShapes().containerShape
+    }
+    Box(modifier.fillMaxWidth()) {
+        if (segmentWidthPx > 0) {
+            GlidingPill(
+                offset = pillOffset,
+                width = with(density) { segmentWidthPx.toDp() },
+                height = with(density) { rowSizePx.height.toDp() },
+                color = colors.secondaryContainer,
+                shape = pillShape,
+            )
+        }
+        Row(
+            Modifier.fillMaxWidth().onGloballyPositioned { rowSizePx = it.size },
+            horizontalArrangement = Arrangement.spacedBy(spacing),
+        ) {
+            options.forEachIndexed { i, option ->
+                val shapes = when (i) {
+                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                    options.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
                 }
-                Text(label(option), maxLines = 2, minLines = 1, overflow = TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center, style = MaterialTheme.typography.labelLarge)
+                ToggleButton(
+                    checked = option == selected,
+                    onCheckedChange = { onSelect(option) },
+                    enabled = enabled,
+                    shapes = shapes,
+                    colors = ToggleButtonDefaults.toggleButtonColors(
+                        containerColor = Color.Transparent,
+                        contentColor = colors.onSurfaceVariant,
+                        checkedContainerColor = Color.Transparent,
+                        checkedContentColor = colors.onSecondaryContainer,
+                    ),
+                    modifier = Modifier.weight(1f).semantics { role = Role.RadioButton },
+                ) {
+                    if (icon != null && option == selected) {
+                        Icon(icon(option), contentDescription = null, modifier = Modifier.size(18.dp).padding(end = 2.dp))
+                    }
+                    Text(label(option), maxLines = 2, minLines = 1, overflow = TextOverflow.Ellipsis, textAlign = androidx.compose.ui.text.style.TextAlign.Center, style = MaterialTheme.typography.labelLarge)
+                }
             }
         }
     }
