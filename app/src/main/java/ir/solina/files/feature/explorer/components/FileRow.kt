@@ -327,19 +327,7 @@ fun FileTile(
                     .padding(4.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                // Boolean flip only, same shared pop as the row checkbox.
-                AnimatedVisibility(
-                    visible = selected,
-                    enter = motion.checkPopEnter(),
-                    exit = motion.checkPopExit(),
-                ) {
-                    Box(Modifier.fillMaxSize().clip(CircleShape).background(colors.primary), contentAlignment = Alignment.Center) {
-                        Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.explorer_selected), tint = colors.onPrimary, modifier = Modifier.size(14.dp))
-                    }
-                }
-                if (!selected && selecting) {
-                    Box(Modifier.fillMaxSize().clip(CircleShape).border(2.dp, colors.outline, CircleShape).background(colors.surface.copy(alpha = 0.6f)))
-                }
+                TileCheckOverlay(selected = selected, selecting = selecting)
             }
         }
         Text(
@@ -351,6 +339,31 @@ fun FileTile(
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(top = if (singlePane) 3.dp else 6.dp),
         )
+    }
+}
+
+/**
+ * Tile check overlay, extracted from FileTile so AnimatedVisibility resolves
+ * to the top-level function: inside FileTile's Column the ColumnScope member
+ * overload is picked instead, and it cannot be called from the nested Box.
+ */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun TileCheckOverlay(selected: Boolean, selecting: Boolean) {
+    val motion = MaterialTheme.motionScheme
+    val colors = MaterialTheme.colorScheme
+    // Boolean flip only, same shared pop as the row checkbox.
+    AnimatedVisibility(
+        visible = selected,
+        enter = motion.checkPopEnter(),
+        exit = motion.checkPopExit(),
+    ) {
+        Box(Modifier.fillMaxSize().clip(CircleShape).background(colors.primary), contentAlignment = Alignment.Center) {
+            Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.explorer_selected), tint = colors.onPrimary, modifier = Modifier.size(14.dp))
+        }
+    }
+    if (!selected && selecting) {
+        Box(Modifier.fillMaxSize().clip(CircleShape).border(2.dp, colors.outline, CircleShape).background(colors.surface.copy(alpha = 0.6f)))
     }
 }
 
