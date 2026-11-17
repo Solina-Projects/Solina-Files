@@ -33,6 +33,7 @@ import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material.icons.rounded.TouchApp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -193,6 +194,7 @@ object SettingsIndex {
 }
 
 @Composable
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun SettingsScreen(
     settings: SolinaSettings,
     repo: SettingsRepository,
@@ -210,14 +212,15 @@ fun SettingsScreen(
     var page by rememberSaveable { mutableStateOf(startPage) }
     val direct = startPage != null
     val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    val motion = MaterialTheme.motionScheme
     BackHandler(enabled = page != null && !direct) { page = null }
     AnimatedContent(
         targetState = page,
         transitionSpec = {
             val forward = targetState != null
             val sign = if (forward != rtl) 1 else -1
-            (slideInHorizontally { w -> sign * w / 4 } + fadeIn())
-                .togetherWith(slideOutHorizontally { w -> -sign * w / 4 } + fadeOut())
+            (slideInHorizontally(motion.defaultSpatialSpec()) { w -> sign * w / 4 } + fadeIn(motion.defaultEffectsSpec()))
+                .togetherWith(slideOutHorizontally(motion.defaultSpatialSpec()) { w -> -sign * w / 4 } + fadeOut(motion.defaultEffectsSpec()))
         },
     ) { current ->
         val back = if (direct) onBack else { { page = null } }
