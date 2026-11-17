@@ -87,6 +87,7 @@ import java.io.InputStream
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
@@ -151,6 +152,9 @@ class ExplorerViewModel(
     // rows only read the cache. Navigating away cancels the job and clears
     // the cache, so re-entering recomputes it fully.
     private val statsJobs = mutableMapOf<Pane, Job>()
+    // Clears a finished task's "done" overlay after a short beat. A new
+    // task cancels it, so a stale clear can never wipe a live task.
+    private var doneClearJob: Job? = null
 
     private fun folderStatsApplicable(settings: SolinaSettings): Boolean =
         !settings.dualPanePreferred && settings.list.viewMode == ViewMode.LIST
@@ -1183,13 +1187,18 @@ class ExplorerViewModel(
         onDone: (OpProgress.Finished) -> Unit,
     ) {
         viewModelScope.launch {
+            // A new task cancels a stale "done" clear, so the previous
+            // task's overlay never lingers over the new one.
+            doneClearJob?.cancel()
             _state.update { it.copy(task = TaskState(title = title, indeterminate = true)) }
             try {
                 withContext(Dispatchers.IO) { work() }.collect { p ->
                     when (p) {
                         is OpProgress.Running -> _state.update { it.copy(task = taskState(title, p)) }
                         is OpProgress.Finished -> {
-                            _state.update { it.copy(task = null) }
+                            // The overlay morphs into a checkmark instead of
+                            // vanishing at once; it clears itself below.
+                            _state.update { it.copy(task = TaskState(title = title, fraction = 1f, done = true)) }
                             if (sound == null) {
                                 UiSounds.forTask(title, failed = p.failed.isNotEmpty(), okCount = p.okCount)
                             } else if (p.failed.isNotEmpty()) {
@@ -1203,6 +1212,12 @@ class ExplorerViewModel(
                             }
                             if (parts.isNotEmpty()) postMessage(parts.joinToString(separator()))
                             onDone(p)
+                            doneClearJob = viewModelScope.launch {
+                                delay(900)
+                                _state.update { cur ->
+                                    if (cur.task?.done == true && cur.task?.title == title) cur.copy(task = null) else cur
+                                }
+                            }
                         }
                     }
                 }
@@ -1215,7 +1230,9 @@ class ExplorerViewModel(
                 }
                 refreshAll()
             } finally {
-                _state.update { it.copy(task = null) }
+                // Errors and cancellation clear immediately; a finished
+                // task keeps its "done" state until the clear job runs.
+                _state.update { cur -> if (cur.task?.done == true) cur else cur.copy(task = null) }
                 onFinally()
             }
         }
