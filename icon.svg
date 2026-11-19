@@ -1,11 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#2196F3"/>
-      <stop offset="100%" style="stop-color:#00E5CC"/>
-    </linearGradient>
-  </defs>
-  <rect width="512" height="512" rx="100" fill="url(#bg)"/>
-  <text x="256" y="340" font-family="Arial, sans-serif" font-size="280" font-weight="bold" fill="white" text-anchor="middle">S</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="6 6 96 96"><defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#00B3A5"/><stop offset="1" stop-color="#0A3C70"/></linearGradient><radialGradient id="h" cx="0.5" cy="0" r="0.85"><stop offset="0" stop-color="#fff" stop-opacity="0.20"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></radialGradient></defs><clipPath id="c"><rect x="6" y="6" width="96" height="96" rx="26"/></clipPath><g clip-path="url(#c)"><rect width="108" height="108" fill="url(#g)"/><rect width="108" height="108" fill="url(#h)"/></g><path d="M30 40a6 6 0 0 1 6-6h12.5l6 7H72a6 6 0 0 1 6 6v25a6 6 0 0 1-6 6H36a6 6 0 0 1-6-6z" fill="#FFFFFF" opacity="0.55"/><path d="M30 52a6 6 0 0 1 6-6h36a6 6 0 0 1 6 6v20a6 6 0 0 1-6 6H36a6 6 0 0 1-6-6z" fill="#FFFFFF" opacity="1"/></svg>
