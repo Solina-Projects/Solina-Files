@@ -1,6 +1,10 @@
 # Solina Files
 
 <p align="center">
+  <img src="docs/solina_files_icon_512.png" alt="Solina Files icon" width="120" height="120">
+</p>
+
+<p align="center">
   <a href="https://github.com/Solina-Projects/Solina-Files/actions/workflows/build.yml"><img src="https://github.com/Solina-Projects/Solina-Files/actions/workflows/build.yml/badge.svg" alt="Build status"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPL--3.0-2456B3" alt="License: GNU AGPL v3.0 or later"></a>
   <a href="https://github.com/Solina-Projects/Solina-Files/releases"><img src="https://img.shields.io/github/v/release/Solina-Projects/Solina-Files?color=6750A4&label=latest%20release" alt="Latest release"></a>
