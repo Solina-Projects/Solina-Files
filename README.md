@@ -78,6 +78,8 @@
 #### Design and language
 
 - **Material 3 Expressive** design with the Solina purple theme and dynamic colours.
+- **d3motion-inspired native animations** — a gliding pill for segmented controls and pop enter/exit transitions, built natively in Compose on the Material 3 Expressive motion scheme (no WebView). RTL-aware, and reduced-motion settings snap instead of animating.
+- **New unified Solina icon** — one Solina mark for the launcher icon, splash screen, and in-app marks.
 - **Persian (Farsi) and English interface**, with full right-to-left support and the Vazirmatn font. Fresh installs start in Persian.
 - Light and dark themes, with wallpaper colours.
 - Customisable home screen, bottom bar, and floating actions — arrange the app the way you work.
@@ -191,6 +193,8 @@ Solina Files is distributed under the [GNU Affero General Public License v3.0 or
 #### طراحی و زبان
 
 - طراحی **Material 3 Expressive** با تم بنفش سولینا و رنگ‌های پویا.
+- **انیمیشن‌های نیتیو با الهام از d3motion** — قرص لغزان برای کنترل‌های چندبخشی و ترنزیشن‌های ورود و خروج، ساخته‌شده به‌صورت نیتیو در Compose روی طرح حرکتی Material 3 Expressive (بدون WebView). راست‌به‌چپ را رعایت می‌کند و با تنظیم کاهش حرکت، به‌جای انیمیشن مستقیم می‌پرد.
+- **آیکون یکپارچهٔ جدید سولینا** — یک نشان سولینا برای آیکون لانچر، صفحهٔ شروع و نشان‌های داخل برنامه.
 - **رابط کاربری فارسی و انگلیسی**، با پشتیبانی کامل راست‌به‌چپ و فونت وزیرمتن. نصب‌های تازه با فارسی شروع می‌شوند.
 - تم روشن و تیره، با رنگ‌های کاغذدیواری.
 - صفحهٔ خانه، نوار پایین و دکمه‌های شناور قابل سفارشی‌سازی‌اند — برنامه را همان‌طور که کار می‌کنید بچینید.
@@ -306,6 +310,8 @@ Solina Files تحت [مجوز GNU Affero General Public License نسخهٔ ۳ ی
 #### التصميم واللغة
 
 - تصميم **Material 3 Expressive** مع سمة سولينا البنفسجية وألوان ديناميكية.
+- **حركات أصلية مستوحاة من d3motion** — شريط منزلق لعناصر التحكم المقطّعة وانتقالات دخول وخروج، مبنية أصليًا في Compose على مخطط حركة Material 3 Expressive (بدون WebView). تراعي الاتجاه من اليمين إلى اليسار، ومع إعداد تقليل الحركة تنتقل مباشرة بدلًا من التحريك.
+- **أيقونة سولينا الموحدة الجديدة** — علامة سولينا واحدة لأيقونة المشغّل وشاشة البداية والعلامات داخل التطبيق.
 - **واجهة بالفارسية والإنجليزية**، مع دعم كامل للاتجاه من اليمين إلى اليسار وخط وزيرمتن. تبدأ التثبيتات الجديدة بالفارسية.
 - سمتان فاتحة وداكنة، مع ألوان خلفية الشاشة.
 - الشاشة الرئيسية والشريط السفلي والأزرار العائمة قابلة للتخصيص — رتّب التطبيق كما تعمل.
