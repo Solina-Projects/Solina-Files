@@ -23,6 +23,17 @@
 - **Android application ID:** `ir.solina.files`
 - **License:** GNU AGPL v3.0 or later
 
+### What's new in 1.2.5
+
+Performance release — the app should feel noticeably faster, especially in big folders:
+
+- Folder opening no longer animates the whole list; only a short fade remains.
+- Folder statistics now arrive in batches instead of rebuilding the list for every subfolder.
+- Sorting and filtering moved off the main thread.
+- Smoother scrolling in large folders, and several dead resources removed.
+
+21 of 23 items from the performance audit are in this release.
+
 ### Features
 
 #### Browse and organise
@@ -84,6 +95,15 @@
 - Light and dark themes, with wallpaper colours.
 - Customisable home screen, bottom bar, and floating actions — arrange the app the way you work.
 
+### Screenshots
+
+<p>
+  <img src="docs/screenshots/screenshot1.jpg" alt="Single-pane browsing" width="270">
+  <img src="docs/screenshots/screenshot2.jpg" alt="Folder actions" width="270">
+  <img src="docs/screenshots/screenshot3.jpg" alt="Home with storage overview" width="270">
+  <img src="docs/screenshots/screenshot4.jpg" alt="Dual-pane browsing" width="270">
+</p>
+
 ### Download
 
 Check the repository's [Releases](https://github.com/Solina-Projects/Solina-Files/releases) for published versions, and the [Actions](https://github.com/Solina-Projects/Solina-Files/actions) page for automated build results and development artifacts.
@@ -137,6 +157,17 @@ Solina Files is distributed under the [GNU Affero General Public License v3.0 or
 - **برنامه:** Solina Files
 - **شناسهٔ برنامه در اندروید:** `ir.solina.files`
 - **مجوز:** GNU AGPL نسخهٔ ۳ یا جدیدتر
+
+### تازه‌های نسخهٔ ۱٫۲٫۵
+
+نسخهٔ بهبود عملکرد — برنامه باید به‌طور محسوس سریع‌تر حس شود، مخصوصاً در پوشه‌های بزرگ:
+
+- باز کردن پوشه دیگر کل لیست را انیمیت نمی‌کند؛ فقط یک محو کوتاه می‌ماند.
+- آمار پوشه‌ها حالا دسته‌ای می‌رسد، به‌جای اینکه به‌ازای هر زیرپوشه کل لیست بازسازی شود.
+- مرتب‌سازی و فیلتر از ترد اصلی بیرون رفت.
+- اسکرول نرم‌تر در پوشه‌های بزرگ، و چند منبع مرده هم حذف شد.
+
+۲۱ مورد از ۲۳ مورد بررسی عملکرد در این نسخه هست.
 
 ### امکانات
 
@@ -199,6 +230,15 @@ Solina Files is distributed under the [GNU Affero General Public License v3.0 or
 - تم روشن و تیره، با رنگ‌های کاغذدیواری.
 - صفحهٔ خانه، نوار پایین و دکمه‌های شناور قابل سفارشی‌سازی‌اند — برنامه را همان‌طور که کار می‌کنید بچینید.
 
+### تصاویر برنامه
+
+<p>
+  <img src="docs/screenshots/screenshot1.jpg" alt="مرور تک‌پنجره" width="270">
+  <img src="docs/screenshots/screenshot2.jpg" alt="عملیات روی پوشه" width="270">
+  <img src="docs/screenshots/screenshot3.jpg" alt="خانه با نمای حافظه" width="270">
+  <img src="docs/screenshots/screenshot4.jpg" alt="مرور دوپنجره" width="270">
+</p>
+
 ### دانلود
 
 نسخه‌های منتشرشده را در صفحهٔ [Releases](https://github.com/Solina-Projects/Solina-Files/releases) ببینید، و نتایج ساخت خودکار و فایل‌های توسعه را در صفحهٔ [Actions](https://github.com/Solina-Projects/Solina-Files/actions).
@@ -254,6 +294,17 @@ Solina Files تحت [مجوز GNU Affero General Public License نسخهٔ ۳ ی
 - **التطبيق:** Solina Files
 - **معرّف التطبيق في أندرويد:** `ir.solina.files`
 - **الترخيص:** GNU AGPL الإصدار 3 أو أحدث
+
+### الجديد في 1.2.5
+
+إصدار لتحسين الأداء — يجب أن تشعر بأن التطبيق أسرع بشكل ملحوظ، خاصة في المجلدات الكبيرة:
+
+- فتح المجلد لم يعد يحرّك القائمة كلها؛ بقي تلاشٍ قصير فقط.
+- إحصاءات المجلدات تصل الآن على دفعات بدل إعادة بناء القائمة لكل مجلد فرعي.
+- نُقل الترتيب والتصفية خارج الخيط الرئيسي.
+- تمرير أكثر سلاسة في المجلدات الكبيرة، وإزالة عدة موارد غير مستخدمة.
+
+يتضمن هذا الإصدار 21 من 23 عنصرًا من تدقيق الأداء.
 
 ### المميزات
 
@@ -315,6 +366,15 @@ Solina Files تحت [مجوز GNU Affero General Public License نسخهٔ ۳ ی
 - **واجهة بالفارسية والإنجليزية**، مع دعم كامل للاتجاه من اليمين إلى اليسار وخط وزيرمتن. تبدأ التثبيتات الجديدة بالفارسية.
 - سمتان فاتحة وداكنة، مع ألوان خلفية الشاشة.
 - الشاشة الرئيسية والشريط السفلي والأزرار العائمة قابلة للتخصيص — رتّب التطبيق كما تعمل.
+
+### لقطات الشاشة
+
+<p>
+  <img src="docs/screenshots/screenshot1.jpg" alt="التصفح بنافذة واحدة" width="270">
+  <img src="docs/screenshots/screenshot2.jpg" alt="إجراءات المجلد" width="270">
+  <img src="docs/screenshots/screenshot3.jpg" alt="الرئيسية مع نظرة على التخزين" width="270">
+  <img src="docs/screenshots/screenshot4.jpg" alt="التصفح بنافذتين" width="270">
+</p>
 
 ### التنزيل
 
