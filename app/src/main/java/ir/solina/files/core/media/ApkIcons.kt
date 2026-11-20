@@ -11,6 +11,7 @@ import coil3.fetch.Fetcher
 import coil3.fetch.ImageFetchResult
 import coil3.key.Keyer
 import coil3.request.Options
+import kotlin.math.roundToInt
 
 data class ApkIcon(val path: String, val modified: Long)
 
@@ -18,14 +19,23 @@ object ApkIcons {
 
     const val SIZE = 192
 
-    fun load(context: Context, path: String, size: Int = SIZE): Bitmap? {
+    // Audit item 21: an APK icon used to mean a full APK parse plus a
+    // 192px bitmap, while the icon is displayed at ~54dp. Decode at the
+    // display size instead (~54dp in pixels on this device).
+    fun displaySizePx(context: Context): Int =
+        (54f * context.resources.displayMetrics.density).roundToInt().coerceAtLeast(1)
+
+    fun load(context: Context, path: String, size: Int = -1): Bitmap? {
         val pm = context.packageManager
         val info = runCatching { pm.getPackageArchiveInfo(path, 0) }.getOrNull() ?: return null
         val app = info.applicationInfo ?: return null
         app.sourceDir = path
         app.publicSourceDir = path
         val icon = runCatching { app.loadIcon(pm) }.getOrNull() ?: return null
-        return runCatching { icon.toBitmap(size, size, Bitmap.Config.ARGB_8888) }.getOrNull()
+        // size <= 0 (the default) means "display size"; an explicit size
+        // still wins for callers that need a larger icon.
+        val targetSize = if (size > 0) size else displaySizePx(context)
+        return runCatching { icon.toBitmap(targetSize, targetSize, Bitmap.Config.ARGB_8888) }.getOrNull()
     }
 }
 
