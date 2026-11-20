@@ -57,7 +57,12 @@ class AppsViewModel(app: Application) : AndroidViewModel(app) {
     private val pm = app.packageManager
     private val _state = MutableStateFlow(AppsUiState())
     val state: StateFlow<AppsUiState> = _state.asStateFlow()
-    private val icons = LruCache<String, Bitmap>(256)
+    // Audit item 18: the old LruCache<String, Bitmap>(256) counted entries,
+    // not bytes, so up to 256 bitmaps could sit in the cache. Cap by bytes
+    // (16 MB) via sizeOf() so the cache is bounded by memory, not count.
+    private val icons = object : LruCache<String, Bitmap>(16 * 1024 * 1024) {
+        override fun sizeOf(key: String, value: Bitmap): Int = value.byteCount
+    }
     private val signerSummaries = LruCache<String, SignerSummary>(1024)
 
     private val platformSha256: String? by lazy {
