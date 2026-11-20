@@ -109,7 +109,7 @@ object ArchiveReader {
     fun canUpdate(name: String) = isZip(name)
 
     fun list(file: File, password: CharArray? = null, access: FileAccess = LocalFileAccess): List<ArchiveEntry> {
-        val cacheable = password.isNullOrEmpty()
+        val cacheable = password == null || password.isEmpty()
         val key = ListCacheKey(file.absolutePath, file.lastModified(), file.length())
         if (cacheable) {
             synchronized(listCache) { listCache[key]?.let { return it } }
