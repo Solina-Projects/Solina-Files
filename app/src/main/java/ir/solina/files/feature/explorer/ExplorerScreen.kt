@@ -297,8 +297,15 @@ fun ExplorerScreen(
     // on every recomposition. Compute it once per (items, sort, hidden,
     // query) and share it with the title; PaneContent keeps its own
     // remembered copy per pane.
-    val activeVisible = remember(activePane.items, settings.sortFor(activePane.path), settings.showHidden, query) {
-        visibleItems(activePane, settings, query)
+    // Perf audit #2 item 6: filter + sort run on Dispatchers.Default, not
+    // the main thread — a 10k-item folder no longer blocks the frame.
+    // The previous list stays visible while the new one is computed, so
+    // there is no empty flash on navigation.
+    var lastActiveVisible by remember { mutableStateOf(emptyList<FileItem>()) }
+    val activeVisible by produceState(initialValue = lastActiveVisible, activePane.items, settings.sortFor(activePane.path), settings.showHidden, query) {
+        value = withContext(Dispatchers.Default) {
+            visibleItems(activePane, settings, query).also { lastActiveVisible = it }
+        }
     }
     val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
@@ -617,7 +624,15 @@ fun ExplorerScreen(
             val state = paneState(pane)
             // Perf item 4: narrow keys — only the sort-relevant values,
             // not the whole SolinaSettings (deep equals over nested maps).
-            val visible = remember(state.items, settings.sortFor(state.path), settings.showHidden, query) { visibleItems(state, settings, query) }
+            // Perf audit #2 item 6: filter + sort on Dispatchers.Default, not
+            // the main thread; the previous list stays visible while the new
+            // one is computed, so there is no empty flash on navigation.
+            var lastVisible by remember { mutableStateOf(emptyList<FileItem>()) }
+            val visible by produceState(initialValue = lastVisible, state.items, settings.sortFor(state.path), settings.showHidden, query) {
+                value = withContext(Dispatchers.Default) {
+                    visibleItems(state, settings, query).also { lastVisible = it }
+                }
+            }
             // Perf item 7: remember the per-pane callbacks (keyed on the pane
             // and, for onOpen, on the parent callbacks) so PaneColumn can skip
             // when nothing it depends on changed.
