@@ -534,14 +534,19 @@ private fun Screen(
         Route.Settings -> {
             val s = rememberCoroutineScope()
             val rootState by RootManager.state.collectAsStateWithLifecycle()
-            val explorer by vm.state.collectAsStateWithLifecycle()
+            // Perf item 16: select only the active folder path instead of
+            // subscribing to the whole explorer state, so explorer list and
+            // selection changes do not recompose this screen.
+            val activeFolder by remember(vm) {
+                vm.state.map { it.activePane.path }.distinctUntilChanged()
+            }.collectAsStateWithLifecycle(vm.state.value.activePane.path)
             SettingsScreen(
                 settings = settings,
                 repo = settingsRepo,
                 rootState = rootState,
                 onRootAccess = { v -> s.launch { settingsRepo.setRootAccess(v && RootManager.request()) } },
                 onOpenRecycleBin = { actions.push(Route.RecycleBin) },
-                activeFolder = explorer.activePane.path,
+                activeFolder = activeFolder,
                 onBack = actions.pop,
                 onOpenVault = actions.openVault,
             )
@@ -549,14 +554,19 @@ private fun Screen(
         is Route.Customize -> {
             val s = rememberCoroutineScope()
             val rootState by RootManager.state.collectAsStateWithLifecycle()
-            val explorer by vm.state.collectAsStateWithLifecycle()
+            // Perf item 16: select only the active folder path instead of
+            // subscribing to the whole explorer state, so explorer list and
+            // selection changes do not recompose this screen.
+            val activeFolder by remember(vm) {
+                vm.state.map { it.activePane.path }.distinctUntilChanged()
+            }.collectAsStateWithLifecycle(vm.state.value.activePane.path)
             SettingsScreen(
                 settings = settings,
                 repo = settingsRepo,
                 rootState = rootState,
                 onRootAccess = { v -> s.launch { settingsRepo.setRootAccess(v && RootManager.request()) } },
                 onOpenRecycleBin = { actions.push(Route.RecycleBin) },
-                activeFolder = explorer.activePane.path,
+                activeFolder = activeFolder,
                 onBack = actions.pop,
                 startPage = SettingsPage.TOOLBAR,
                 startTab = r.tab,
@@ -594,17 +604,25 @@ private fun Screen(
             onBack = actions.pop,
             onSign = { actions.signApk(FileItem.of(File(r.path))) },
         )
-        is Route.Archive -> ArchiveScreen(
-            path = r.path,
-            otherPaneDir = vm.state.value.let { it.pane(it.inactive).path },
-            actions = ArchiveActions(
-                onBack = actions.pop,
-                onOpenFile = { file -> actions.openFile(FileItem.of(file)) },
-                onSignApk = { p -> actions.signApk(FileItem.of(File(p))) },
-                onLocate = actions.locate,
-                onOpenArsc = { archive, entry -> actions.push(Route.Arsc(archive, entry)) },
-            ),
-        )
+        is Route.Archive -> {
+            // Perf item 16: select only the inactive pane path instead of
+            // reading the whole explorer state, so explorer changes do not
+            // recompose the archive screen.
+            val otherPaneDir by remember(vm) {
+                vm.state.map { it.pane(it.inactive).path }.distinctUntilChanged()
+            }.collectAsStateWithLifecycle(vm.state.value.pane(vm.state.value.inactive).path)
+            ArchiveScreen(
+                path = r.path,
+                otherPaneDir = otherPaneDir,
+                actions = ArchiveActions(
+                    onBack = actions.pop,
+                    onOpenFile = { file -> actions.openFile(FileItem.of(file)) },
+                    onSignApk = { p -> actions.signApk(FileItem.of(File(p))) },
+                    onLocate = actions.locate,
+                    onOpenArsc = { archive, entry -> actions.push(Route.Arsc(archive, entry)) },
+                ),
+            )
+        }
         is Route.Image -> ImageViewerScreen(
             path = r.path,
             showHidden = settings.showHidden,
@@ -640,24 +658,45 @@ private fun Screen(
         )
         Route.Languages -> LanguagesScreen(onBack = actions.pop)
         Route.ColorPicker -> ColorPickerScreen(onBack = actions.pop)
-        Route.Share -> ShareScreen(
-            currentFolder = vm.state.value.let { it.pane(it.active).path }.takeUnless { RemoteUri.isRemote(it) }
-                ?: android.os.Environment.getExternalStorageDirectory().path,
-            onBack = actions.pop,
-        )
-        Route.SigningKeys -> SigningKeysScreen(
-            exportDir = vm.state.value.let { it.pane(it.active).path }.takeUnless { RemoteUri.isRemote(it) }
-                ?: android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).path,
-            onBack = actions.pop,
-            onLocate = actions.locate,
-        )
+        Route.Share -> {
+            // Perf item 16: select only the active pane path instead of
+            // reading the whole explorer state.
+            val currentFolder by remember(vm) {
+                vm.state.map { it.pane(it.active).path }.distinctUntilChanged()
+            }.collectAsStateWithLifecycle(vm.state.value.pane(vm.state.value.active).path)
+            ShareScreen(
+                currentFolder = currentFolder.takeUnless { RemoteUri.isRemote(it) }
+                    ?: android.os.Environment.getExternalStorageDirectory().path,
+                onBack = actions.pop,
+            )
+        }
+        Route.SigningKeys -> {
+            // Perf item 16: select only the active pane path instead of
+            // reading the whole explorer state.
+            val exportDir by remember(vm) {
+                vm.state.map { it.pane(it.active).path }.distinctUntilChanged()
+            }.collectAsStateWithLifecycle(vm.state.value.pane(vm.state.value.active).path)
+            SigningKeysScreen(
+                exportDir = exportDir.takeUnless { RemoteUri.isRemote(it) }
+                    ?: android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).path,
+                onBack = actions.pop,
+                onLocate = actions.locate,
+            )
+        }
         Route.Plugins -> PluginsScreen(onBack = actions.pop)
-        Route.Remote -> RemoteScreen(
-            onBack = actions.pop,
-            onOpenLocalFile = { actions.openFile(FileItem.of(File(it))) },
-            onLocate = actions.locate,
-            localDir = vm.state.value.let { it.pane(it.active).path },
-        )
+        Route.Remote -> {
+            // Perf item 16: select only the active pane path instead of
+            // reading the whole explorer state.
+            val localDir by remember(vm) {
+                vm.state.map { it.pane(it.active).path }.distinctUntilChanged()
+            }.collectAsStateWithLifecycle(vm.state.value.pane(vm.state.value.active).path)
+            RemoteScreen(
+                onBack = actions.pop,
+                onOpenLocalFile = { actions.openFile(FileItem.of(File(it))) },
+                onLocate = actions.locate,
+                localDir = localDir,
+            )
+        }
         Route.Apps -> {
             val s = rememberCoroutineScope()
             AppsScreen(
