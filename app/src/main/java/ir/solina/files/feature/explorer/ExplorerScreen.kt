@@ -85,6 +85,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -310,14 +311,20 @@ fun ExplorerScreen(
     var horizontalSplit by rememberSaveable { mutableStateOf(false) }
     var quickCreateExpanded by rememberSaveable { mutableStateOf(false) }
     var layoutMenuExpanded by remember { mutableStateOf(false) }
+    // Perf item 23: a stable dismiss lambda, so the layout-menu scrim's
+    // pointerInput key never changes and the gesture detector is not
+    // recreated on every recomposition.
+    val dismissLayoutMenu = remember { { layoutMenuExpanded = false } }
     val createIconRotation by animateFloatAsState(if (quickCreateExpanded) 45f else 0f, motion.defaultSpatialSpec(), label = "createFabRotation")
-    val paneIconRotation by animateFloatAsState(if (dual) 180f else 0f, motion.defaultSpatialSpec(), label = "paneFabRotation")
     val termux = viewModel<TermuxViewModel>().session
     val sshHere = RemoteUri.parse(activePane.path)?.let { (id, dir) ->
         storages.firstOrNull { it.id == id && it.protocol == RemoteProtocol.SFTP }?.let { it to dir }
     }
     val activePath = activePane.path
-    val project by produceState<Project?>(null, activePath, activePane.items) {
+    // Perf item 9: keyed only on the active path — the whole item list
+    // used to be a key, so every recomposition paid an O(n) equals plus
+    // a TermuxProjects.detect IO call on each change.
+    val project by produceState<Project?>(null, activePath) {
         value = if (RemoteUri.isRemote(activePath)) null else withContext(Dispatchers.IO) { TermuxProjects.detect(java.io.File(activePath)) }
     }
 
@@ -459,9 +466,15 @@ fun ExplorerScreen(
     val onSwapPane = remember(vm) { vm::swapPanes }
 
     val drag = remember { FileDragState() }
-    drag.haptics = LocalHapticFeedback.current
-    drag.onDrop = { session, spot -> vm.dropInto(session.pane, session.items, spot.dir) }
-    drag.onSpring = { spot -> Pane.entries.getOrNull(spot.pane)?.let { p -> vm.setActive(p); vm.openPath(p, spot.dir) } }
+    // Perf item 23: assigning the drag state's callbacks during composition
+    // writes state while composing; do it in SideEffect instead, so it runs
+    // after composition with the same values.
+    val dragHaptics = LocalHapticFeedback.current
+    SideEffect {
+        drag.haptics = dragHaptics
+        drag.onDrop = { session, spot -> vm.dropInto(session.pane, session.items, spot.dir) }
+        drag.onSpring = { spot -> Pane.entries.getOrNull(spot.pane)?.let { p -> vm.setActive(p); vm.openPath(p, spot.dir) } }
+    }
     val host = remember { arrayOfNulls<LayoutCoordinates>(1) }
 
     LaunchedEffect(undo?.seq) {
@@ -602,7 +615,9 @@ fun ExplorerScreen(
         @Composable
         fun PaneContent(pane: Pane, modifier: Modifier) {
             val state = paneState(pane)
-            val visible = remember(state.items, settings, query) { visibleItems(state, settings, query) }
+            // Perf item 4: narrow keys — only the sort-relevant values,
+            // not the whole SolinaSettings (deep equals over nested maps).
+            val visible = remember(state.items, settings.sortFor(state.path), settings.showHidden, query) { visibleItems(state, settings, query) }
             // Perf item 7: remember the per-pane callbacks (keyed on the pane
             // and, for onOpen, on the parent callbacks) so PaneColumn can skip
             // when nothing it depends on changed.
@@ -674,7 +689,7 @@ fun ExplorerScreen(
     // The invisible scrim closes it on any tap or scroll outside it.
     if (layoutMenuExpanded && !searchActive) {
         Box(
-            Modifier.fillMaxSize().dismissMenuOnOutsideGesture { layoutMenuExpanded = false },
+            Modifier.fillMaxSize().dismissMenuOnOutsideGesture(dismissLayoutMenu),
         )
         // The panel sits below the path header, so the header's layout
         // button stays visible while the menu is open.
@@ -1302,7 +1317,7 @@ private fun PaneModeSegment(
 // Redesign v2: closes the layout menu on a tap or a scroll anywhere outside
 // it, without swallowing the scroll itself — the gesture is only observed,
 // never consumed, so the file list keeps scrolling underneath.
-private fun Modifier.dismissMenuOnOutsideGesture(onDismiss: () -> Unit): Modifier = pointerInput(onDismiss) {
+private fun Modifier.dismissMenuOnOutsideGesture(onDismiss: () -> Unit): Modifier = pointerInput(Unit) {
     awaitEachGesture {
         val down = awaitFirstDown()
         val up = awaitTouchSlopOrCancellation(down.id) { _, _ -> onDismiss() }
