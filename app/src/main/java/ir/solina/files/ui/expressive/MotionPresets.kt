@@ -16,6 +16,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MotionScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
@@ -81,3 +82,20 @@ fun MotionScheme.checkPopEnter(): EnterTransition =
 fun MotionScheme.checkPopExit(): ExitTransition =
     scaleOut(animationSpec = fastSpatialSpec(), targetScale = 0.6f) +
         fadeOut(animationSpec = fastEffectsSpec())
+
+/**
+ * Cached [checkPopEnter]/[checkPopExit] (PERF_AUDIT_2 item 7): the builders
+ * above allocate fresh Enter/ExitTransition objects on every call, and
+ * FileRow called them during every row's composition — pure garbage while
+ * scrolling. The transitions only depend on the motion scheme, so they are
+ * remembered per scheme and rebuilt only if the scheme itself changes.
+ */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun rememberCheckPopEnter(motion: MotionScheme): EnterTransition =
+    remember(motion) { motion.checkPopEnter() }
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+fun rememberCheckPopExit(motion: MotionScheme): ExitTransition =
+    remember(motion) { motion.checkPopExit() }
