@@ -39,6 +39,24 @@ object Formatters {
         val jalali = solarHijri && locale.language == "fa"
     }
 
+    // PERF_AUDIT_2 item 3: date formatters are expensive to build (each one
+    // constructs a Calendar) and listDate() used to build fresh ones for
+    // every row on every composition. SimpleDateFormat/DateFormat are not
+    // thread-safe, so they are cached per thread, keyed by pattern/style +
+    // locale. The cached instance's timeZone is set on every use (same
+    // thread, synchronous format call), exactly as before.
+    private val threadLocalSimpleFormats = ThreadLocal.withInitial { mutableMapOf<String, SimpleDateFormat>() }
+
+    private fun cachedSimpleFormat(pattern: String, locale: Locale): SimpleDateFormat =
+        threadLocalSimpleFormats.get().getOrPut(pattern + "|" + locale.toLanguageTag()) {
+            SimpleDateFormat(pattern, locale)
+        }
+
+    private val threadLocalDateFormats = ThreadLocal.withInitial { mutableMapOf<String, DateFormat>() }
+
+    private fun cachedDateFormat(key: String, locale: Locale, create: () -> DateFormat): DateFormat =
+        threadLocalDateFormats.get().getOrPut(key + "|" + locale.toLanguageTag(), create)
+
     fun number(value: Long, locale: Locale = Formatters.locale): String = String.format(locale, "%d", value)
 
     fun size(bytes: Long): String = size(bytes, SizeUnits.BINARY)
@@ -61,7 +79,7 @@ object Formatters {
         if (epochMillis <= 0) return "—"
         val s = Style(locale, solarHijri)
         if (s.jalali) return tr(R.string.date_long_time, longDay(s, epochMillis, zone), time(s, epochMillis, true, zone))
-        return DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, locale).apply { timeZone = zone }.format(Date(epochMillis))
+        return cachedDateFormat("datetime-MEDIUM-SHORT", locale) { DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT, locale) }.apply { timeZone = zone }.format(Date(epochMillis))
     }
 
     fun shortDate(epochMillis: Long, zone: TimeZone = TimeZone.getDefault()): String =
@@ -126,7 +144,7 @@ object Formatters {
             val j = jalali(epochMillis, zone)
             return "${digits(s, j.day)} ${tr(jalaliMonths[j.month - 1])} ${digits(s, j.year)}"
         }
-        return DateFormat.getDateInstance(DateFormat.MEDIUM, s.locale).apply { timeZone = zone }.format(Date(epochMillis))
+        return cachedDateFormat("date-MEDIUM", s.locale) { DateFormat.getDateInstance(DateFormat.MEDIUM, s.locale) }.apply { timeZone = zone }.format(Date(epochMillis))
     }
 
     private fun weekday(s: Style, epochMillis: Long, zone: TimeZone): String {
@@ -138,7 +156,7 @@ object Formatters {
         format(s, if (use24Hour) "HH:mm" else "h:mm a", epochMillis, zone)
 
     private fun format(s: Style, pattern: String, epochMillis: Long, zone: TimeZone): String =
-        SimpleDateFormat(pattern, s.locale).apply { timeZone = zone }.format(Date(epochMillis))
+        cachedSimpleFormat(pattern, s.locale).apply { timeZone = zone }.format(Date(epochMillis))
 
     private fun sameDay(a: Long, b: Long, zone: TimeZone): Boolean {
         val ca = calendar(a, zone)
