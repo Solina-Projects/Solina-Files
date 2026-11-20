@@ -438,7 +438,7 @@ private fun rememberFlash(flashKey: Int, pulses: Int): State<Float> {
         }
         flash.animateTo(0f, motion.defaultEffectsSpec())
     }
-    return flash
+    return flash.asState()
 }
 
 const val FLASH_PULSES = 2
