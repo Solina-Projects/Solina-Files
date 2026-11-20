@@ -40,7 +40,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -74,18 +76,36 @@ import ir.solina.files.core.model.ListPrefs
 import ir.solina.files.core.util.FileKind
 import ir.solina.files.core.util.FileKinds
 import ir.solina.files.core.util.Formatters
+import ir.solina.files.feature.explorer.dnd.DropAnimation
 import ir.solina.files.feature.explorer.dnd.DropHalo
 import ir.solina.files.feature.explorer.dnd.DropLook
 import ir.solina.files.feature.explorer.dnd.dropHaloBehind
 import ir.solina.files.feature.explorer.dnd.fileGestures
 import ir.solina.files.feature.explorer.dnd.rememberDropAnimation
-import ir.solina.files.ui.LocalSettings
+import ir.solina.files.ui.LocalAppearancePrefs
+import ir.solina.files.ui.LocalBehaviorPrefs
+import ir.solina.files.ui.LocalListPrefs
 import ir.solina.files.ui.LocalUiDensity
-import ir.solina.files.ui.expressive.checkPopEnter
-import ir.solina.files.ui.expressive.checkPopExit
+import ir.solina.files.ui.expressive.rememberCheckPopEnter
+import ir.solina.files.ui.expressive.rememberCheckPopExit
 import ir.solina.files.ui.theme.KindPalette
 import ir.solina.files.ui.theme.toShape
 import okio.Path.Companion.toPath
+
+/**
+ * Shared resting [DropAnimation] for rows with no drag active (PERF_AUDIT_2
+ * item 3). The values are the rest values [rememberDropAnimation] produces
+ * for [DropLook.NONE] (hover 0, ring 0, gulp 1, spin 0). The states are
+ * never mutated, so sharing one instance across all rows is safe — and it
+ * lets every idle row skip its own animateFloatAsState, two Animatables
+ * and two LaunchedEffects entirely.
+ */
+private val IdleDropAnimation = DropAnimation(
+    hover = mutableFloatStateOf(0f),
+    ring = mutableFloatStateOf(0f),
+    gulp = mutableFloatStateOf(1f),
+    spin = mutableFloatStateOf(0f),
+)
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -108,8 +128,11 @@ fun FileRow(
     val motion = MaterialTheme.motionScheme
     val colors = MaterialTheme.colorScheme
     val density = LocalUiDensity.current
-    val settings = LocalSettings.current
-    val list = settings.list
+    // PERF_AUDIT_2 item 15: read only the narrow list slice, not the whole
+    // SolinaSettings — an appearance/behavior change no longer recomposes
+    // every visible row.
+    val list = LocalListPrefs.current
+    val iconTapSelects = LocalBehaviorPrefs.current.iconTapSelects
     // Scroll-lag fix: folder size/count is NOT computed here anymore.
     // A recursive walk per visible row, re-run every time the row scrolled
     // back into view, is what made single-pane scrolling stutter. The
@@ -129,7 +152,16 @@ fun FileRow(
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.96f else 1f, motion.fastSpatialSpec(), label = "press")
-    val look = rememberDropAnimation(drop)
+    // PERF_AUDIT_2 item 3: the drag state already lives at list level
+    // (DragLinks returns the DropLook.NONE singleton when no drag is
+    // active), so only a row with a live DropLook pays for drop-animation
+    // state. Idle rows share IdleDropAnimation instead.
+    val dragActive = drop !== DropLook.NONE
+    val look = if (dragActive) rememberDropAnimation(drop) else IdleDropAnimation
+    // PERF_AUDIT_2 item 7: the check pop transitions are built once per
+    // motion scheme, not fresh on every composition.
+    val checkPopEnter = rememberCheckPopEnter(motion)
+    val checkPopExit = rememberCheckPopExit(motion)
     val background by animateColorAsState(
         when {
             drop.hovered -> colors.primaryContainer.copy(alpha = 0.6f)
@@ -165,8 +197,17 @@ fun FileRow(
         Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        DropHalo(look, drop.anchor) {
-            Leading(item, selected, showThumbnail, iconSize, if (settings.behavior.iconTapSelects) onIconClick else null)
+        // No drag active: the halo draws nothing (hover == 0), so skip the
+        // MorphPainter / polygon-morph setup entirely. drop.anchor is kept
+        // so a later drag still finds this row as a target.
+        if (dragActive) {
+            DropHalo(look, drop.anchor) {
+                Leading(item, selected, showThumbnail, iconSize, if (iconTapSelects) onIconClick else null)
+            }
+        } else {
+            Box(drop.anchor, contentAlignment = Alignment.Center) {
+                Leading(item, selected, showThumbnail, iconSize, if (iconTapSelects) onIconClick else null)
+            }
         }
         Spacer(Modifier.width((if (density.iconDp <= 30) 8.dp else 10.dp) * listSpacingScale))
         Column(Modifier.weight(1f)) {
@@ -221,8 +262,8 @@ fun FileRow(
             // motion-scheme spec, so REDUCED motion snaps it.
             AnimatedVisibility(
                 visible = selected,
-                enter = motion.checkPopEnter(),
-                exit = motion.checkPopExit(),
+                enter = checkPopEnter,
+                exit = checkPopExit,
             ) {
                 Icon(
                     Icons.Rounded.Check,
@@ -256,8 +297,8 @@ fun FileTile(
 ) {
     val motion = MaterialTheme.motionScheme
     val colors = MaterialTheme.colorScheme
-    val settings = LocalSettings.current
-    val list = settings.list
+    // PERF_AUDIT_2 item 15: narrow list slice only (see FileRow).
+    val list = LocalListPrefs.current
     val density = LocalUiDensity.current
     val fontScale = if (singlePane) when (density) { UiDensity.COMPACT -> 1f; UiDensity.COMFORTABLE -> 1.05f; UiDensity.LARGE -> 1.1f } else 1f
     // Redesign v2: fixed normal font size in dual-pane, like the list rows.
@@ -267,7 +308,10 @@ fun FileTile(
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
     val scale by animateFloatAsState(if (pressed) 0.95f else 1f, motion.fastSpatialSpec(), label = "press")
-    val look = rememberDropAnimation(drop)
+    // PERF_AUDIT_2 item 3: same gating as FileRow — no drag, no
+    // per-tile drop-animation state (see IdleDropAnimation).
+    val dragActive = drop !== DropLook.NONE
+    val look = if (dragActive) rememberDropAnimation(drop) else IdleDropAnimation
     val background by animateColorAsState(
         when {
             drop.hovered -> colors.primaryContainer
@@ -280,7 +324,7 @@ fun FileTile(
     val ghostAlpha by animateFloatAsState(if (drop.ghosted) 0.36f else 1f, motion.defaultEffectsSpec(), label = "tileGhost")
     val flash = rememberFlash(flashKey, flashPulses)
     val flashColor = colors.primary.copy(alpha = 0.32f)
-    val shape = settings.appearance.iconShape.toShape()
+    val shape = LocalAppearancePrefs.current.iconShape.toShape()
     val kind = FileKinds.of(item)
     Column(
         modifier
@@ -302,7 +346,9 @@ fun FileTile(
             .testTag("file-tile"),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Box(Modifier.fillMaxWidth().aspectRatio(1f).then(drop.anchor).dropHaloBehind(look, reach = 0.72f), contentAlignment = Alignment.Center) {
+        // PERF_AUDIT_2 item 3: skip dropHaloBehind entirely when no drag
+        // is active — the halo draws nothing at hover 0.
+        Box(Modifier.fillMaxWidth().aspectRatio(1f).then(drop.anchor).then(if (dragActive) Modifier.dropHaloBehind(look, reach = 0.72f) else Modifier), contentAlignment = Alignment.Center) {
             val picture = showThumbnail && list.thumbnails && (kind == FileKind.IMAGE || kind == FileKind.VIDEO)
             val apk = showThumbnail && list.apkIcons && kind == FileKind.APK
             when {
@@ -353,10 +399,13 @@ private fun TileCheckOverlay(selected: Boolean, selecting: Boolean) {
     val motion = MaterialTheme.motionScheme
     val colors = MaterialTheme.colorScheme
     // Boolean flip only, same shared pop as the row checkbox.
+    // PERF_AUDIT_2 item 7: transitions cached per motion scheme.
+    val checkPopEnter = rememberCheckPopEnter(motion)
+    val checkPopExit = rememberCheckPopExit(motion)
     AnimatedVisibility(
         visible = selected,
-        enter = motion.checkPopEnter(),
-        exit = motion.checkPopExit(),
+        enter = checkPopEnter,
+        exit = checkPopExit,
     ) {
         Box(Modifier.fillMaxSize().clip(CircleShape).background(colors.primary), contentAlignment = Alignment.Center) {
             Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.explorer_selected), tint = colors.onPrimary, modifier = Modifier.size(14.dp))
@@ -369,7 +418,13 @@ private fun TileCheckOverlay(selected: Boolean, selecting: Boolean) {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun rememberFlash(flashKey: Int, pulses: Int): Animatable<Float, *> {
+private fun rememberFlash(flashKey: Int, pulses: Int): State<Float> {
+    // PERF_AUDIT_2 item 3: a flash is requested for at most one row at a
+    // time, and only briefly — every other row used to pay for an
+    // Animatable plus a LaunchedEffect that did nothing but snap to 0.
+    // With flashKey == 0 there is no animation state at all; when a flash
+    // is requested the state is created and the effect runs as before.
+    if (flashKey == 0) return remember { mutableFloatStateOf(0f) }
     // The flash now rides the motion scheme's effects spec instead of
     // hardcoded tweens, so REDUCED motion snaps it; the FLASH_*_MS
     // constants stay because flashDurationMs() still times the reveal
@@ -377,10 +432,6 @@ private fun rememberFlash(flashKey: Int, pulses: Int): Animatable<Float, *> {
     val motion = MaterialTheme.motionScheme
     val flash = remember { Animatable(0f) }
     LaunchedEffect(flashKey) {
-        if (flashKey == 0) {
-            flash.snapTo(0f)
-            return@LaunchedEffect
-        }
         repeat(pulses) {
             flash.animateTo(1f, motion.defaultEffectsSpec())
             flash.animateTo(0.25f, motion.defaultEffectsSpec())
@@ -424,8 +475,9 @@ private fun thumbnailModel(item: FileItem): Any {
 private fun Leading(item: FileItem, selected: Boolean, showThumbnail: Boolean, iconSize: Dp, onIconClick: (() -> Unit)?) {
     val motion = MaterialTheme.motionScheme
     val colors = MaterialTheme.colorScheme
-    val settings = LocalSettings.current
-    val shape = settings.appearance.iconShape.toShape()
+    // PERF_AUDIT_2 item 15: narrow slices only (see FileRow).
+    val shape = LocalAppearancePrefs.current.iconShape.toShape()
+    val list = LocalListPrefs.current
     val kind = FileKinds.of(item)
     Box(
         Modifier
@@ -449,7 +501,7 @@ private fun Leading(item: FileItem, selected: Boolean, showThumbnail: Boolean, i
                 ) {
                     Icon(Icons.Rounded.Check, contentDescription = stringResource(R.string.explorer_selected), tint = colors.onPrimary)
                 }
-                showThumbnail && settings.list.thumbnails && (kind == FileKind.IMAGE || kind == FileKind.VIDEO) -> Box(
+                showThumbnail && list.thumbnails && (kind == FileKind.IMAGE || kind == FileKind.VIDEO) -> Box(
                     Modifier.size(iconSize),
                     contentAlignment = Alignment.Center,
                 ) {
@@ -461,7 +513,7 @@ private fun Leading(item: FileItem, selected: Boolean, showThumbnail: Boolean, i
                         modifier = Modifier.size(iconSize).clip(shape),
                     )
                 }
-                showThumbnail && settings.list.apkIcons && kind == FileKind.APK -> ApkIconOrKind(item, iconSize, shape)
+                showThumbnail && list.apkIcons && kind == FileKind.APK -> ApkIconOrKind(item, iconSize, shape)
                 else -> KindIcon(item, iconSize, shape)
             }
         }
@@ -485,9 +537,9 @@ private fun ApkIconOrKind(item: FileItem, size: Dp, shape: Shape) {
 @Composable
 private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape, contentPaddingFraction: Float = 0.22f) {
     val colors = MaterialTheme.colorScheme
-    val settings = LocalSettings.current
     val kind = FileKinds.of(item)
-    val tile = KindPalette.colors(kind, settings.appearance.colorfulIcons, colors, colors.background.luminance() < 0.5f)
+    // PERF_AUDIT_2 item 15: narrow appearance slice only (see FileRow).
+    val tile = KindPalette.colors(kind, LocalAppearancePrefs.current.colorfulIcons, colors, colors.background.luminance() < 0.5f)
     // Show the file-type symbol by itself: no colored tile/background or inset.
     Box(
         Modifier.size(iconSize),
