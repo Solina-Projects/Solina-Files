@@ -3,9 +3,6 @@ package ir.solina.files.ui.expressive
 import androidx.annotation.DrawableRes
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.LinearEasing
-import androidx.compose.animation.core.animateFloat
-import androidx.compose.animation.core.infiniteRepeatable
-import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
@@ -119,6 +116,13 @@ object HeroShapes {
 
 private const val LOOP_MILLIS = 24_000
 
+// Perf (audit 2, item 12): the hero morph/sparkle loop used to run forever
+// (rememberInfiniteTransition), redrawing the polygon + sparks on Canvas
+// every frame for as long as an empty folder stayed on screen. It now plays
+// at loop speed for a short intro and then freezes on that frame, so the
+// Canvas stops redrawing once the intro is over.
+private const val HERO_ANIM_MILLIS = 3_000L
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun ExpressiveHero(
@@ -135,9 +139,16 @@ fun ExpressiveHero(
     val entrance = remember { Animatable(if (moving) 0f else 1f) }
     val spec = MaterialTheme.motionScheme.defaultSpatialSpec<Float>()
     LaunchedEffect(Unit) { entrance.animateTo(1f, spec) }
-    val loop = rememberInfiniteTransition()
-    val time = loop.animateFloat(0f, 1f, infiniteRepeatable(tween(LOOP_MILLIS, easing = LinearEasing)))
-    val clock = remember(moving) { { if (moving) time.value else 0f } }
+    val heroClock = remember { Animatable(0f) }
+    LaunchedEffect(moving) {
+        if (moving) {
+            heroClock.animateTo(
+                HERO_ANIM_MILLIS / LOOP_MILLIS.toFloat(),
+                tween(HERO_ANIM_MILLIS.toInt(), easing = LinearEasing),
+            )
+        }
+    }
+    val clock = remember(moving) { { if (moving) heroClock.value else 0f } }
     val tag = art?.resource ?: if (picture != null) "picture" else "icon"
     Box(
         modifier
