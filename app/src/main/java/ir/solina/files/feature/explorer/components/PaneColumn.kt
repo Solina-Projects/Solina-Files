@@ -3,17 +3,13 @@ package ir.solina.files.feature.explorer.components
 import ir.solina.files.ui.asPath
 import ir.solina.files.ui.isolated
 import ir.solina.files.ui.LocalUiDensity
-import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -60,6 +56,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.key
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -78,7 +75,6 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.layout.boundsInRoot
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
@@ -88,7 +84,6 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import ir.solina.files.R
 import ir.solina.files.core.fs.DropKind
@@ -116,6 +111,19 @@ import ir.solina.files.ui.expressive.ArtTone
 import ir.solina.files.ui.expressive.ExpressiveEmptyState
 import ir.solina.files.ui.expressive.HeroShapes
 import kotlinx.coroutines.delay
+
+private const val MAX_SCROLL_MEMORY_ENTRIES = 50
+
+/**
+ * Scroll-position memory for visited folders. Capped so a long session
+ * can't grow it without bound: keeps only the most recently used entries
+ * and evicts the oldest once the cap is reached.
+ */
+private class BoundedScrollMemory :
+    LinkedHashMap<String, Pair<Int, Int>>(64, 0.75f, true) {
+    override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Pair<Int, Int>>?): Boolean =
+        size > MAX_SCROLL_MEMORY_ENTRIES
+}
 
 private data class FolderPage(
     val path: String,
@@ -155,13 +163,12 @@ fun PaneColumn(
 ) {
     val motion = MaterialTheme.motionScheme
     val activate by rememberUpdatedState(onActivate)
-    val scrollMemory = remember { HashMap<String, Pair<Int, Int>>() }
+    val scrollMemory = remember { BoundedScrollMemory() }
     val drag = LocalFileDrag.current
     val paneKey = "pane:${pane.ordinal}"
     val paneHover = drag?.hover?.key == paneKey
     val paneGlow by animateFloatAsState(if (paneHover) 1f else 0f, motion.defaultSpatialSpec(), label = "paneGlow")
     val glowColor = MaterialTheme.colorScheme.primary
-    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
 
     Box(
         modifier
@@ -209,39 +216,38 @@ fun PaneColumn(
             reveal = state.reveal,
             revealSeq = state.revealSeq,
         )
-        AnimatedContent(
-            targetState = page,
-            contentKey = { it.path },
-            transitionSpec = {
-                val dir = targetState.direction
-                if (dir == NavDirection.FORWARD || dir == NavDirection.BACK) {
-                    val sign = (if (dir == NavDirection.FORWARD) 1 else -1) * (if (rtl) -1 else 1)
-                    (slideInHorizontally(motion.defaultSpatialSpec()) { w -> sign * w / 3 } + fadeIn(motion.defaultEffectsSpec()))
-                        .togetherWith(slideOutHorizontally(motion.defaultSpatialSpec()) { w -> -sign * w / 3 } + fadeOut(motion.fastEffectsSpec()))
-                } else {
-                    fadeIn(motion.defaultEffectsSpec()).togetherWith(fadeOut(motion.fastEffectsSpec()))
-                }.using(SizeTransform(clip = true))
-            },
-            label = "folderPage",
-            modifier = Modifier.fillMaxSize().clipToBounds(),
-        ) { folder ->
-            val selected = if (folder.path == state.path) state.selected else emptySet()
-            FolderList(
-                folder = folder,
-                folderStats = state.folderStats,
-                selected = selected,
-                scrollMemory = scrollMemory,
-                refreshing = state.loading && folder.path == state.path,
-                onRefresh = onRefresh,
-                onUp = onUp,
-                onOpen = onOpen,
-                onToggleSelect = onToggleSelect,
-                onItemMenu = onItemMenu,
-                pane = pane,
-                drag = drag,
-                horizontalItems = horizontalItems,
-                singlePane = singlePane,
-            )
+        // Perf (audit 2, item 1): the folder list used to sit inside an
+        // AnimatedContent that slid + faded the whole list on every navigation,
+        // composing, measuring and drawing both the old and the new list at
+        // once while comparing the full item list on every recomposition.
+        // A short fade on navigation is enough. The outgoing pane's scroll
+        // position is still saved to scrollMemory when its list leaves
+        // composition (FolderList's DisposableEffect), so back navigation
+        // restores it exactly as before.
+        key(page.path) {
+            AnimatedVisibility(
+                visible = true,
+                enter = fadeIn(motion.defaultEffectsSpec()),
+                label = "folderFade",
+                modifier = Modifier.fillMaxSize().clipToBounds(),
+            ) {
+                FolderList(
+                    folder = page,
+                    folderStats = state.folderStats,
+                    selected = state.selected,
+                    scrollMemory = scrollMemory,
+                    refreshing = state.loading,
+                    onRefresh = onRefresh,
+                    onUp = onUp,
+                    onOpen = onOpen,
+                    onToggleSelect = onToggleSelect,
+                    onItemMenu = onItemMenu,
+                    pane = pane,
+                    drag = drag,
+                    horizontalItems = horizontalItems,
+                    singlePane = singlePane,
+                )
+            }
         }
     }
     AnimatedVisibility(
