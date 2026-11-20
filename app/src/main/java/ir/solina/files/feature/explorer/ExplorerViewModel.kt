@@ -121,17 +121,27 @@ class ExplorerViewModel(
     )
 
     private val remoteOpened = LinkedHashMap<String, RemoteOpened>()
+    private val maxRemoteOpened = 100
 
     private data class RemoteOpened(val uri: String, val stamp: Long, val length: Long)
 
-    // Set once the settings flow has delivered its first value into _state.
-    // Read from the IO thread by DirectoryLister.local, so it must be volatile.
-    @Volatile
-    private var settingsLoaded = false
+    // Perf: remoteOpened used to grow without bound (one entry per remotely
+    // opened file). Cap it at 100 entries, evicting the oldest first.
+    private fun trackRemoteOpened(path: String, opened: RemoteOpened) {
+        remoteOpened[path] = opened
+        while (remoteOpened.size > maxRemoteOpened) {
+            remoteOpened.keys.firstOrNull()?.let { remoteOpened.remove(it) } ?: break
+        }
+    }
 
     private val lister = DirectoryLister(
         storageRoot = rootPath,
-        local = { p -> withContext(Dispatchers.IO) { val currentSettings = if (settingsLoaded) _state.value.settings else settingsRepo.settings.first(); val calculateChildCount = !currentSettings.dualPanePreferred && currentSettings.list.viewMode == ViewMode.LIST; File(p).takeIf { it.isDirectory }?.listFiles()?.map { FileItem.of(it, calculateChildCount) } } },
+        // Perf: never request child counts here. File rows no longer read
+        // childCount (they use folderStats), so the extra file.list() per
+        // subfolder was pure overhead on every navigation. Pass false
+        // explicitly so this still compiles if FileItem.of keeps its
+        // calculateChildCount parameter.
+        local = { p -> withContext(Dispatchers.IO) { File(p).takeIf { it.isDirectory }?.listFiles()?.map { FileItem.of(it, false) } } },
         root = { p -> privilegedAccess()?.let { a -> withContext(Dispatchers.IO) { a.list(p) } } },
         missing = { p -> isMissing(p) },
         fallback = { p -> if (p == "/") withContext(Dispatchers.IO) { TopLevel.probe() } else null },
@@ -163,23 +173,55 @@ class ExplorerViewModel(
         statsJobs[pane]?.cancel()
         if (!folderStatsApplicable(_state.value.settings)) return
         statsJobs[pane] = viewModelScope.launch {
+            // Perf: emitting a full ExplorerUiState copy after EVERY folder
+            // meant 500 full list recompositions for 500 subfolders. Batch
+            // the results and flush at most once per 8 folders or 200 ms.
+            val pending = LinkedHashMap<String, Pair<Long, Int>>()
+            var lastFlush = android.os.SystemClock.elapsedRealtime()
+            fun flush() {
+                if (pending.isEmpty()) return
+                val batch = pending.toMap()
+                pending.clear()
+                lastFlush = android.os.SystemClock.elapsedRealtime()
+                if (_state.value.pane(pane).path != dirPath) return
+                updatePane(pane) { state ->
+                    if (state.path != dirPath) state else state.copy(folderStats = state.folderStats + batch)
+                }
+            }
             for (item in items) {
                 if (!item.isDirectory || !item.canRead || "://" in item.path) continue
                 val stats = calculateFolderStats(item.path) ?: continue
                 if (_state.value.pane(pane).path != dirPath) return@launch
-                updatePane(pane) { state ->
-                    if (state.path != dirPath) state else state.copy(folderStats = state.folderStats + (item.path to stats))
-                }
+                pending[item.path] = stats
+                if (pending.size >= 8 || android.os.SystemClock.elapsedRealtime() - lastFlush >= 200) flush()
             }
+            flush()
         }
     }
 
     private suspend fun calculateFolderStats(path: String): Pair<Long, Int>? = withContext(Dispatchers.IO) {
-        runCatching {
+        // Perf: the old walkTopDown().fold{} had no cancellation check,
+        // so cancelling the stats job kept walking a big tree (e.g.
+        // Android/) to the end on IO. Check every 256 files so a
+        // cancelled job actually stops mid-walk. (runCatching would
+        // swallow the CancellationException from ensureActive, so catch
+        // it explicitly and rethrow.)
+        try {
+            var bytes = 0L
+            var count = 0
             File(path).walkTopDown()
                 .filter { it.isFile && !FsUtil.isSymlink(it) }
-                .fold(0L to 0) { (bytes, count), f -> (bytes + f.length()) to (count + 1) }
-        }.getOrNull()
+                .forEach { f ->
+                    bytes += f.length()
+                    count++
+                    if (count % 256 == 0) ensureActive()
+                }
+            bytes to count
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            null
+        }
     }
 
     private val rootEnabled: Boolean get() = _state.value.settings.rootAccess
@@ -201,7 +243,6 @@ class ExplorerViewModel(
             var previousRoot: Boolean? = null
             var previousStats: Boolean? = null
             settingsRepo.settings.collect { s ->
-                settingsLoaded = true
                 _state.update { it.copy(settings = s) }
                 if (previousRoot != null && previousRoot != s.rootAccess) onRootModeChanged(s.rootAccess)
                 previousRoot = s.rootAccess
@@ -331,9 +372,19 @@ class ExplorerViewModel(
     fun refresh(pane: Pane, reveal: Collection<String> = emptyList()) =
         navigate(pane, _state.value.pane(pane).path, refresh = true, history = HistoryOp.NONE, reveal = reveal)
 
-    fun refreshAll() {
-        refresh(Pane.LEFT)
-        refresh(Pane.RIGHT)
+    // Perf: used to re-list BOTH panes after every create/rename/delete/
+    // move even when only one pane changed. Pass the changed pane when it
+    // is known so only that pane re-lists; null keeps the old both-panes
+    // behaviour for callers where both panes can change (layout-mode
+    // change, vault moves touching source + vault, generic task errors)
+    // or where the affected pane is not known.
+    fun refreshAll(changedPane: Pane? = null) {
+        if (changedPane != null) {
+            refresh(changedPane)
+        } else {
+            refresh(Pane.LEFT)
+            refresh(Pane.RIGHT)
+        }
     }
 
     private fun navigate(
@@ -363,6 +414,14 @@ class ExplorerViewModel(
                 return@launch
             }
             val items = listing.items
+            // Perf: the old selection filter was O(n^2) — items.any{} per
+            // selected path, i.e. 25M comparisons for select-all in a
+            // 5000-item folder. Build one Set of item paths and filter
+            // against it instead.
+            val itemPaths = items.mapTo(HashSet()) { it.path }
+            // A re-list means a directory's contents may have changed, so
+            // the per-folder hasSmali cache (see hasSmali) is stale now.
+            smaliCache.clear()
             updatePane(pane) { p ->
                 val samePath = p.path == opened
                 val dir = directionOf(p.path, opened)
@@ -372,7 +431,7 @@ class ExplorerViewModel(
                     loading = false,
                     error = null,
                     viaRoot = listing.viaRoot,
-                    selected = if (samePath) p.selected.filterTo(HashSet()) { s -> items.any { it.path == s } } else emptySet(),
+                    selected = if (samePath) p.selected.filterTo(HashSet()) { s -> s in itemPaths } else emptySet(),
                     direction = if (initial || refresh || samePath) NavDirection.NONE else dir,
                     cameFrom = if (!samePath && dir == NavDirection.BACK) childTowards(opened, p.path) else null,
                     history = if (samePath) p.history else when (history) {
@@ -558,7 +617,7 @@ class ExplorerViewModel(
         if (RemoteUri.isRemote(ps.path)) {
             runTask(tr(R.string.explorer_task_deleting), { RemoteTransfers.delete(items, sessions) }, sound = UiSound.TRASH) {
                 clearSelection(pane)
-                refreshAll()
+                refreshAll(pane)
             }
             return
         }
@@ -567,7 +626,7 @@ class ExplorerViewModel(
             if (useBin) recycleBin.moveToTrash(items) else FileOperations.delete(items, access(ps.path, write = true, viaRoot = ps.viaRoot))
         }, sound = UiSound.TRASH) {
             clearSelection(pane)
-            refreshAll()
+            refreshAll(pane)
         }
     }
 
@@ -945,15 +1004,28 @@ class ExplorerViewModel(
         }
     }
 
+    // Perf: hasSmali re-ran a folder scan with IO on every selection
+    // change, with no cache. Cache the result per folder path; the cache
+    // is cleared in navigate() whenever a directory is re-listed, i.e.
+    // whenever that folder's contents may have changed.
+    private val smaliCache = LinkedHashMap<String, Boolean>()
+    private val maxSmaliCache = 64
+
     suspend fun hasSmali(pane: Pane, folder: FileItem): Boolean {
         if (!folder.isDirectory || _state.value.isRemote(pane)) return false
+        smaliCache[folder.path]?.let { return it }
         val ps = _state.value.pane(pane)
-        return withContext(Dispatchers.IO) {
+        val result = withContext(Dispatchers.IO) {
             runCatching {
                 val from = access(ps.path, write = false, viaRoot = ps.viaRoot)
                 DexConvert.containsSmali(from.file(folder.path), from)
             }.getOrDefault(false)
         }
+        if (smaliCache.size >= maxSmaliCache) {
+            smaliCache.keys.firstOrNull()?.let { smaliCache.remove(it) }
+        }
+        smaliCache[folder.path] = result
+        return result
     }
 
     fun smaliToDex(pane: Pane, folder: FileItem) {
@@ -991,7 +1063,7 @@ class ExplorerViewModel(
                 pane?.let { clearSelection(it) }
                 refreshAllRevealing(dir, listOf(out.absolutePath))
                 onDone(out)
-            }.onFailure { refreshAll() }
+            }.onFailure { if (pane != null) refreshAll(pane) else refreshAll() }
         }
     }
 
@@ -1284,7 +1356,7 @@ class ExplorerViewModel(
                     val local = File(File(getApplication<Application>().cacheDir, "remote-panes/$id"), path.removePrefix("/"))
                     local.parentFile?.mkdirs()
                     sessions.use(id) { fs -> local.outputStream().use { out -> fs.download(path, out) } }
-                    remoteOpened[local.path] = RemoteOpened(item.path, local.lastModified(), local.length())
+                    trackRemoteOpened(local.path, RemoteOpened(item.path, local.lastModified(), local.length()))
                     if (id == Vault.ID) Vault.store.trackOpened(local, path)
                     local
                 }
@@ -1313,7 +1385,7 @@ class ExplorerViewModel(
                     runCatching { sessions.use(id) { fs -> File(e.copy).inputStream().use { fs.upload(it, path) } } }
                         .onSuccess {
                             File(e.copy).let { f ->
-                                remoteOpened[e.copy] = RemoteOpened(e.uri, f.lastModified(), f.length())
+                                trackRemoteOpened(e.copy, RemoteOpened(e.uri, f.lastModified(), f.length()))
                                 if (id == Vault.ID) Vault.store.trackOpened(f, path)
                             }
                         }
