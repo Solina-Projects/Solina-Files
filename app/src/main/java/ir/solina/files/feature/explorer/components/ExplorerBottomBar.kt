@@ -44,6 +44,7 @@ import androidx.compose.material3.FlexibleBottomAppBar
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.IconButtonShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -188,10 +189,22 @@ fun ExplorerBottomBar(
     }
 }
 
+// Perf item 14: one stable button-shapes instance per button, instead of
+// rebuilding IconButtonDefaults.shapes() on every recomposition. shapes()
+// is @Composable (it reads the theme), so the call itself stays in
+// composition; remember keyed on its result keeps the instance stable
+// (and follows a theme change, since a new theme yields a new value).
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun rememberButtonShapes(): IconButtonShapes {
+    val shapes = IconButtonDefaults.shapes()
+    return remember(shapes) { shapes }
+}
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 private fun BarButton(icon: ImageVector, description: String, enabled: Boolean = true, onClick: () -> Unit) {
-    IconButton(onClick = onClick, enabled = enabled, shapes = IconButtonDefaults.shapes()) {
+    IconButton(onClick = onClick, enabled = enabled, shapes = rememberButtonShapes()) {
         Icon(icon, contentDescription = description)
     }
 }
@@ -267,11 +280,13 @@ private fun BrowseActions(
         else -> action.icon
     }
     fun runAction(action: BrowseAction) = action.run(a)
-    val newEntries = buildList {
+    // Perf item 14: the "new" menu entries are only built while the new-item
+    // menu or the overflow menu (which can include them) is open.
+    val newEntries: List<MenuEntry> = if (newMenu || more) buildList {
         add(MenuEntry(stringResource(R.string.common_new_folder), Icons.Rounded.CreateNewFolder) { newMenu = false; more = false; a.onNewFolder() })
         add(MenuEntry(stringResource(R.string.common_new_file), Icons.AutoMirrored.Rounded.NoteAdd) { newMenu = false; more = false; a.onNewFile() })
         if (context.termux) add(MenuEntry(stringResource(R.string.explorer_new_project), Icons.Rounded.Code) { newMenu = false; more = false; a.onNewProject() })
-    }
+    } else emptyList()
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
         for (action in browse.zones[0]) {
             if (!action.available(context)) continue
@@ -281,7 +296,7 @@ private fun BrowseActions(
                     enter = scaleIn(motion.fastSpatialSpec()) + fadeIn(motion.fastEffectsSpec()),
                     exit = scaleOut(motion.fastSpatialSpec()) + fadeOut(motion.fastEffectsSpec()),
                 ) {
-                    IconButton(onClick = a.onPaste, shapes = IconButtonDefaults.shapes()) {
+                    IconButton(onClick = a.onPaste, shapes = rememberButtonShapes()) {
                         BadgedBox(badge = { Badge { Text(Formatters.number(clipboardCount.toLong())) } }) {
                             Icon(action.icon, contentDescription = action.text(clipboardIsMove, showHidden, projectLabel))
                         }
@@ -293,14 +308,17 @@ private fun BrowseActions(
                 }
                 BrowseAction.VIEW_LAYOUT -> Box {
                     BarButton(actionIcon(action), actionText(action)) { layoutMenu = true }
+                    // Perf item 14: the layout menu entries are only built
+                    // while the layout menu is open.
+                    val layoutEntries: List<MenuEntry> = if (layoutMenu) buildList {
+                        if (!dual) add(MenuEntry(stringResource(R.string.explorer_view_grid), Icons.Rounded.GridView) { layoutMenu = false; if (!gridView) onToggleViewLayout() })
+                        add(MenuEntry(stringResource(R.string.explorer_view_list), Icons.Rounded.ViewList) { layoutMenu = false; if (gridView) onToggleViewLayout() })
+                        add(MenuEntry(stringResource(R.string.explorer_customize_bar), Icons.Rounded.DashboardCustomize) { layoutMenu = false; a.onCustomize(ToolbarTab.BROWSE) })
+                    } else emptyList()
                     ExpressiveMenu(
                         expanded = layoutMenu,
                         onDismiss = { layoutMenu = false },
-                        groups = listOf(buildList {
-                            if (!dual) add(MenuEntry(stringResource(R.string.explorer_view_grid), Icons.Rounded.GridView) { layoutMenu = false; if (!gridView) onToggleViewLayout() })
-                            add(MenuEntry(stringResource(R.string.explorer_view_list), Icons.Rounded.ViewList) { layoutMenu = false; if (gridView) onToggleViewLayout() })
-                            add(MenuEntry(stringResource(R.string.explorer_customize_bar), Icons.Rounded.DashboardCustomize) { layoutMenu = false; a.onCustomize(ToolbarTab.BROWSE) })
-                        }),
+                        groups = listOf(layoutEntries),
                     )
                 }
                 // Redesign v2: the pane switch lives in the new mode bar now —
@@ -330,7 +348,9 @@ private fun BrowseActions(
         }
         Box {
             BarButton(Icons.Rounded.MoreVert, stringResource(R.string.common_more)) { more = true }
-            val entries = buildList {
+            // Perf item 14: the overflow entries are only built while the
+            // overflow menu is open.
+            val entries: List<MenuEntry> = if (more) buildList {
                 for (action in browse.zones[1]) {
                     if (!action.available(context)) continue
                     when (action) {
@@ -350,11 +370,11 @@ private fun BrowseActions(
                         )
                     }
                 }
-            }
-            val tools = buildList {
+            } else emptyList()
+            val tools: List<MenuEntry> = if (more) buildList {
                 if (clipboardCount > 0) add(MenuEntry(stringResource(R.string.explorer_clear_clipboard), Icons.Rounded.LayersClear) { more = false; a.onCancelClipboard() })
                 add(MenuEntry(stringResource(R.string.explorer_customize_bar), Icons.Rounded.DashboardCustomize) { more = false; a.onCustomize(ToolbarTab.BROWSE) })
-            }
+            } else emptyList()
             ExpressiveMenu(expanded = more, onDismiss = { more = false }, groups = listOf(entries, tools))
         }
     }
@@ -426,10 +446,12 @@ private fun SelectionActions(
         }
         Box {
             BarButton(Icons.Rounded.MoreVert, stringResource(R.string.explorer_more_actions)) { more = true }
-            val entries = selection.zones[1].filter { it.available(context) }.map { action ->
+            // Perf item 14: the selection overflow entries are only built
+            // while the overflow menu is open.
+            val entries: List<MenuEntry> = if (more) selection.zones[1].filter { it.available(context) }.map { action ->
                 MenuEntry(action.text(dual, activeIsLeft), action.icon) { more = false; action.run(a, dual) }
-            }
-            val tools = listOf(MenuEntry(stringResource(R.string.explorer_customize_bar), Icons.Rounded.DashboardCustomize) { more = false; a.onCustomize(ToolbarTab.SELECTION) })
+            } else emptyList()
+            val tools: List<MenuEntry> = if (more) listOf(MenuEntry(stringResource(R.string.explorer_customize_bar), Icons.Rounded.DashboardCustomize) { more = false; a.onCustomize(ToolbarTab.SELECTION) }) else emptyList()
             ExpressiveMenu(expanded = more, onDismiss = { more = false }, groups = listOf(entries, tools))
         }
     }
@@ -439,7 +461,7 @@ private fun SelectionActions(
 @Composable
 private fun DirectionalAction(icon: ImageVector, toRight: Boolean, description: String, onClick: () -> Unit) {
     val rightOnScreen = toRight != (LocalLayoutDirection.current == LayoutDirection.Rtl)
-    IconButton(onClick = onClick, shapes = IconButtonDefaults.shapes()) {
+    IconButton(onClick = onClick, shapes = rememberButtonShapes()) {
         Box {
             Icon(icon, contentDescription = description)
             Icon(
