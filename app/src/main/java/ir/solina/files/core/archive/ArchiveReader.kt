@@ -85,6 +85,20 @@ object ArchiveReader {
     private val tarballSuffixes = listOf(".tar.gz", ".tgz", ".tar.bz2", ".tbz2", ".tar.xz", ".txz", ".tar.zst", ".tar.zstd", ".tar.lz4", ".tar")
     private val singleSuffixes = listOf(".gz", ".bz2", ".xz", ".zst", ".zstd", ".lz4")
 
+    // Audit item 20: listing a tarball fully decompresses it on every scan,
+    // with no cache. Cache the parsed entry list per archive, keyed by
+    // path + mtime + size, so re-opening the same archive is free. Bounded
+    // LRU (8 archives); only password-less listings are cached, so a
+    // password-protected archive is always re-read with its password.
+    private data class ListCacheKey(val path: String, val modified: Long, val size: Long)
+
+    private const val MAX_CACHED_LISTINGS = 8
+
+    private val listCache = object : LinkedHashMap<ListCacheKey, List<ArchiveEntry>>(16, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<ListCacheKey, List<ArchiveEntry>>): Boolean =
+            size > MAX_CACHED_LISTINGS
+    }
+
     fun isZip(name: String) = zipSuffixes.any { name.lowercase().endsWith(it) }
 
     fun supports(name: String): Boolean {
@@ -95,8 +109,13 @@ object ArchiveReader {
     fun canUpdate(name: String) = isZip(name)
 
     fun list(file: File, password: CharArray? = null, access: FileAccess = LocalFileAccess): List<ArchiveEntry> {
+        val cacheable = password.isNullOrEmpty()
+        val key = ListCacheKey(file.absolutePath, file.lastModified(), file.length())
+        if (cacheable) {
+            synchronized(listCache) { listCache[key]?.let { return it } }
+        }
         val name = file.name.lowercase()
-        return when {
+        val entries: List<ArchiveEntry> = when {
             isZip(name) -> listZip(file, access)
             name.endsWith(".7z") -> listSevenZ(file, password, access)
             RarArchive.isRar(name) -> {
@@ -114,6 +133,10 @@ object ArchiveReader {
             }
             else -> throw IllegalArgumentException(tr(R.string.archive_unsupported, file.name))
         }
+        if (cacheable) {
+            synchronized(listCache) { listCache[key] = entries }
+        }
+        return entries
     }
 
     private fun listZip(file: File, access: FileAccess): List<ArchiveEntry> =
