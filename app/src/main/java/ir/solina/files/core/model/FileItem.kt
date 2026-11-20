@@ -14,7 +14,6 @@ data class FileItem(
     val isHidden: Boolean,
     val canRead: Boolean,
     val isSymlink: Boolean = false,
-    val childCount: Int = -1,
 ) {
     val extension: String
         get() = if (isDirectory) "" else name.substringAfterLast('.', "").lowercase()
@@ -23,6 +22,13 @@ data class FileItem(
         get() = File(path).parent
 
     companion object {
+        // Audit item 5: the childCount field is gone. No code reads it
+        // (rows use folderStats), and it cost one extra file.list() per
+        // folder on every navigation in single-pane list mode. The
+        // calculateChildCount parameter is kept so existing call sites
+        // keep compiling unchanged, but it is ignored now: of() never
+        // lists children. DirectoryLister.local already passes false.
+        @Suppress("UNUSED_PARAMETER")
         fun of(file: File, calculateChildCount: Boolean = true): FileItem {
             val name = file.name
             // One stat instead of three: readAttributes returns the type, size
@@ -37,7 +43,6 @@ data class FileItem(
                 }.getOrNull()
             } else null
             val isDirectory = attrs?.isDirectory ?: file.isDirectory
-            val childCount = if (isDirectory && calculateChildCount) file.list()?.size ?: -1 else -1
             return FileItem(
                 name = name,
                 path = file.absolutePath,
@@ -49,7 +54,6 @@ data class FileItem(
                 isHidden = name.startsWith('.'),
                 canRead = file.canRead(),
                 isSymlink = ir.solina.files.core.fs.FsUtil.isSymlink(file),
-                childCount = childCount,
             )
         }
     }
