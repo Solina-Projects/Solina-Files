@@ -39,9 +39,19 @@ class RecycleBin(
     private val infoDir = File(root, "info")
     private val json = Json { ignoreUnknownKeys = true }
 
+    // Audit item 19: list() used to re-parse every trash JSON on every call.
+    // Cache the parsed list and invalidate it on any change.
+    private val cacheLock = Any()
+    private var cachedList: List<TrashEntry>? = null
+
+    private fun invalidateCache() {
+        synchronized(cacheLock) { cachedList = null }
+    }
+
     fun contains(path: String): Boolean = FsUtil.isSameOrDescendant(root, File(path))
 
     fun list(): List<TrashEntry> {
+        synchronized(cacheLock) { cachedList?.let { return it } }
         val infoFiles = infoDir.listFiles { f -> f.name.endsWith(".json") } ?: return emptyList()
         val entries = ArrayList<TrashEntry>(infoFiles.size)
         for (f in infoFiles) {
@@ -54,7 +64,9 @@ class RecycleBin(
             }
             entries += TrashEntry(info, stored)
         }
-        return entries.sortedByDescending { it.info.deletedAt }
+        val result = entries.sortedByDescending { it.info.deletedAt }
+        synchronized(cacheLock) { cachedList = result }
+        return result
     }
 
     fun totalSize(): Long = list().sumOf { it.info.size }
@@ -77,18 +89,25 @@ class RecycleBin(
                 continue
             }
             val id = newId()
+            val wasDirectory = src.isDirectory
+            val stored = File(filesDir, id)
+            // Audit item 19: the size used to be computed with a full
+            // recursive sizeOf(src) walk before the move. Count it during
+            // the move instead: FsUtil.move reports the moved bytes via
+            // onBytesCopied (free on the copy path, one walk over the
+            // already-moved tree on the rename path).
+            var movedBytes = 0L
+            if (!FsUtil.move(src, stored, onBytesCopied = { movedBytes += it })) {
+                failed += item.name
+                continue
+            }
             val info = TrashInfo(
                 id = id,
                 originalPath = src.absolutePath,
                 deletedAt = clock(),
-                isDirectory = src.isDirectory,
-                size = FsUtil.sizeOf(src),
+                isDirectory = wasDirectory,
+                size = movedBytes,
             )
-            val stored = File(filesDir, id)
-            if (!FsUtil.move(src, stored)) {
-                failed += item.name
-                continue
-            }
             if (!writeInfo(info)) {
                 FsUtil.move(stored, src)
                 failed += tr(R.string.trash_no_metadata, item.name)
@@ -96,6 +115,7 @@ class RecycleBin(
             }
             done++
         }
+        if (done > 0) invalidateCache()
         emit(OpProgress.Finished(done, failed))
     }.flowOn(Dispatchers.IO)
 
@@ -130,6 +150,7 @@ class RecycleBin(
             infoFile(entry.info.id).delete()
             done++
         }
+        if (done > 0) invalidateCache()
         emit(OpProgress.Finished(done, failed, skipped))
     }.flowOn(Dispatchers.IO)
 
@@ -147,6 +168,7 @@ class RecycleBin(
                 failed += entry.name
             }
         }
+        if (done > 0) invalidateCache()
         emit(OpProgress.Finished(done, failed))
     }.flowOn(Dispatchers.IO)
 
@@ -162,6 +184,7 @@ class RecycleBin(
                 purged++
             }
         }
+        if (purged > 0) invalidateCache()
         return purged
     }
 
