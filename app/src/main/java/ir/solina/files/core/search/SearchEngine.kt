@@ -15,10 +15,17 @@ object SearchEngine {
     private const val BINARY_SNIFF_BYTES = 8000
     private const val PREVIEW_MAX = 200
 
+    // Audit item 17: progress used to emit a full state update every 64
+    // files. Throttle to at most every 500 files or every 200 ms.
+    private const val PROGRESS_MIN_FILES = 500
+    private const val PROGRESS_MIN_NANOS = 200_000_000L
+
     fun search(query: SearchQuery): Flow<SearchEvent> = flow {
         var scanned = 0
         var found = 0
         var stoppedEarly = false
+        var lastProgressScanned = 0
+        var lastProgressAtNanos = System.nanoTime()
         val root = File(query.root)
         val exclude = query.excludePaths.map { File(it).absolutePath }
         // Compile the name pattern once per query instead of once per file.
@@ -38,7 +45,14 @@ object SearchEngine {
                 if (hidden && !query.includeHidden) continue
 
                 scanned++
-                if (scanned % 64 == 0) emit(SearchEvent.Progress(scanned, child.absolutePath))
+                val nowNanos = System.nanoTime()
+                if (scanned - lastProgressScanned >= PROGRESS_MIN_FILES ||
+                    nowNanos - lastProgressAtNanos >= PROGRESS_MIN_NANOS
+                ) {
+                    emit(SearchEvent.Progress(scanned, child.absolutePath))
+                    lastProgressScanned = scanned
+                    lastProgressAtNanos = nowNanos
+                }
 
                 // The child count is never displayed for search results, so
                 // skip the extra readdir per directory (audit item 27).
@@ -66,6 +80,9 @@ object SearchEngine {
                 }
             }
         }
+        // One final progress update so the UI ends on the true scanned
+        // count instead of the last throttled value.
+        if (scanned != lastProgressScanned) emit(SearchEvent.Progress(scanned, root.absolutePath))
         emit(SearchEvent.Finished(found, stoppedEarly))
     }.flowOn(Dispatchers.IO)
 
