@@ -168,96 +168,103 @@ fun SolinaDrawerContent(
         }
     }
 
-    Column(
-        Modifier
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp)
-            .padding(top = 18.dp, bottom = 20.dp)
-            .testTag("solina-files-drawer"),
-    ) {
-        Brand(reduced, open, Modifier.stagger())
-        StorageSolina(root, !closed, reduced, Modifier.stagger().padding(top = 16.dp)) { actions.onShortcut(root) }
-
-        SectionTitle(stringResource(R.string.drawer_places), Modifier.stagger())
-        val places = remember(root) {
-            listOf(
-                Place(R.string.drawer_downloads, Icons.Rounded.Download, "$root/Download", FileKind.FOLDER),
-                Place(R.string.drawer_images, Icons.Rounded.Image, "$root/Pictures", FileKind.IMAGE),
-                Place(R.string.drawer_camera, Icons.Rounded.CameraAlt, "$root/DCIM", FileKind.IMAGE),
-                Place(R.string.drawer_movies, Icons.Rounded.Movie, "$root/Movies", FileKind.VIDEO),
-                Place(R.string.drawer_music, Icons.Rounded.Audiotrack, "$root/Music", FileKind.AUDIO),
-                Place(R.string.drawer_documents, Icons.Rounded.Description, "$root/Documents", FileKind.DOCUMENT),
-            )
-        }
-        val scheme = MaterialTheme.colorScheme
-        val dark = isSystemInDarkTheme()
-        places.chunked(3).forEachIndexed { row, three ->
-            Row(Modifier.fillMaxWidth().stagger().padding(top = if (row == 0) 0.dp else 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                three.forEach { place ->
-                    val colors = KindPalette.colors(place.kind, colorful = true, scheme = scheme, dark = dark)
-                    PlaceTile(place, colors.container, colors.content, reduced, Modifier.weight(1f)) { actions.onShortcut(place.folder) }
-                }
-            }
-        }
-
-        if (bookmarks.isNotEmpty()) {
-            SectionTitle(stringResource(R.string.common_bookmarks), Modifier.stagger())
-            LazyRow(
-                modifier = Modifier.fillMaxWidth().stagger(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                contentPadding = PaddingValues(end = 8.dp),
-            ) {
-                items(bookmarks, key = { it.path }) { b -> BookmarkChip(b) { actions.onBookmark(b) } }
-            }
-        }
-
-        SectionTitle(stringResource(R.string.drawer_system), Modifier.stagger())
-        val rootLabel = stringResource(R.string.drawer_root)
-        val dataLabel = stringResource(R.string.drawer_data)
-        val systemLabel = stringResource(R.string.drawer_system_folder)
-        DrawerGroup(
-            buildList {
-                add(DrawerLink(rootLabel, Icons.Rounded.Folder) { actions.onShortcut("/") })
-                if (rootMode) {
-                    add(DrawerLink(dataLabel, Icons.Rounded.Storage) { actions.onShortcut("/data") })
-                    add(DrawerLink(systemLabel, Icons.Rounded.Memory) { actions.onShortcut("/system") })
-                }
-            },
-            Modifier.stagger(),
-        )
-
-        SectionTitle(stringResource(R.string.remote_title), Modifier.stagger())
-        val manageLabel = stringResource(R.string.drawer_manage_storages)
-        val sharingLabel = stringResource(R.string.drawer_wifi_sharing)
-        DrawerGroup(
-            buildList {
-                add(DrawerLink(manageLabel, Icons.Rounded.Cloud, actions.onNetwork))
-                storages.forEach { c -> add(DrawerLink(c.name.ifBlank { c.host }, Icons.Rounded.CloudQueue) { actions.onStorage(c) }) }
-                add(DrawerLink(sharingLabel, Icons.Rounded.Wifi, actions.onShare))
-            },
-            Modifier.stagger(),
-        )
-
-        SectionTitle(stringResource(R.string.common_tools), Modifier.stagger())
-        DrawerGroup(
-            listOf(
-                DrawerLink(stringResource(R.string.drawer_languages), Icons.Rounded.Terminal, actions.onLanguages),
-                DrawerLink(stringResource(R.string.apps_title), Icons.Rounded.Apps, actions.onApps),
-                DrawerLink(stringResource(R.string.color_picker_title), Icons.Rounded.Palette, actions.onColorPicker),
-                DrawerLink(stringResource(R.string.keys_title), Icons.Rounded.Key, actions.onSigningKeys),
-                DrawerLink(stringResource(R.string.plugin_title), Icons.Rounded.Extension, actions.onPlugins),
-            ),
-            Modifier.stagger(),
-        )
-
-        VaultCard(actions.onVault, Modifier.stagger().padding(top = 22.dp))
-
-        Row(
-            Modifier.fillMaxWidth().stagger().padding(top = 10.dp),
-            horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
+    // Perf item 13: the drawer sits off-screen most of the time, so none of its
+    // sections are composed while it is closed and settled. `closed` is only
+    // true once the drawer has finished closing, so the content is still
+    // composed through the whole open/close animation, and the entrance
+    // stagger and logo animation are untouched.
+    if (!closed) {
+        Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
+                .padding(top = 18.dp, bottom = 20.dp)
+                .testTag("solina-files-drawer"),
         ) {
-            FooterButton(stringResource(R.string.common_recycle_bin), Icons.Rounded.DeleteSweep, leading = true, modifier = Modifier.weight(1f), onClick = actions.onRecycleBin)
-            FooterButton(stringResource(R.string.common_settings), Icons.Rounded.Settings, leading = false, modifier = Modifier.weight(1f), onClick = actions.onSettings)
+            Brand(reduced, open, Modifier.stagger())
+            StorageSolina(root, !closed, reduced, Modifier.stagger().padding(top = 16.dp)) { actions.onShortcut(root) }
+
+            SectionTitle(stringResource(R.string.drawer_places), Modifier.stagger())
+            val places = remember(root) {
+                listOf(
+                    Place(R.string.drawer_downloads, Icons.Rounded.Download, "$root/Download", FileKind.FOLDER),
+                    Place(R.string.drawer_images, Icons.Rounded.Image, "$root/Pictures", FileKind.IMAGE),
+                    Place(R.string.drawer_camera, Icons.Rounded.CameraAlt, "$root/DCIM", FileKind.IMAGE),
+                    Place(R.string.drawer_movies, Icons.Rounded.Movie, "$root/Movies", FileKind.VIDEO),
+                    Place(R.string.drawer_music, Icons.Rounded.Audiotrack, "$root/Music", FileKind.AUDIO),
+                    Place(R.string.drawer_documents, Icons.Rounded.Description, "$root/Documents", FileKind.DOCUMENT),
+                )
+            }
+            val scheme = MaterialTheme.colorScheme
+            val dark = isSystemInDarkTheme()
+            places.chunked(3).forEachIndexed { row, three ->
+                Row(Modifier.fillMaxWidth().stagger().padding(top = if (row == 0) 0.dp else 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    three.forEach { place ->
+                        val colors = KindPalette.colors(place.kind, colorful = true, scheme = scheme, dark = dark)
+                        PlaceTile(place, colors.container, colors.content, reduced, Modifier.weight(1f)) { actions.onShortcut(place.folder) }
+                    }
+                }
+            }
+
+            if (bookmarks.isNotEmpty()) {
+                SectionTitle(stringResource(R.string.common_bookmarks), Modifier.stagger())
+                LazyRow(
+                    modifier = Modifier.fillMaxWidth().stagger(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    contentPadding = PaddingValues(end = 8.dp),
+                ) {
+                    items(bookmarks, key = { it.path }) { b -> BookmarkChip(b) { actions.onBookmark(b) } }
+                }
+            }
+
+            SectionTitle(stringResource(R.string.drawer_system), Modifier.stagger())
+            val rootLabel = stringResource(R.string.drawer_root)
+            val dataLabel = stringResource(R.string.drawer_data)
+            val systemLabel = stringResource(R.string.drawer_system_folder)
+            DrawerGroup(
+                buildList {
+                    add(DrawerLink(rootLabel, Icons.Rounded.Folder) { actions.onShortcut("/") })
+                    if (rootMode) {
+                        add(DrawerLink(dataLabel, Icons.Rounded.Storage) { actions.onShortcut("/data") })
+                        add(DrawerLink(systemLabel, Icons.Rounded.Memory) { actions.onShortcut("/system") })
+                    }
+                },
+                Modifier.stagger(),
+            )
+
+            SectionTitle(stringResource(R.string.remote_title), Modifier.stagger())
+            val manageLabel = stringResource(R.string.drawer_manage_storages)
+            val sharingLabel = stringResource(R.string.drawer_wifi_sharing)
+            DrawerGroup(
+                buildList {
+                    add(DrawerLink(manageLabel, Icons.Rounded.Cloud, actions.onNetwork))
+                    storages.forEach { c -> add(DrawerLink(c.name.ifBlank { c.host }, Icons.Rounded.CloudQueue) { actions.onStorage(c) }) }
+                    add(DrawerLink(sharingLabel, Icons.Rounded.Wifi, actions.onShare))
+                },
+                Modifier.stagger(),
+            )
+
+            SectionTitle(stringResource(R.string.common_tools), Modifier.stagger())
+            DrawerGroup(
+                listOf(
+                    DrawerLink(stringResource(R.string.drawer_languages), Icons.Rounded.Terminal, actions.onLanguages),
+                    DrawerLink(stringResource(R.string.apps_title), Icons.Rounded.Apps, actions.onApps),
+                    DrawerLink(stringResource(R.string.color_picker_title), Icons.Rounded.Palette, actions.onColorPicker),
+                    DrawerLink(stringResource(R.string.keys_title), Icons.Rounded.Key, actions.onSigningKeys),
+                    DrawerLink(stringResource(R.string.plugin_title), Icons.Rounded.Extension, actions.onPlugins),
+                ),
+                Modifier.stagger(),
+            )
+
+            VaultCard(actions.onVault, Modifier.stagger().padding(top = 22.dp))
+
+            Row(
+                Modifier.fillMaxWidth().stagger().padding(top = 10.dp),
+                horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween),
+            ) {
+                FooterButton(stringResource(R.string.common_recycle_bin), Icons.Rounded.DeleteSweep, leading = true, modifier = Modifier.weight(1f), onClick = actions.onRecycleBin)
+                FooterButton(stringResource(R.string.common_settings), Icons.Rounded.Settings, leading = false, modifier = Modifier.weight(1f), onClick = actions.onSettings)
+            }
         }
     }
 }
@@ -279,11 +286,11 @@ private fun Brand(reduced: Boolean, animate: Boolean, modifier: Modifier) {
 private fun SolinaMark(reduced: Boolean, animate: Boolean, modifier: Modifier) {
     val colors = MaterialTheme.colorScheme
     val layers = listOf(colors.secondary, colors.tertiary, colors.primary)
-    // Perf item 5: the logo drift runs ONLY while the drawer is open. The
-    // drawer content stays composed when closed, so the old infinite
-    // transition animated forever. An Animatable driven from LaunchedEffect
-    // reproduces the same 3200 ms reverse cycle, gated on `animate`; when
-    // closed (or reduced motion) the mark rests at drift 0, exactly as before.
+    // Perf item 5: the logo drift runs ONLY while the drawer is open. An
+    // Animatable driven from LaunchedEffect reproduces the same 3200 ms reverse
+    // cycle, gated on `animate`; when closed (or reduced motion) the mark rests
+    // at drift 0, exactly as before. (The drawer content is not composed at
+    // all while closed — perf item 13 — so this gate is belt and braces.)
     val driftAnim = remember { Animatable(0f) }
     LaunchedEffect(animate, reduced) {
         if (animate && !reduced) {
