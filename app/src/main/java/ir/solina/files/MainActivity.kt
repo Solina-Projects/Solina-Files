@@ -26,6 +26,9 @@ import ir.solina.files.core.sound.UiSounds
 import ir.solina.files.core.util.Formatters
 import ir.solina.files.feature.pdf.ReaderSource
 import ir.solina.files.ui.AppShell
+import ir.solina.files.ui.LocalAppearancePrefs
+import ir.solina.files.ui.LocalBehaviorPrefs
+import ir.solina.files.ui.LocalListPrefs
 import ir.solina.files.ui.LocalSettings
 import ir.solina.files.ui.LocalUiDensity
 import ir.solina.files.ui.i18n.AndroidStrings
@@ -129,7 +132,16 @@ class MainActivity : FragmentActivity() {
             val scope = rememberCoroutineScope()
             SolinaTheme(appearance = settings.appearance) {
                 Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    CompositionLocalProvider(LocalUiDensity provides settings.uiDensity, LocalSettings provides settings) {
+                    // PERF_AUDIT_2 item 15: the narrow slices are provided
+                    // alongside LocalSettings (which stays for other readers)
+                    // so rows can read only what they need.
+                    CompositionLocalProvider(
+                        LocalUiDensity provides settings.uiDensity,
+                        LocalSettings provides settings,
+                        LocalListPrefs provides settings.list,
+                        LocalAppearancePrefs provides settings.appearance,
+                        LocalBehaviorPrefs provides settings.behavior,
+                    ) {
                         AppLockGate(onTurnOff = { scope.launch { settingsRepo.editSecurity { it.copy(appLock = false) } } }) {
                             AppShell(
                                 settings = settings,
