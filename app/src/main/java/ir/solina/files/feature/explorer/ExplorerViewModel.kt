@@ -197,14 +197,54 @@ class ExplorerViewModel(
                     if (state.path != dirPath) state else state.copy(folderStats = state.folderStats + batch)
                 }
             }
-            for (item in items) {
-                if (!item.isDirectory || !item.canRead || "://" in item.path) continue
+            val directories = items.filter { it.isDirectory && it.canRead && "://" !in it.path }
+
+            // Prefer a single Rust walk for all direct child folders. This
+            // avoids recursively walking the same nested tree once per row.
+            val nativeBatch = calculateFolderStatsBatch(dirPath, directories)
+            if (nativeBatch != null) {
+                if (_state.value.pane(pane).path != dirPath) return@launch
+                val batch = directories.mapNotNull { item ->
+                    nativeBatch[item.name]?.let { item.path to it }
+                }.toMap()
+                if (batch.isNotEmpty()) {
+                    updatePane(pane) { state ->
+                        if (state.path != dirPath) state else state.copy(folderStats = state.folderStats + batch)
+                    }
+                }
+                return@launch
+            }
+
+            // Safe fallback for Root/unsupported native environments.
+            for (item in directories) {
                 val stats = calculateFolderStats(item.path) ?: continue
                 if (_state.value.pane(pane).path != dirPath) return@launch
                 pending[item.path] = stats
                 if (pending.size >= 8 || android.os.SystemClock.elapsedRealtime() - lastFlush >= 200) flush()
             }
             flush()
+        }
+    }
+
+    private suspend fun calculateFolderStatsBatch(
+        rootPath: String,
+        directories: List<FileItem>,
+    ): Map<String, Pair<Long, Int>>? = withContext(Dispatchers.IO) {
+        if (directories.isEmpty()) return@withContext emptyMap()
+        val token = NativeBridge.newScanToken()
+        val finished = java.util.concurrent.atomic.AtomicBoolean(false)
+        val watcher = launch {
+            try {
+                kotlinx.coroutines.awaitCancellation()
+            } finally {
+                if (!finished.get()) NativeBridge.cancelScanToken(token)
+            }
+        }
+        try {
+            NativeBridge.folderStatsBatch(rootPath, directories.map { it.name }, token)
+        } finally {
+            finished.set(true)
+            watcher.cancel()
         }
     }
 

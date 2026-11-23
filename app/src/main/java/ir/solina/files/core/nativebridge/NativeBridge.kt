@@ -32,6 +32,7 @@ object NativeBridge {
     private external fun writeBytes(path: String, offset: Long, data: ByteArray): Boolean
     private external fun listDir(path: String): ByteArray?
     private external fun dirStats(path: String, token: Long, out: LongArray): Boolean
+    private external fun dirStatsBatch(path: String, childNames: Array<String>, token: Long, out: LongArray): Boolean
     private external fun cancelScan(token: Long)
     private external fun rarList(path: String, password: String?, status: IntArray): Array<String>?
     private external fun rarExtract(path: String, password: String?, sink: RarSink): Int
@@ -76,6 +77,31 @@ object NativeBridge {
         val out = LongArray(3)
         val ok = runCatching { dirStats(path, token, out) }.getOrDefault(false)
         return if (ok) out[0] to out[1].toInt() else null
+    }
+
+
+
+    /**
+     * Computes direct child folder statistics with one native traversal.
+     * Returns null when native scanning is unavailable so callers can fall back.
+     */
+    fun folderStatsBatch(
+        path: String,
+        childNames: List<String>,
+        token: Long = scanTokens.getAndIncrement(),
+    ): Map<String, Pair<Long, Int>>? {
+        if (!ensureLoaded()) return null
+        if (childNames.isEmpty()) return emptyMap()
+        val names = childNames.toTypedArray()
+        val out = LongArray(names.size * 3)
+        val ok = runCatching { dirStatsBatch(path, names, token, out) }.getOrDefault(false)
+        if (!ok) return null
+        return buildMap(names.size) {
+            names.forEachIndexed { index, name ->
+                val offset = index * 3
+                put(name, out[offset] to out[offset + 1].toInt())
+            }
+        }
     }
 
     fun newScanToken(): Long = scanTokens.getAndIncrement()

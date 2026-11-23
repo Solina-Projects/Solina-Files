@@ -4,7 +4,7 @@ mod hexio;
 mod pdfium;
 mod rar;
 
-use jni::objects::{JByteArray, JIntArray, JLongArray, JMethodID, JObject, JString, JValue};
+use jni::objects::{JByteArray, JIntArray, JLongArray, JMethodID, JObject, JObjectArray, JString, JValue};
 use jni::signature::{Primitive, ReturnType};
 use jni::sys::{jboolean, jbyteArray, jint, jlong, jobjectArray, jstring, JNI_FALSE, JNI_TRUE};
 use jni::JNIEnv;
@@ -535,4 +535,59 @@ pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_cance
     token: jlong,
 ) {
     fsscan::cancel(token);
+}
+
+
+
+/// Fills the output with triples [bytes, files, dirs] in the same order as
+/// child_names. The visible child folders are scanned in one native traversal.
+#[no_mangle]
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_dirStatsBatch<'local>(
+    mut env: JNIEnv<'local>,
+    _this: JObject<'local>,
+    path: JString<'local>,
+    child_names: JObjectArray<'local>,
+    token: jlong,
+    out: JLongArray<'local>,
+) -> jboolean {
+    let Some(root) = java_string(&mut env, &path) else {
+        return JNI_FALSE;
+    };
+    let count = match env.get_array_length(&child_names) {
+        Ok(n) => n,
+        Err(_) => return JNI_FALSE,
+    };
+    let mut names = Vec::with_capacity(count as usize);
+    for index in 0..count {
+        let obj = match env.get_object_array_element(&child_names, index) {
+            Ok(value) => value,
+            Err(_) => return JNI_FALSE,
+        };
+        let name = java_string(&mut env, &JString::from(obj));
+        if let Some(name) = name {
+            names.push(name);
+        } else {
+            return JNI_FALSE;
+        }
+    }
+    if names.len() != count as usize {
+        return JNI_FALSE;
+    }
+    match fsscan::dir_stats_children(&root, &names, token) {
+        Ok(Some(stats)) => {
+            let mut values = Vec::with_capacity(names.len() * 3);
+            for name in &names {
+                let Some(s) = stats.get(name) else {
+                    return JNI_FALSE;
+                };
+                values.extend_from_slice(&[s.bytes, s.files, s.dirs]);
+            }
+            if env.set_long_array_region(&out, 0, &values).is_ok() {
+                JNI_TRUE
+            } else {
+                JNI_FALSE
+            }
+        }
+        _ => JNI_FALSE,
+    }
 }

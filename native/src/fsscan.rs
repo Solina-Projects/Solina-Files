@@ -5,7 +5,7 @@
 //! `java.io.File` syscalls per child. `dir_stats` walks a tree without
 //! following symlinks and can be cancelled from another thread.
 
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::io;
 use std::path::Path;
@@ -183,6 +183,92 @@ pub fn dir_stats(root: &str, token: i64) -> io::Result<Option<Stats>> {
     }
 }
 
+
+/// Calculate statistics for every direct child directory in one tree walk.
+/// The root directory is opened once; descendants are assigned to their
+/// top-level child, avoiding one recursive walk per visible folder row.
+/// Symlinks below each child are not followed. A direct child symlink to a
+/// directory is followed to preserve the existing single-folder behavior.
+pub fn dir_stats_children(
+    root: &str,
+    child_names: &[String],
+    token: i64,
+) -> io::Result<Option<HashMap<String, Stats>>> {
+    let mut stats: HashMap<String, Stats> = child_names
+        .iter()
+        .cloned()
+        .map(|name| (name, Stats::default()))
+        .collect();
+
+    let result = (|| {
+        if is_cancelled(token) {
+            return Ok(None);
+        }
+        let mut stack: Vec<(std::path::PathBuf, String)> = Vec::new();
+        for entry in fs::read_dir(root)? {
+            let entry = match entry {
+                Ok(e) => e,
+                Err(_) => continue,
+            };
+            let name = match entry.file_name().to_str() {
+                Some(n) if stats.contains_key(n) => n.to_owned(),
+                _ => continue,
+            };
+            // Follow a symlink only when it is one of the explicitly requested
+            // direct child folders. Descendant symlinks are always skipped.
+            if fs::metadata(entry.path()).map(|m| m.is_dir()).unwrap_or(false) {
+                stack.push((entry.path(), name));
+            }
+        }
+
+        let mut seen: u64 = 0;
+        while let Some((dir, owner)) = stack.pop() {
+            let rd = match fs::read_dir(&dir) {
+                Ok(rd) => rd,
+                Err(_) => continue,
+            };
+            for entry in rd {
+                let entry = match entry {
+                    Ok(e) => e,
+                    Err(_) => continue,
+                };
+                seen += 1;
+                if seen % 256 == 0 && is_cancelled(token) {
+                    return Ok(None);
+                }
+                let ft = match entry.file_type() {
+                    Ok(t) => t,
+                    Err(_) => continue,
+                };
+                if ft.is_symlink() {
+                    continue;
+                }
+                if ft.is_dir() {
+                    if let Some(s) = stats.get_mut(&owner) {
+                        s.dirs += 1;
+                    }
+                    stack.push((entry.path(), owner.clone()));
+                } else if ft.is_file() {
+                    if let Some(s) = stats.get_mut(&owner) {
+                        s.files += 1;
+                        if let Ok(meta) = entry.metadata() {
+                            s.bytes += meta.len() as i64;
+                        }
+                    }
+                }
+            }
+        }
+        Ok(Some(()))
+    })();
+
+    clear_token(token);
+    match result {
+        Ok(Some(())) => Ok(Some(stats)),
+        Ok(None) => Ok(None),
+        Err(e) => Err(e),
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -270,4 +356,25 @@ mod tests {
         assert!(dir_stats(d.to_str().unwrap(), 777).unwrap().is_some());
         let _ = fs::remove_dir_all(&d);
     }
+
+    #[test]
+    fn batch_stats_walks_children_once_and_keeps_them_separate() {
+        let d = tmp("batch");
+        fs::create_dir_all(d.join("a/nested")).unwrap();
+        fs::create_dir_all(d.join("b")).unwrap();
+        fs::File::create(d.join("a/one")).unwrap().write_all(&[0u8; 10]).unwrap();
+        fs::File::create(d.join("a/nested/two")).unwrap().write_all(&[0u8; 5]).unwrap();
+        fs::File::create(d.join("b/three")).unwrap().write_all(&[0u8; 7]).unwrap();
+
+        let names = vec!["a".to_string(), "b".to_string()];
+        let got = dir_stats_children(d.to_str().unwrap(), &names, 0).unwrap().unwrap();
+        assert_eq!(got.get("a").unwrap().bytes, 15);
+        assert_eq!(got.get("a").unwrap().files, 2);
+        assert_eq!(got.get("a").unwrap().dirs, 1);
+        assert_eq!(got.get("b").unwrap().bytes, 7);
+        assert_eq!(got.get("b").unwrap().files, 1);
+        assert_eq!(got.get("b").unwrap().dirs, 0);
+        let _ = fs::remove_dir_all(&d);
+    }
+
 }
