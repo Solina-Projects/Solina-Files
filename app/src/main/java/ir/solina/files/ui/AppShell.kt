@@ -4,6 +4,15 @@ import android.app.Application
 import android.net.Uri
 import android.os.Environment
 import androidx.activity.compose.BackHandler
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.CancellationException
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.animate
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -316,11 +325,27 @@ fun AppShell(
     }
 
     BackHandler(enabled = drawerState.isOpen) { scope.launch { drawerState.close() } }
-    BackHandler(
+    // Predictive back: while the gesture is dragged the top screen shrinks and shifts
+    // away with the finger (read in graphicsLayer, so no recomposition). Releasing
+    // completes the pop (AnimatedContent then finishes the exit); cancelling springs back.
+    var backProgress by remember { mutableFloatStateOf(0f) }
+    PredictiveBackHandler(
         enabled = route == Route.Settings || route is Route.Customize || route == Route.RecycleBin || route is Route.Search || route is Route.ApkInfo ||
             route == Route.ColorPicker,
-    ) {
-        stack.pop()
+    ) { events ->
+        try {
+            events.collect { backProgress = it.progress }
+            stack.pop()
+            scope.launch {
+                delay(400)
+                backProgress = 0f
+            }
+        } catch (e: CancellationException) {
+            withContext(NonCancellable) {
+                animate(backProgress, 0f, animationSpec = spring(dampingRatio = 0.8f, stiffness = 500f)) { v, _ -> backProgress = v }
+            }
+            throw e
+        }
     }
 
     fun go(path: String) {
@@ -427,7 +452,16 @@ fun AppShell(
                     }
                     saveable.SaveableStateProvider(entry.key) {
                         CompositionLocalProvider(LocalViewModelStoreOwner provides entry) {
-                            Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                            Surface(
+                                Modifier.fillMaxSize().graphicsLayer {
+                                    val p = backProgress
+                                    val k = 1f - 0.08f * p
+                                    scaleX = k
+                                    scaleY = k
+                                    translationX = side * size.width * 0.06f * p
+                                },
+                                color = MaterialTheme.colorScheme.background,
+                            ) {
                                 Screen(entry.route, settings, settingsRepo, vm, actions)
                             }
                         }

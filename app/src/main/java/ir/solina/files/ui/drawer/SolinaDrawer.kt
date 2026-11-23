@@ -150,7 +150,7 @@ fun SolinaDrawerContent(
     LaunchedEffect(open, closed, reduced) {
         when {
             reduced -> entrance.snapTo(1f)
-            open -> entrance.animateTo(1f, tween(900, easing = LinearEasing))
+            open -> entrance.animateTo(1f, tween(520, easing = LinearEasing))
             closed -> entrance.snapTo(0f)
         }
     }
@@ -161,7 +161,7 @@ fun SolinaDrawerContent(
             val local = ((entrance.value - index * 0.04f) / 0.4f).coerceIn(0f, 1f)
             val eased = EaseOutBack.transform(local)
             alpha = local
-            translationY = (1f - eased) * 28.dp.toPx()
+            translationY = (1f - eased) * 20.dp.toPx()
             val s = 0.94f + 0.06f * eased
             scaleX = s
             scaleY = s

@@ -667,32 +667,54 @@ fun ExplorerScreen(
                 isGrid = settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID,
             )
         }
+        // Single <-> dual pane: the panes share the space by animated weights, so the
+        // second pane slides open (and the first one narrows) instead of the whole
+        // content being swapped. Only a change of split direction swaps the container.
+        val vertical = dual && horizontalSplit
+        val leftWeight by animateFloatAsState(
+            if (dual || active == Pane.LEFT) 1f else 0f,
+            motion.defaultSpatialSpec(),
+            label = "leftPaneWeight",
+        )
+        val rightWeight by animateFloatAsState(
+            if (dual || active == Pane.RIGHT) 1f else 0f,
+            motion.defaultSpatialSpec(),
+            label = "rightPaneWeight",
+        )
         AnimatedContent(
-            targetState = dual to horizontalSplit,
+            targetState = vertical,
             transitionSpec = {
-                (fadeIn(motion.defaultEffectsSpec()) + androidx.compose.animation.scaleIn(motion.defaultSpatialSpec(), initialScale = 0.92f))
-                    .togetherWith(fadeOut(motion.defaultEffectsSpec()) + androidx.compose.animation.scaleOut(motion.defaultSpatialSpec(), targetScale = 0.96f))
+                fadeIn(motion.defaultEffectsSpec()).togetherWith(fadeOut(motion.fastEffectsSpec()))
             },
-            label = "singleDualPaneTransition",
+            label = "paneSplitDirection",
             modifier = Modifier.weight(1f),
-        ) { (showDual, splitHorizontal) ->
-            if (showDual && splitHorizontal) {
+        ) { isVertical ->
+            if (isVertical) {
                 Column(
                     Modifier.fillMaxSize().padding(horizontal = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(3.dp),
                 ) {
-                    PaneContent(Pane.LEFT, Modifier.weight(1f).fillMaxWidth())
-                    PaneContent(Pane.RIGHT, Modifier.weight(1f).fillMaxWidth())
+                    listOf(Pane.LEFT to leftWeight, Pane.RIGHT to rightWeight).forEach { (pane, w) ->
+                        if (w > 0.04f) {
+                            PaneContent(
+                                pane,
+                                Modifier.weight(w).fillMaxWidth().graphicsLayer { alpha = w.coerceIn(0f, 1f) },
+                            )
+                        }
+                    }
                 }
-            } else if (!showDual) {
-                PaneContent(active, Modifier.fillMaxSize().padding(horizontal = 4.dp))
             } else {
                 Row(
                     Modifier.fillMaxSize().padding(horizontal = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    listOf(Pane.LEFT, Pane.RIGHT).forEach { pane ->
-                        PaneContent(pane, Modifier.weight(1f).fillMaxSize())
+                    listOf(Pane.LEFT to leftWeight, Pane.RIGHT to rightWeight).forEach { (pane, w) ->
+                        if (w > 0.04f) {
+                            PaneContent(
+                                pane,
+                                Modifier.weight(w).fillMaxSize().graphicsLayer { alpha = w.coerceIn(0f, 1f) },
+                            )
+                        }
                     }
                 }
             }
