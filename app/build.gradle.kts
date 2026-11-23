@@ -170,9 +170,9 @@ tasks.withType<Test>().configureEach {
 }
 
 configurations.configureEach {
-    exclude(group = "org.ow2.asm", module = "asm")
     resolutionStrategy {
         force(
+            "org.ow2.asm:asm:9.10.1",
             "org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}",
             "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${libs.versions.kotlin.get()}",
             "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${libs.versions.kotlin.get()}",
