@@ -136,7 +136,7 @@ zip4j = { group = "net.lingala.zip4j", name = "zip4j", version.ref = "zip4j" }
 apksig = { group = "com.android.tools.build", name = "apksig", version.ref = "apksig" }
 bouncycastle-pkix = { group = "org.bouncycastle", name = "bcpkix-jdk18on", version.ref = "bouncycastle" }
 bouncycastle-prov = { group = "org.bouncycastle", name = "bcprov-jdk18on", version.ref = "bouncycastle" }
-desugar-jdk-libs = { group = "com.android.tools", name = "desugar_jdk_libs", version.ref = "desugar" }
+desugar-jdk-libs-nio = { group = "com.android.tools", name = "desugar_jdk_libs_nio", version.ref = "desugar" }
 sora-editor-bom = { group = "io.github.rosemoe", name = "editor-bom", version.ref = "soraEditor" }
 sora-editor = { group = "io.github.rosemoe", name = "editor" }
 sora-language-textmate = { group = "io.github.rosemoe", name = "language-textmate" }
