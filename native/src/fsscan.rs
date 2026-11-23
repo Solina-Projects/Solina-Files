@@ -194,6 +194,7 @@ pub fn dir_stats_children(
     child_names: &[String],
     token: i64,
 ) -> io::Result<Option<HashMap<String, Stats>>> {
+    let wanted: HashSet<&str> = child_names.iter().map(String::as_str).collect();
     let mut stats: HashMap<String, Stats> = HashMap::with_capacity(child_names.len());
 
     let result = (|| {
@@ -212,7 +213,7 @@ pub fn dir_stats_children(
                 return Ok(None);
             }
             let name = match entry.file_name().to_str() {
-                Some(n) if child_names.iter().any(|wanted| wanted == n) => n.to_owned(),
+                Some(n) if wanted.contains(n) => n.to_owned(),
                 _ => continue,
             };
             // Follow a symlink only when it is one of the explicitly requested

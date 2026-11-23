@@ -571,7 +571,9 @@ pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_dirSt
             Ok(value) => value,
             Err(_) => return JNI_FALSE,
         };
-        let name = java_string(&mut env, &JString::from(obj));
+        let jname = JString::from(obj);
+        let name = java_string(&mut env, &jname);
+        let _ = env.delete_local_ref(jname);
         if let Some(name) = name {
             names.push(name);
         } else {
