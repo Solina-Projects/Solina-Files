@@ -113,6 +113,5 @@ jobs:
       - name: Build the native core
         run: native/build.sh
 
-      - name: Run Lint (warnings do not fail the build)
-        continue-on-error: true
+      - name: Run Lint
         run: ./gradlew --stacktrace :app:lintDebug
