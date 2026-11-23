@@ -134,7 +134,12 @@ object TermuxBridge {
     fun launch(context: Context): Boolean {
         val intent = context.packageManager.getLaunchIntentForPackage(TermuxApi.PACKAGE) ?: return false
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        val options = launchDisplayId?.let { ActivityOptions.makeBasic().setLaunchDisplayId(it).toBundle() }
+        val displayId = launchDisplayId
+        val options = if (Build.VERSION.SDK_INT >= 26 && displayId != null) {
+            ActivityOptions.makeBasic().setLaunchDisplayId(displayId).toBundle()
+        } else {
+            null
+        }
         context.startActivity(intent, options)
         return true
     }
