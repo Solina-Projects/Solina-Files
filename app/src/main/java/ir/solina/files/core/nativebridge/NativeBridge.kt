@@ -79,8 +79,6 @@ object NativeBridge {
         return if (ok) out[0] to out[1].toInt() else null
     }
 
-
-
     /**
      * Computes direct child folder statistics with one native traversal.
      * Returns null when native scanning is unavailable so callers can fall back.

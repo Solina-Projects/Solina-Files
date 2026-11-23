@@ -557,6 +557,14 @@ pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_dirSt
         Ok(n) => n,
         Err(_) => return JNI_FALSE,
     };
+    let expected_len = (count as usize).saturating_mul(3);
+    let out_len = match env.get_array_length(&out) {
+        Ok(n) => n as usize,
+        Err(_) => return JNI_FALSE,
+    };
+    if out_len < expected_len {
+        return JNI_FALSE;
+    }
     let mut names = Vec::with_capacity(count as usize);
     for index in 0..count {
         let obj = match env.get_object_array_element(&child_names, index) {

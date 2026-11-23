@@ -194,38 +194,46 @@ pub fn dir_stats_children(
     child_names: &[String],
     token: i64,
 ) -> io::Result<Option<HashMap<String, Stats>>> {
-    let mut stats: HashMap<String, Stats> = child_names
-        .iter()
-        .cloned()
-        .map(|name| (name, Stats::default()))
-        .collect();
+    let mut stats: HashMap<String, Stats> = HashMap::with_capacity(child_names.len());
 
     let result = (|| {
         if is_cancelled(token) {
             return Ok(None);
         }
-        let mut stack: Vec<(std::path::PathBuf, String)> = Vec::new();
+        let mut stack: Vec<(std::path::PathBuf, String, bool)> = Vec::new();
+        let mut seen: u64 = 0;
         for entry in fs::read_dir(root)? {
             let entry = match entry {
                 Ok(e) => e,
                 Err(_) => continue,
             };
+            seen += 1;
+            if seen % 256 == 0 && is_cancelled(token) {
+                return Ok(None);
+            }
             let name = match entry.file_name().to_str() {
-                Some(n) if stats.contains_key(n) => n.to_owned(),
+                Some(n) if child_names.iter().any(|wanted| wanted == n) => n.to_owned(),
                 _ => continue,
             };
             // Follow a symlink only when it is one of the explicitly requested
             // direct child folders. Descendant symlinks are always skipped.
             if fs::metadata(entry.path()).map(|m| m.is_dir()).unwrap_or(false) {
-                stack.push((entry.path(), name));
+                stats.insert(name.clone(), Stats::default());
+                stack.push((entry.path(), name, true));
             }
         }
 
-        let mut seen: u64 = 0;
-        while let Some((dir, owner)) = stack.pop() {
+        while let Some((dir, owner, is_child_root)) = stack.pop() {
             let rd = match fs::read_dir(&dir) {
                 Ok(rd) => rd,
-                Err(_) => continue,
+                Err(_) => {
+                    // Match the old per-folder behavior: if the direct child
+                    // itself cannot be scanned, fall back to Kotlin for it.
+                    if is_child_root {
+                        stats.remove(&owner);
+                    }
+                    continue;
+                }
             };
             for entry in rd {
                 let entry = match entry {
@@ -247,7 +255,7 @@ pub fn dir_stats_children(
                     if let Some(s) = stats.get_mut(&owner) {
                         s.dirs += 1;
                     }
-                    stack.push((entry.path(), owner.clone()));
+                    stack.push((entry.path(), owner.clone(), false));
                 } else if ft.is_file() {
                     if let Some(s) = stats.get_mut(&owner) {
                         s.files += 1;
