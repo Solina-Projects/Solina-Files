@@ -62,6 +62,9 @@ jobs:
       - name: Install cargo-ndk
         run: cargo install cargo-ndk --locked
 
+      - name: Run Rust unit and JNI bridge tests
+        run: cargo test --manifest-path native/Cargo.toml -- --test-threads=1
+
       - name: Fetch PDFium
         run: native/fetch-pdfium.sh
 
