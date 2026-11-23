@@ -258,7 +258,7 @@ dependencies {
     implementation(libs.apksig)
     implementation(libs.bouncycastle.pkix)
     implementation(libs.bouncycastle.prov)
-    coreLibraryDesugaring(libs.desugar.jdk.libs)
+    coreLibraryDesugaring(libs.desugar.jdk.libs.nio)
 
     implementation(platform(libs.sora.editor.bom))
     implementation(libs.sora.editor)
