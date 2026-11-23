@@ -170,9 +170,15 @@ tasks.withType<Test>().configureEach {
 }
 
 configurations.configureEach {
+    // dex2jar's bundled d2j-external artifact already contains a small subset
+    // of ASM core classes. Keep the standalone ASM core out of packaged app
+    // runtime classpaths to avoid duplicate classes in the APK. Unit-test
+    // runtime keeps its own ASM dependency for Android Lint's test model.
+    if (name.endsWith("RuntimeClasspath") && !name.contains("UnitTest")) {
+        exclude(group = "org.ow2.asm", module = "asm")
+    }
     resolutionStrategy {
         force(
-            "org.ow2.asm:asm:9.10.1",
             "org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}",
             "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${libs.versions.kotlin.get()}",
             "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${libs.versions.kotlin.get()}",
@@ -269,6 +275,7 @@ dependencies {
     debugImplementation(libs.kotlinx.coroutines.test)
 
     testImplementation(libs.junit)
+    testImplementation("org.ow2.asm:asm:9.10.1")
     testImplementation(libs.robolectric)
     testImplementation(libs.truth)
     testImplementation(libs.kotlinx.coroutines.test)
