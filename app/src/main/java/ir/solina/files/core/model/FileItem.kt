@@ -28,6 +28,19 @@ data class FileItem(
         // calculateChildCount parameter is kept so existing call sites
         // keep compiling unchanged, but it is ignored now: of() never
         // lists children. DirectoryLister.local already passes false.
+        /** Build an item from one native directory entry; no extra syscalls per child. */
+        fun fromNative(parentAbsolute: String, e: ir.solina.files.core.nativebridge.NativeBridge.DirEntry): FileItem =
+            FileItem(
+                name = e.name,
+                path = if (parentAbsolute.endsWith("/")) parentAbsolute + e.name else "$parentAbsolute/${e.name}",
+                isDirectory = e.isDirectory,
+                size = e.size,
+                lastModified = e.lastModified,
+                isHidden = e.isHidden,
+                canRead = e.canRead,
+                isSymlink = e.isSymlink,
+            )
+
         @Suppress("UNUSED_PARAMETER")
         fun of(file: File, calculateChildCount: Boolean = true): FileItem {
             val name = file.name

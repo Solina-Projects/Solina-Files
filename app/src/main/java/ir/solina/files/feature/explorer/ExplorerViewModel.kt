@@ -84,6 +84,7 @@ import ir.solina.files.core.trash.RecycleBin
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import ir.solina.files.core.nativebridge.NativeBridge
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -141,7 +142,15 @@ class ExplorerViewModel(
         // subfolder was pure overhead on every navigation. Pass false
         // explicitly so this still compiles if FileItem.of keeps its
         // calculateChildCount parameter.
-        local = { p -> withContext(Dispatchers.IO) { File(p).takeIf { it.isDirectory }?.listFiles()?.map { FileItem.of(it, false) } } },
+        local = { p ->
+            withContext(Dispatchers.IO) {
+                File(p).takeIf { it.isDirectory }?.let { dir ->
+                    // One native readdir+stat pass; falls back to java.io.File if native is unavailable.
+                    NativeBridge.listDirectory(dir.absolutePath)?.map { FileItem.fromNative(dir.absolutePath, it) }
+                        ?: dir.listFiles()?.map { FileItem.of(it, false) }
+                }
+            }
+        },
         root = { p -> privilegedAccess()?.let { a -> withContext(Dispatchers.IO) { a.list(p) } } },
         missing = { p -> isMissing(p) },
         fallback = { p -> if (p == "/") withContext(Dispatchers.IO) { TopLevel.probe() } else null },
@@ -207,6 +216,25 @@ class ExplorerViewModel(
         // swallow the CancellationException from ensureActive, so catch
         // it explicitly and rethrow.)
         try {
+            // Native walk first (single pass, no per-file JVM objects). Cancelling the
+            // coroutine flips the native token so the walk stops mid-tree.
+            val token = NativeBridge.newScanToken()
+            val finished = java.util.concurrent.atomic.AtomicBoolean(false)
+            val watcher = launch {
+                try {
+                    kotlinx.coroutines.awaitCancellation()
+                } finally {
+                    if (!finished.get()) NativeBridge.cancelScanToken(token)
+                }
+            }
+            val nativeStats = try {
+                NativeBridge.folderStats(path, token)
+            } finally {
+                finished.set(true)
+                watcher.cancel()
+            }
+            if (nativeStats != null) return@withContext nativeStats
+            ensureActive()
             var bytes = 0L
             var count = 0
             File(path).walkTopDown()
