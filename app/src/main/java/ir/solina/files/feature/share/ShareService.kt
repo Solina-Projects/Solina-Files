@@ -129,7 +129,10 @@ class ShareService : Service() {
     private fun afterChange() {
         if (status.value.any) {
             if (wakeLock?.isHeld != true) {
-                wakeLock = getSystemService(PowerManager::class.java).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "solina:share").apply { acquire() }
+                wakeLock = getSystemService(PowerManager::class.java).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "solina:share").apply {
+                    // Keep an active user-started share awake, but never leave a lock held indefinitely.
+                    acquire(WAKE_LOCK_TIMEOUT_MS)
+                }
             }
             getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification())
         } else {
@@ -171,6 +174,7 @@ class ShareService : Service() {
     companion object {
         private const val CHANNEL = "share"
         private const val NOTIFICATION_ID = 7301
+        private const val WAKE_LOCK_TIMEOUT_MS = 24L * 60L * 60L * 1000L
         private const val ACTION_START = "ir.solina.files.share.START"
         private const val ACTION_STOP_FTP = "ir.solina.files.share.STOP_FTP"
         private const val ACTION_STOP_WEB = "ir.solina.files.share.STOP_WEB"
