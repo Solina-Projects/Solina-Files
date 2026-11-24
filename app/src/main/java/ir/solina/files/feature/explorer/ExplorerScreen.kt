@@ -225,64 +225,64 @@ fun ExplorerScreen(
     // map + distinctUntilChanged (data-class slices compare by value).
     val active by remember(vm) {
         vm.state.map { it.active }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.active)
+    }.collectAsStateWithLifecycle()
     val settings by remember(vm) {
         vm.state.map { it.settings }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.settings)
+    }.collectAsStateWithLifecycle()
     val leftPane by remember(vm) {
         vm.state.map { it.left }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.left)
+    }.collectAsStateWithLifecycle()
     val rightPane by remember(vm) {
         vm.state.map { it.right }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.right)
+    }.collectAsStateWithLifecycle()
     val clipboard by remember(vm) {
         vm.state.map { it.clipboard }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.clipboard)
+    }.collectAsStateWithLifecycle()
     // Task progress ticks arrive per file copied; sample them to at most one
     // UI update per 100 ms (the overlay only shows title/detail/fraction).
     // Throttling lives in this collector only — the ViewModel is untouched.
     val task by remember(vm) {
         vm.state.map { it.task }.sample(100).distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.task)
+    }.collectAsStateWithLifecycle()
     val build by remember(vm) {
         vm.state.map { it.build }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.build)
+    }.collectAsStateWithLifecycle()
     val query by remember(vm) {
         vm.state.map { it.query }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.query)
+    }.collectAsStateWithLifecycle()
     val searchActive by remember(vm) {
         vm.state.map { it.searchActive }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.searchActive)
+    }.collectAsStateWithLifecycle()
     val message by remember(vm) {
         vm.state.map { it.message }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.message)
+    }.collectAsStateWithLifecycle()
     val bookmarks by remember(vm) {
         vm.state.map { it.bookmarks }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.bookmarks)
+    }.collectAsStateWithLifecycle()
     val renameHistory by remember(vm) {
         vm.state.map { it.renameHistory }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.renameHistory)
+    }.collectAsStateWithLifecycle()
     val passwordPrompt by remember(vm) {
         vm.state.map { it.passwordPrompt }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.passwordPrompt)
+    }.collectAsStateWithLifecycle()
     val transferPrompt by remember(vm) {
         vm.state.map { it.transferPrompt }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.transferPrompt)
+    }.collectAsStateWithLifecycle()
     val storages by remember(vm) {
         vm.state.map { it.storages }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.storages)
+    }.collectAsStateWithLifecycle()
     val remoteEdits by remember(vm) {
         vm.state.map { it.remoteEdits }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.remoteEdits)
+    }.collectAsStateWithLifecycle()
     val storagePrompt by remember(vm) {
         vm.state.map { it.storagePrompt }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.storagePrompt)
+    }.collectAsStateWithLifecycle()
     val undo by remember(vm) {
         vm.state.map { it.undo }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.undo)
+    }.collectAsStateWithLifecycle()
     val incoming by remember(vm) {
         vm.state.map { it.incoming }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.incoming)
+    }.collectAsStateWithLifecycle()
     fun paneState(p: Pane) = if (p == Pane.LEFT) leftPane else rightPane
     val activePane = paneState(active)
     fun isRemotePane(p: Pane) = RemoteUri.isRemote(paneState(p).path)
