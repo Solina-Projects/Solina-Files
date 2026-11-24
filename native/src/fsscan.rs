@@ -338,7 +338,7 @@ mod tests {
     fn invalid_utf8_names_are_not_silently_dropped() {
         use std::os::unix::ffi::OsStrExt;
         let d = tmp("invalid-utf8");
-        let raw_name = std::ffi::OsStr::from_bytes(b"bad-\\xff-name");
+        let raw_name = std::ffi::OsStr::from_bytes(b"bad-\xff-name");
         fs::File::create(d.join(raw_name)).unwrap();
         let got = decode(&list_dir(d.to_str().unwrap()).unwrap());
         assert_eq!(got.len(), 1);
