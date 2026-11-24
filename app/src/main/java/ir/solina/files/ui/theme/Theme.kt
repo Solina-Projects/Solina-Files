@@ -147,10 +147,14 @@ object SolinaColors {
         val wallpaperPrimary: Int? = if (wallpaper != null &&
             !(a.style == ThemeStyle.TONAL_SPOT && a.contrast == ContrastLevel.STANDARD)
         ) {
-            runCatching {
-                WallpaperManager.getInstance(context)
-                    .getWallpaperColors(WallpaperManager.FLAG_SYSTEM)?.primaryColor?.toArgb()
-            }.getOrNull()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                runCatching {
+                    WallpaperManager.getInstance(context)
+                        .getWallpaperColors(WallpaperManager.FLAG_SYSTEM)?.primaryColor?.toArgb()
+                }.getOrNull()
+            } else {
+                null
+            }
         } else {
             null
         }
