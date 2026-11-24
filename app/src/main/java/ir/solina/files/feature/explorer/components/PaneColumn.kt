@@ -327,7 +327,11 @@ private fun FolderList(
     val hasParent = folder.path != "/"
     val offset = if (hasParent) 1 else 0
     val saved = scrollMemory[folder.path]
-    val cameFromIndex = folder.cameFrom?.let { from -> folder.items.indexOfFirst { it.path == from } } ?: -1
+    // FolderPage is rebuilt by its parent on state updates; memoize this O(n)
+    // lookup so stats/selection/progress changes don't rescan the whole folder.
+    val cameFromIndex = remember(folder.items, folder.cameFrom) {
+        folder.cameFrom?.let { from -> folder.items.indexOfFirst { it.path == from } } ?: -1
+    }
     val listState = rememberLazyListState(
         initialFirstVisibleItemIndex = saved?.first ?: (cameFromIndex + offset - 2).coerceAtLeast(0),
         initialFirstVisibleItemScrollOffset = saved?.second ?: 0,
@@ -514,7 +518,11 @@ private fun FolderGrid(
     val hasParent = folder.path != "/"
     val offset = if (hasParent) 1 else 0
     val saved = scrollMemory[folder.path]
-    val cameFromIndex = folder.cameFrom?.let { from -> folder.items.indexOfFirst { it.path == from } } ?: -1
+    // FolderPage is rebuilt by its parent on state updates; memoize this O(n)
+    // lookup so stats/selection/progress changes don't rescan the whole folder.
+    val cameFromIndex = remember(folder.items, folder.cameFrom) {
+        folder.cameFrom?.let { from -> folder.items.indexOfFirst { it.path == from } } ?: -1
+    }
     val gridState = rememberLazyGridState(
         initialFirstVisibleItemIndex = saved?.first ?: (cameFromIndex + offset - 2).coerceAtLeast(0),
         initialFirstVisibleItemScrollOffset = saved?.second ?: 0,
