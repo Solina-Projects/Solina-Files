@@ -72,10 +72,9 @@ pub fn list_dir(path: &str) -> io::Result<Vec<u8>> {
             Err(_) => continue,
         };
         let name_os = entry.file_name();
-        let name = match name_os.to_str() {
-            Some(n) => n,
-            None => continue,
-        };
+        // Java's File.listFiles() also exposes undecodable Unix names through
+        // replacement characters. Do not silently drop those directory rows.
+        let name = name_os.to_string_lossy();
         if name.len() > u16::MAX as usize {
             continue;
         }
@@ -331,6 +330,19 @@ mod tests {
         fs::File::create(d.join("فایل ۱.txt")).unwrap();
         let got = decode(&list_dir(d.to_str().unwrap()).unwrap());
         assert_eq!(got[0].2, "فایل ۱.txt");
+        let _ = fs::remove_dir_all(&d);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn invalid_utf8_names_are_not_silently_dropped() {
+        use std::os::unix::ffi::OsStrExt;
+        let d = tmp("invalid-utf8");
+        let raw_name = std::ffi::OsStr::from_bytes(b"bad-\\xff-name");
+        fs::File::create(d.join(raw_name)).unwrap();
+        let got = decode(&list_dir(d.to_str().unwrap()).unwrap());
+        assert_eq!(got.len(), 1);
+        assert!(got[0].2.contains('�'));
         let _ = fs::remove_dir_all(&d);
     }
 
