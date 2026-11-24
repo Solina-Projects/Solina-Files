@@ -94,11 +94,14 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.sample
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
@@ -161,6 +164,20 @@ class ExplorerViewModel(
         ExplorerUiState(left = PaneState(path = rootPath), right = PaneState(path = rootPath)),
     )
     val state: StateFlow<ExplorerUiState> = _state.asStateFlow()
+
+    /**
+     * Exposes a narrow, eagerly shared StateFlow for Compose consumers.
+     * The initial snapshot is read here in the ViewModel, not during
+     * composition; this also avoids rebuilding a mapped Flow on recomposition.
+     */
+    fun <T> selectState(
+        sampleMillis: Long = 0L,
+        selector: (ExplorerUiState) -> T,
+    ): StateFlow<T> {
+        val selected = state.map(selector).distinctUntilChanged()
+        val updates = if (sampleMillis > 0L) selected.sample(sampleMillis) else selected
+        return updates.stateIn(viewModelScope, SharingStarted.Eagerly, selector(state.value))
+    }
 
     private val navJobs = mutableMapOf<Pane, Job>()
 
