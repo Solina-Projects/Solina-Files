@@ -448,4 +448,7 @@
 
     <string name="settings_tab_floating_bar">Плавающая панель</string>
     <string name="settings_floating_bar_note">Выберите, какие плавающие действия отображать, помещать в меню дополнительных действий или скрывать. Эти настройки отдельно задаются для одно- и двухпанельного режимов.</string>
+
+    <string name="settings_backup_not_strata">Это не файл настроек Solina Files</string>
+    <string name="drawer_used">Использовано</string>
 </resources>
