@@ -174,6 +174,10 @@ fun FileRow(
     val ghostAlpha by animateFloatAsState(if (drop.ghosted) 0.36f else 1f, motion.defaultEffectsSpec(), label = "rowGhost")
     val flash = rememberFlash(flashKey, flashPulses)
     val flashColor = colors.primary.copy(alpha = 0.32f)
+    // Resolve the extension-based kind once per file identity. Leading and
+    // its nested icon/thumbnail branches reuse this value rather than each
+    // lowercasing the extension and walking the kind classifier again.
+    val kind = remember(item.path, item.name, item.isDirectory) { FileKinds.of(item) }
 
     Box(
         modifier
@@ -202,7 +206,7 @@ fun FileRow(
         // so a later drag still finds this row as a target.
         if (dragActive) {
             DropHalo(look, drop.anchor) {
-                Leading(item, selected, showThumbnail, iconSize, if (iconTapSelects) onIconClick else null)
+                Leading(item, kind, selected, showThumbnail, iconSize, if (iconTapSelects) onIconClick else null)
             }
         } else {
             Box(drop.anchor, contentAlignment = Alignment.Center) {
@@ -325,7 +329,7 @@ fun FileTile(
     val flash = rememberFlash(flashKey, flashPulses)
     val flashColor = colors.primary.copy(alpha = 0.32f)
     val shape = LocalAppearancePrefs.current.iconShape.toShape()
-    val kind = FileKinds.of(item)
+    val kind = remember(item.path, item.name, item.isDirectory) { FileKinds.of(item) }
     Column(
         modifier
             .then(drop.spot)
@@ -353,7 +357,7 @@ fun FileTile(
             val apk = showThumbnail && list.apkIcons && kind == FileKind.APK
             when {
                 picture -> {
-                    KindIcon(item, 48.dp, shape)
+                    KindIcon(item, kind, 48.dp, shape)
                     AsyncImage(
                         model = thumbnailModel(item),
                         contentDescription = item.name,
@@ -361,8 +365,8 @@ fun FileTile(
                         modifier = Modifier.fillMaxSize().clip(MaterialTheme.shapes.medium),
                     )
                 }
-                apk -> ApkIconOrKind(item, tileIconSize, shape)
-                else -> KindIcon(item, tileIconSize, shape, contentPaddingFraction = if (!singlePane) 0.22f else when (density) { UiDensity.COMPACT -> 0.07f; UiDensity.COMFORTABLE -> 0.07f; UiDensity.LARGE -> 0.02f })
+                apk -> ApkIconOrKind(item, kind, tileIconSize, shape)
+                else -> KindIcon(item, kind, tileIconSize, shape, contentPaddingFraction = if (!singlePane) 0.22f else when (density) { UiDensity.COMPACT -> 0.07f; UiDensity.COMFORTABLE -> 0.07f; UiDensity.LARGE -> 0.02f })
             }
             Box(
                 Modifier
@@ -472,13 +476,12 @@ private fun thumbnailModel(item: FileItem): Any {
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun Leading(item: FileItem, selected: Boolean, showThumbnail: Boolean, iconSize: Dp, onIconClick: (() -> Unit)?) {
+private fun Leading(item: FileItem, kind: FileKind, selected: Boolean, showThumbnail: Boolean, iconSize: Dp, onIconClick: (() -> Unit)?) {
     val motion = MaterialTheme.motionScheme
     val colors = MaterialTheme.colorScheme
     // PERF_AUDIT_2 item 15: narrow slices only (see FileRow).
     val shape = LocalAppearancePrefs.current.iconShape.toShape()
     val list = LocalListPrefs.current
-    val kind = FileKinds.of(item)
     Box(
         Modifier
             .size(iconSize)
@@ -505,7 +508,7 @@ private fun Leading(item: FileItem, selected: Boolean, showThumbnail: Boolean, i
                     Modifier.size(iconSize),
                     contentAlignment = Alignment.Center,
                 ) {
-                    KindIcon(item, iconSize, shape)
+                    KindIcon(item, kind, iconSize, shape)
                     AsyncImage(
                         model = thumbnailModel(item),
                         contentDescription = item.name,
@@ -513,7 +516,7 @@ private fun Leading(item: FileItem, selected: Boolean, showThumbnail: Boolean, i
                         modifier = Modifier.size(iconSize).clip(shape),
                     )
                 }
-                showThumbnail && list.apkIcons && kind == FileKind.APK -> ApkIconOrKind(item, iconSize, shape)
+                showThumbnail && list.apkIcons && kind == FileKind.APK -> ApkIconOrKind(item, kind, iconSize, shape)
                 else -> KindIcon(item, iconSize, shape)
             }
         }
@@ -521,10 +524,10 @@ private fun Leading(item: FileItem, selected: Boolean, showThumbnail: Boolean, i
 }
 
 @Composable
-private fun ApkIconOrKind(item: FileItem, size: Dp, shape: Shape) {
+private fun ApkIconOrKind(item: FileItem, kind: FileKind, size: Dp, shape: Shape) {
     var loaded by remember(item.path) { mutableStateOf(false) }
     Box(Modifier.size(size), contentAlignment = Alignment.Center) {
-        if (!loaded) KindIcon(item, size, shape)
+        if (!loaded) KindIcon(item, kind, size, shape)
         AsyncImage(
             model = remember(item.path, item.lastModified) { ApkIcon(item.path, item.lastModified) },
             contentDescription = stringResource(R.string.explorer_app_icon),
@@ -535,9 +538,8 @@ private fun ApkIconOrKind(item: FileItem, size: Dp, shape: Shape) {
 }
 
 @Composable
-private fun KindIcon(item: FileItem, iconSize: Dp, shape: Shape, contentPaddingFraction: Float = 0.22f) {
+private fun KindIcon(item: FileItem, kind: FileKind, iconSize: Dp, shape: Shape, contentPaddingFraction: Float = 0.22f) {
     val colors = MaterialTheme.colorScheme
-    val kind = FileKinds.of(item)
     // PERF_AUDIT_2 item 15: narrow appearance slice only (see FileRow).
     val tile = KindPalette.colors(kind, LocalAppearancePrefs.current.colorfulIcons, colors, colors.background.luminance() < 0.5f)
     // Show the file-type symbol by itself: no colored tile/background or inset.
