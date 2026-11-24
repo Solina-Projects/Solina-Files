@@ -176,7 +176,7 @@ class ExplorerViewModel(
     ): StateFlow<T> {
         val selected = state.map(selector).distinctUntilChanged()
         val updates = if (sampleMillis > 0L) selected.sample(sampleMillis) else selected
-        return updates.stateIn(viewModelScope, SharingStarted.Eagerly, selector(state.value))
+        return updates.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), selector(state.value))
     }
 
     private val navJobs = mutableMapOf<Pane, Job>()
