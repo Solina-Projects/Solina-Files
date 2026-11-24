@@ -384,7 +384,11 @@ fun ExplorerScreen(
 
     fun visibleOfActive() = visibleItems(activePane, settings, query).map { it.path }
 
-    val selection = activePane.items.filter { it.path in activePane.selected }
+    // Keep the selected-item projection stable across unrelated recompositions
+    // (task progress, folder-stat batches, snackbar state, etc.).
+    val selection = remember(activePane.items, activePane.selected) {
+        activePane.items.filter { it.path in activePane.selected }
+    }
     val single = selection.singleOrNull()
     val smaliFolder by produceState(false, single?.path, active) {
         value = single != null && single.isDirectory && vm.hasSmali(active, single)
