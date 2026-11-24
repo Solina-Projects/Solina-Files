@@ -573,7 +573,7 @@ private fun Screen(
             // selection changes do not recompose this screen.
             val activeFolder by remember(vm) {
                 vm.state.map { it.activePane.path }.distinctUntilChanged()
-            }.collectAsStateWithLifecycle(vm.state.value.activePane.path)
+            }.collectAsStateWithLifecycle()
             SettingsScreen(
                 settings = settings,
                 repo = settingsRepo,
@@ -593,7 +593,7 @@ private fun Screen(
             // selection changes do not recompose this screen.
             val activeFolder by remember(vm) {
                 vm.state.map { it.activePane.path }.distinctUntilChanged()
-            }.collectAsStateWithLifecycle(vm.state.value.activePane.path)
+            }.collectAsStateWithLifecycle()
             SettingsScreen(
                 settings = settings,
                 repo = settingsRepo,
@@ -644,7 +644,7 @@ private fun Screen(
             // recompose the archive screen.
             val otherPaneDir by remember(vm) {
                 vm.state.map { it.pane(it.inactive).path }.distinctUntilChanged()
-            }.collectAsStateWithLifecycle(vm.state.value.pane(vm.state.value.inactive).path)
+            }.collectAsStateWithLifecycle()
             ArchiveScreen(
                 path = r.path,
                 otherPaneDir = otherPaneDir,
@@ -697,7 +697,7 @@ private fun Screen(
             // reading the whole explorer state.
             val currentFolder by remember(vm) {
                 vm.state.map { it.pane(it.active).path }.distinctUntilChanged()
-            }.collectAsStateWithLifecycle(vm.state.value.pane(vm.state.value.active).path)
+            }.collectAsStateWithLifecycle()
             ShareScreen(
                 currentFolder = currentFolder.takeUnless { RemoteUri.isRemote(it) }
                     ?: android.os.Environment.getExternalStorageDirectory().path,
@@ -709,7 +709,7 @@ private fun Screen(
             // reading the whole explorer state.
             val exportDir by remember(vm) {
                 vm.state.map { it.pane(it.active).path }.distinctUntilChanged()
-            }.collectAsStateWithLifecycle(vm.state.value.pane(vm.state.value.active).path)
+            }.collectAsStateWithLifecycle()
             SigningKeysScreen(
                 exportDir = exportDir.takeUnless { RemoteUri.isRemote(it) }
                     ?: android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).path,
@@ -723,7 +723,7 @@ private fun Screen(
             // reading the whole explorer state.
             val localDir by remember(vm) {
                 vm.state.map { it.pane(it.active).path }.distinctUntilChanged()
-            }.collectAsStateWithLifecycle(vm.state.value.pane(vm.state.value.active).path)
+            }.collectAsStateWithLifecycle()
             RemoteScreen(
                 onBack = actions.pop,
                 onOpenLocalFile = { actions.openFile(FileItem.of(File(it))) },
