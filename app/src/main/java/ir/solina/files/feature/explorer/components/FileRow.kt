@@ -210,7 +210,7 @@ fun FileRow(
             }
         } else {
             Box(drop.anchor, contentAlignment = Alignment.Center) {
-                Leading(item, selected, showThumbnail, iconSize, if (iconTapSelects) onIconClick else null)
+                Leading(item, kind, selected, showThumbnail, iconSize, if (iconTapSelects) onIconClick else null)
             }
         }
         Spacer(Modifier.width((if (density.iconDp <= 30) 8.dp else 10.dp) * listSpacingScale))
@@ -517,7 +517,7 @@ private fun Leading(item: FileItem, kind: FileKind, selected: Boolean, showThumb
                     )
                 }
                 showThumbnail && list.apkIcons && kind == FileKind.APK -> ApkIconOrKind(item, kind, iconSize, shape)
-                else -> KindIcon(item, iconSize, shape)
+                else -> KindIcon(item, kind, iconSize, shape)
             }
         }
     }
