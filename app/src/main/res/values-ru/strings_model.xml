@@ -182,4 +182,7 @@
     <string name="model_protocol_webdavs">WebDAV через HTTPS</string>
     <string name="model_protocol_saf">Локальное хранилище</string>
     <string name="model_protocol_vault">Сейф</string>
+
+    <string name="model_browse_orientation">Изменить ориентацию панелей</string>
+    <string name="model_browse_swap_panes">Поменять панели местами</string>
 </resources>
