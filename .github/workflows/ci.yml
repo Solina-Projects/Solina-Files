@@ -102,3 +102,12 @@ jobs:
 
       - name: Run Lint
         run: ./gradlew --stacktrace :app:lintDebug
+
+      - name: Upload Lint report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Solina-Files-Lint-report
+          path: app/build/reports/lint-results-debug.html
+          retention-days: 14
+          if-no-files-found: warn
