@@ -230,7 +230,7 @@ fun ExplorerScreen(
     val clipboard by remember(vm) { vm.selectState { it.clipboard } }.collectAsStateWithLifecycle()
     // Task progress ticks arrive per file copied; sample them to at most one
     // UI update per 100 ms (the overlay only shows title/detail/fraction).
-    // Throttling lives in this collector only — the ViewModel is untouched.
+    // The ViewModel exposes this sampled slice separately; other UI state stays unthrottled.
     val task by remember(vm) { vm.selectState(100) { it.task } }.collectAsStateWithLifecycle()
     val build by remember(vm) { vm.selectState { it.build } }.collectAsStateWithLifecycle()
     val query by remember(vm) { vm.selectState { it.query } }.collectAsStateWithLifecycle()
