@@ -463,14 +463,25 @@ private fun trailingInfo(item: FileItem, list: ListPrefs, singlePane: Boolean, f
 }
 
 @Composable
-private fun thumbnailModel(item: FileItem): Any {
+private fun thumbnailModel(item: FileItem): ImageRequest {
     val context = LocalContext.current
-    return remember(item.path) {
-        if (item.extension == "gif" || item.extension == "webp") {
-            ImageRequest.Builder(context).data(item.path.toPath()).decoderFactory(BitmapFactoryDecoder.Factory()).build()
-        } else {
-            item.path.toPath()
-        }
+    // Include file metadata in both Coil cache keys. A file can be replaced
+    // in place while retaining its path; path-only keys would then keep the
+    // previous thumbnail visible until the cache naturally evicts it.
+    val cacheKey = remember(item.path, item.lastModified, item.size) {
+        "${item.path}:${item.lastModified}:${item.size}"
+    }
+    return remember(context, cacheKey, item.extension) {
+        ImageRequest.Builder(context)
+            .data(item.path.toPath())
+            .memoryCacheKey(cacheKey)
+            .diskCacheKey(cacheKey)
+            .apply {
+                if (item.extension == "gif" || item.extension == "webp") {
+                    decoderFactory(BitmapFactoryDecoder.Factory())
+                }
+            }
+            .build()
     }
 }
 
