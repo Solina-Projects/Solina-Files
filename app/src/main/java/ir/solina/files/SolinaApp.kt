@@ -7,7 +7,6 @@ import coil3.PlatformContext
 import coil3.SingletonImageLoader
 import coil3.gif.AnimatedImageDecoder
 import coil3.gif.GifDecoder
-import coil3.request.crossfade
 import coil3.svg.SvgDecoder
 import coil3.video.VideoFrameDecoder
 import ir.solina.files.core.media.ApkIconFetcher
@@ -46,6 +45,9 @@ class SolinaFilesApp : Application(), SingletonImageLoader.Factory {
                 add(ApkIconFetcher.Factory())
                 add(ApkIconKeyer())
             }
-            .crossfade(true)
+            // Keep file-list thumbnails and rapid image paging free of
+            // per-request crossfade animations. Compose already animates
+            // selection and row state; image fades add extra work while
+            // scrolling through large directories.
             .build()
 }
