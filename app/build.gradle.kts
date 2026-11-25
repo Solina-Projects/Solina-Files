@@ -45,7 +45,7 @@ tasks.configureEach {
 }
 
 android {
-    sourceSets.getByName("main").res.srcDir(generatedSolinaIconRes)
+    sourceSets.getByName("main").res.srcDir(generatedSolinaIconRes.get().asFile)
 
     namespace = "ir.solina.files"
 
