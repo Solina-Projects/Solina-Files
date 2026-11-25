@@ -1,9 +1,10 @@
 mod crypt;
+mod fsscan;
 mod hexio;
 mod pdfium;
 mod rar;
 
-use jni::objects::{JByteArray, JIntArray, JMethodID, JObject, JString, JValue};
+use jni::objects::{JByteArray, JIntArray, JLongArray, JMethodID, JObject, JObjectArray, JString, JValue};
 use jni::signature::{Primitive, ReturnType};
 use jni::sys::{jboolean, jbyteArray, jint, jlong, jobjectArray, jstring, JNI_FALSE, JNI_TRUE};
 use jni::JNIEnv;
@@ -74,7 +75,7 @@ fn null_bytes() -> jbyteArray {
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_version<'local>(
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_version<'local>(
     env: JNIEnv<'local>,
     _this: JObject<'local>,
 ) -> jstring {
@@ -85,7 +86,7 @@ pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_ver
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_hashFile<'local>(
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_hashFile<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -101,7 +102,7 @@ pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_has
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_fileSize<'local>(
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_fileSize<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -113,7 +114,7 @@ pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_fil
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_readRange<'local>(
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_readRange<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -136,7 +137,7 @@ pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_rea
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_indexOf<'local>(
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_indexOf<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -154,7 +155,7 @@ pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_ind
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_lastIndexOf<'local>(
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_lastIndexOf<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -174,7 +175,7 @@ pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_las
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_writeBytes<'local>(
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_writeBytes<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -213,7 +214,7 @@ fn to_java(env: &mut JNIEnv, bytes: &[u8]) -> jbyteArray {
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_encDeriveKey<'local>(
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_encDeriveKey<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     password: JByteArray<'local>,
@@ -242,7 +243,7 @@ pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_enc
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_encSeal<'local>(
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_encSeal<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     key: JByteArray<'local>,
@@ -268,7 +269,7 @@ pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_enc
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_encOpen<'local>(
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_encOpen<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     key: JByteArray<'local>,
@@ -297,7 +298,7 @@ pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_enc
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_rarList<'local>(
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_rarList<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -328,7 +329,7 @@ pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_rar
 }
 
 #[no_mangle]
-pub extern "system" fn Java_dev_solina_solina_core_nativebridge_NativeBridge_rarExtract<'local>(
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_rarExtract<'local>(
     mut env: JNIEnv<'local>,
     _this: JObject<'local>,
     path: JString<'local>,
@@ -481,5 +482,122 @@ mod tests {
         let p = tmp_file(b"x");
         assert!(hash_file(p.to_str().unwrap(), 99).is_err());
         let _ = std::fs::remove_file(p);
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_listDir<'local>(
+    mut env: JNIEnv<'local>,
+    _this: JObject<'local>,
+    path: JString<'local>,
+) -> jbyteArray {
+    let Some(p) = java_string(&mut env, &path) else {
+        return null_bytes();
+    };
+    match fsscan::list_dir(&p) {
+        Ok(bytes) => env
+            .byte_array_from_slice(&bytes)
+            .map(|a| a.into_raw())
+            .unwrap_or_else(|_| null_bytes()),
+        Err(_) => null_bytes(),
+    }
+}
+
+/// Fills `out` with `[bytes, files, dirs]`. Returns 1 on success and 0 when the
+/// walk failed or was cancelled, so the caller can fall back to the JVM walk.
+#[no_mangle]
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_dirStats<'local>(
+    mut env: JNIEnv<'local>,
+    _this: JObject<'local>,
+    path: JString<'local>,
+    token: jlong,
+    out: JLongArray<'local>,
+) -> jboolean {
+    let Some(p) = java_string(&mut env, &path) else {
+        return JNI_FALSE;
+    };
+    match fsscan::dir_stats(&p, token) {
+        Ok(Some(s)) => {
+            if env.set_long_array_region(&out, 0, &[s.bytes, s.files, s.dirs]).is_ok() {
+                JNI_TRUE
+            } else {
+                JNI_FALSE
+            }
+        }
+        _ => JNI_FALSE,
+    }
+}
+
+#[no_mangle]
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_cancelScan<'local>(
+    _env: JNIEnv<'local>,
+    _this: JObject<'local>,
+    token: jlong,
+) {
+    fsscan::cancel(token);
+}
+
+
+
+/// Fills the output with triples [bytes, files, dirs] in the same order as
+/// child_names. The visible child folders are scanned in one native traversal.
+#[no_mangle]
+pub extern "system" fn Java_ir_solina_files_core_nativebridge_NativeBridge_dirStatsBatch<'local>(
+    mut env: JNIEnv<'local>,
+    _this: JObject<'local>,
+    path: JString<'local>,
+    child_names: JObjectArray<'local>,
+    token: jlong,
+    out: JLongArray<'local>,
+) -> jboolean {
+    let Some(root) = java_string(&mut env, &path) else {
+        return JNI_FALSE;
+    };
+    let count = match env.get_array_length(&child_names) {
+        Ok(n) => n,
+        Err(_) => return JNI_FALSE,
+    };
+    let expected_len = (count as usize).saturating_mul(3);
+    let out_len = match env.get_array_length(&out) {
+        Ok(n) => n as usize,
+        Err(_) => return JNI_FALSE,
+    };
+    if out_len < expected_len {
+        return JNI_FALSE;
+    }
+    let mut names = Vec::with_capacity(count as usize);
+    for index in 0..count {
+        let obj = match env.get_object_array_element(&child_names, index) {
+            Ok(value) => value,
+            Err(_) => return JNI_FALSE,
+        };
+        let jname = JString::from(obj);
+        let name = java_string(&mut env, &jname);
+        let _ = env.delete_local_ref(jname);
+        if let Some(name) = name {
+            names.push(name);
+        } else {
+            return JNI_FALSE;
+        }
+    }
+    if names.len() != count as usize {
+        return JNI_FALSE;
+    }
+    match fsscan::dir_stats_children(&root, &names, token) {
+        Ok(Some(stats)) => {
+            let mut values = Vec::with_capacity(names.len() * 3);
+            for name in &names {
+                let Some(s) = stats.get(name) else {
+                    return JNI_FALSE;
+                };
+                values.extend_from_slice(&[s.bytes, s.files, s.dirs]);
+            }
+            if env.set_long_array_region(&out, 0, &values).is_ok() {
+                JNI_TRUE
+            } else {
+                JNI_FALSE
+            }
+        }
+        _ => JNI_FALSE,
     }
 }

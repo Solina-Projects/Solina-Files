@@ -344,7 +344,7 @@ fun <T : Enum<T>> ZoneEditor(
                             reduced = reduced,
                             buttons = buttons(zone),
                             onButton = { b -> drag.move(item, b.zone, b.atEnd) },
-                            handle = Modifier.pointerInput(item) {
+                            modifier = Modifier.pointerInput(item) {
                                 detectDragGestures(
                                     onDragStart = { drag.start(item) },
                                     onDrag = { change, amount -> change.consume(); drag.drag(amount.y) },
@@ -467,7 +467,7 @@ private fun ZoneRow(
     reduced: Boolean,
     buttons: List<ZoneButton>,
     onButton: (ZoneButton) -> Unit,
-    handle: Modifier,
+    modifier: Modifier,
 ) {
     val colors = MaterialTheme.colorScheme
     val lift by animateFloatAsState(
@@ -545,7 +545,7 @@ private fun ZoneRow(
                     Icon(b.icon, contentDescription = b.description(label))
                 }
             }
-            Box(handle.size(44.dp), contentAlignment = Alignment.Center) {
+            Box(modifier.size(44.dp), contentAlignment = Alignment.Center) {
                 Icon(Icons.Rounded.DragIndicator, contentDescription = stringResource(R.string.settings_zone_drag, label), tint = colors.onSurfaceVariant)
             }
         }

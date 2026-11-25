@@ -13,13 +13,6 @@ val keystoreProperties = Properties().apply {
 }
 val hasReleaseKeystore = keystorePropertiesFile.exists()
 
-// Use the project's original image as the launcher icon without adding a frame or border.
-val syncSolinaLauncherIcon = tasks.register<Copy>("syncSolinaLauncherIcon") {
-    from(rootProject.file("1792898887402.jpg"))
-    into(layout.projectDirectory.dir("src/main/res/drawable-nodpi"))
-    rename { "solina_project_icon.jpg" }
-}
-
 // Redesign v2: fetch Vazirmatn TTFs into src/main/res/font/ before the build,
 // so Type.kt's R.font references resolve on any clean checkout or CI runner.
 // The script is a no-op when the files already match their SHA-256 hashes.
@@ -31,14 +24,16 @@ val fetchVazirmatn = tasks.register<Exec>("fetchVazirmatn") {
 }
 
 tasks.named("preBuild").configure {
-    dependsOn(syncSolinaLauncherIcon, fetchVazirmatn)
+    dependsOn(fetchVazirmatn)
 }
 
 android {
     namespace = "ir.solina.files"
 
     compileSdk {
-        version = release(37)
+        version = release(37) {
+            minorApiLevel = 1
+        }
     }
 
     defaultConfig {
@@ -168,7 +163,13 @@ tasks.withType<Test>().configureEach {
 }
 
 configurations.configureEach {
-    exclude(group = "org.ow2.asm", module = "asm")
+    // dex2jar's bundled d2j-external artifact already contains a small subset
+    // of ASM core classes. Keep the standalone ASM core out of packaged app
+    // runtime classpaths to avoid duplicate classes in the APK. Unit-test
+    // runtime keeps its own ASM dependency for Android Lint's test model.
+    if (name.endsWith("RuntimeClasspath") && !name.contains("UnitTest")) {
+        exclude(group = "org.ow2.asm", module = "asm")
+    }
     resolutionStrategy {
         force(
             "org.jetbrains.kotlin:kotlin-stdlib:${libs.versions.kotlin.get()}",
@@ -200,6 +201,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.documentfile)
+    implementation(libs.androidx.exifinterface)
     implementation(libs.androidx.biometric)
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.androidx.appcompat)
@@ -250,7 +252,7 @@ dependencies {
     implementation(libs.apksig)
     implementation(libs.bouncycastle.pkix)
     implementation(libs.bouncycastle.prov)
-    coreLibraryDesugaring(libs.desugar.jdk.libs)
+    coreLibraryDesugaring(libs.desugar.jdk.libs.nio)
 
     implementation(platform(libs.sora.editor.bom))
     implementation(libs.sora.editor)
@@ -267,6 +269,7 @@ dependencies {
     debugImplementation(libs.kotlinx.coroutines.test)
 
     testImplementation(libs.junit)
+    testImplementation("org.ow2.asm:asm:9.10.1")
     testImplementation(libs.robolectric)
     testImplementation(libs.truth)
     testImplementation(libs.kotlinx.coroutines.test)

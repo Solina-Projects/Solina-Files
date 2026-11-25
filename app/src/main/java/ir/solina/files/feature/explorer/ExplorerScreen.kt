@@ -223,66 +223,28 @@ fun ExplorerScreen(
     // whole state, so a query keystroke, a selection change or a task tick
     // only recomposes the readers of that slice. Slices are derived with
     // map + distinctUntilChanged (data-class slices compare by value).
-    val active by remember(vm) {
-        vm.state.map { it.active }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.active)
-    val settings by remember(vm) {
-        vm.state.map { it.settings }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.settings)
-    val leftPane by remember(vm) {
-        vm.state.map { it.left }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.left)
-    val rightPane by remember(vm) {
-        vm.state.map { it.right }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.right)
-    val clipboard by remember(vm) {
-        vm.state.map { it.clipboard }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.clipboard)
+    val active by remember(vm) { vm.selectState { it.active } }.collectAsStateWithLifecycle()
+    val settings by remember(vm) { vm.selectState { it.settings } }.collectAsStateWithLifecycle()
+    val leftPane by remember(vm) { vm.selectState { it.left } }.collectAsStateWithLifecycle()
+    val rightPane by remember(vm) { vm.selectState { it.right } }.collectAsStateWithLifecycle()
+    val clipboard by remember(vm) { vm.selectState { it.clipboard } }.collectAsStateWithLifecycle()
     // Task progress ticks arrive per file copied; sample them to at most one
     // UI update per 100 ms (the overlay only shows title/detail/fraction).
-    // Throttling lives in this collector only — the ViewModel is untouched.
-    val task by remember(vm) {
-        vm.state.map { it.task }.sample(100).distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.task)
-    val build by remember(vm) {
-        vm.state.map { it.build }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.build)
-    val query by remember(vm) {
-        vm.state.map { it.query }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.query)
-    val searchActive by remember(vm) {
-        vm.state.map { it.searchActive }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.searchActive)
-    val message by remember(vm) {
-        vm.state.map { it.message }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.message)
-    val bookmarks by remember(vm) {
-        vm.state.map { it.bookmarks }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.bookmarks)
-    val renameHistory by remember(vm) {
-        vm.state.map { it.renameHistory }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.renameHistory)
-    val passwordPrompt by remember(vm) {
-        vm.state.map { it.passwordPrompt }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.passwordPrompt)
-    val transferPrompt by remember(vm) {
-        vm.state.map { it.transferPrompt }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.transferPrompt)
-    val storages by remember(vm) {
-        vm.state.map { it.storages }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.storages)
-    val remoteEdits by remember(vm) {
-        vm.state.map { it.remoteEdits }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.remoteEdits)
-    val storagePrompt by remember(vm) {
-        vm.state.map { it.storagePrompt }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.storagePrompt)
-    val undo by remember(vm) {
-        vm.state.map { it.undo }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.undo)
-    val incoming by remember(vm) {
-        vm.state.map { it.incoming }.distinctUntilChanged()
-    }.collectAsStateWithLifecycle(vm.state.value.incoming)
+    // The ViewModel exposes this sampled slice separately; other UI state stays unthrottled.
+    val task by remember(vm) { vm.selectState(100) { it.task } }.collectAsStateWithLifecycle()
+    val build by remember(vm) { vm.selectState { it.build } }.collectAsStateWithLifecycle()
+    val query by remember(vm) { vm.selectState { it.query } }.collectAsStateWithLifecycle()
+    val searchActive by remember(vm) { vm.selectState { it.searchActive } }.collectAsStateWithLifecycle()
+    val message by remember(vm) { vm.selectState { it.message } }.collectAsStateWithLifecycle()
+    val bookmarks by remember(vm) { vm.selectState { it.bookmarks } }.collectAsStateWithLifecycle()
+    val renameHistory by remember(vm) { vm.selectState { it.renameHistory } }.collectAsStateWithLifecycle()
+    val passwordPrompt by remember(vm) { vm.selectState { it.passwordPrompt } }.collectAsStateWithLifecycle()
+    val transferPrompt by remember(vm) { vm.selectState { it.transferPrompt } }.collectAsStateWithLifecycle()
+    val storages by remember(vm) { vm.selectState { it.storages } }.collectAsStateWithLifecycle()
+    val remoteEdits by remember(vm) { vm.selectState { it.remoteEdits } }.collectAsStateWithLifecycle()
+    val storagePrompt by remember(vm) { vm.selectState { it.storagePrompt } }.collectAsStateWithLifecycle()
+    val undo by remember(vm) { vm.selectState { it.undo } }.collectAsStateWithLifecycle()
+    val incoming by remember(vm) { vm.selectState { it.incoming } }.collectAsStateWithLifecycle()
     fun paneState(p: Pane) = if (p == Pane.LEFT) leftPane else rightPane
     val activePane = paneState(active)
     fun isRemotePane(p: Pane) = RemoteUri.isRemote(paneState(p).path)
@@ -384,7 +346,11 @@ fun ExplorerScreen(
 
     fun visibleOfActive() = visibleItems(activePane, settings, query).map { it.path }
 
-    val selection = activePane.items.filter { it.path in activePane.selected }
+    // Keep the selected-item projection stable across unrelated recompositions
+    // (task progress, folder-stat batches, snackbar state, etc.).
+    val selection = remember(activePane.items, activePane.selected) {
+        activePane.items.filter { it.path in activePane.selected }
+    }
     val single = selection.singleOrNull()
     val smaliFolder by produceState(false, single?.path, active) {
         value = single != null && single.isDirectory && vm.hasSmali(active, single)
@@ -667,32 +633,54 @@ fun ExplorerScreen(
                 isGrid = settings.list.viewMode == ir.solina.files.core.model.ViewMode.GRID,
             )
         }
+        // Single <-> dual pane: the panes share the space by animated weights, so the
+        // second pane slides open (and the first one narrows) instead of the whole
+        // content being swapped. Only a change of split direction swaps the container.
+        val vertical = dual && horizontalSplit
+        val leftWeight by animateFloatAsState(
+            if (dual || active == Pane.LEFT) 1f else 0f,
+            motion.defaultSpatialSpec(),
+            label = "leftPaneWeight",
+        )
+        val rightWeight by animateFloatAsState(
+            if (dual || active == Pane.RIGHT) 1f else 0f,
+            motion.defaultSpatialSpec(),
+            label = "rightPaneWeight",
+        )
         AnimatedContent(
-            targetState = dual to horizontalSplit,
+            targetState = vertical,
             transitionSpec = {
-                (fadeIn(motion.defaultEffectsSpec()) + androidx.compose.animation.scaleIn(motion.defaultSpatialSpec(), initialScale = 0.92f))
-                    .togetherWith(fadeOut(motion.defaultEffectsSpec()) + androidx.compose.animation.scaleOut(motion.defaultSpatialSpec(), targetScale = 0.96f))
+                fadeIn(motion.defaultEffectsSpec()).togetherWith(fadeOut(motion.fastEffectsSpec()))
             },
-            label = "singleDualPaneTransition",
+            label = "paneSplitDirection",
             modifier = Modifier.weight(1f),
-        ) { (showDual, splitHorizontal) ->
-            if (showDual && splitHorizontal) {
+        ) { isVertical ->
+            if (isVertical) {
                 Column(
                     Modifier.fillMaxSize().padding(horizontal = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(3.dp),
                 ) {
-                    PaneContent(Pane.LEFT, Modifier.weight(1f).fillMaxWidth())
-                    PaneContent(Pane.RIGHT, Modifier.weight(1f).fillMaxWidth())
+                    listOf(Pane.LEFT to leftWeight, Pane.RIGHT to rightWeight).forEach { (pane, w) ->
+                        if (w > 0.04f) {
+                            PaneContent(
+                                pane,
+                                Modifier.weight(w).fillMaxWidth().graphicsLayer { alpha = w.coerceIn(0f, 1f) },
+                            )
+                        }
+                    }
                 }
-            } else if (!showDual) {
-                PaneContent(active, Modifier.fillMaxSize().padding(horizontal = 4.dp))
             } else {
                 Row(
                     Modifier.fillMaxSize().padding(horizontal = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    listOf(Pane.LEFT, Pane.RIGHT).forEach { pane ->
-                        PaneContent(pane, Modifier.weight(1f).fillMaxSize())
+                    listOf(Pane.LEFT to leftWeight, Pane.RIGHT to rightWeight).forEach { (pane, w) ->
+                        if (w > 0.04f) {
+                            PaneContent(
+                                pane,
+                                Modifier.weight(w).fillMaxSize().graphicsLayer { alpha = w.coerceIn(0f, 1f) },
+                            )
+                        }
                     }
                 }
             }

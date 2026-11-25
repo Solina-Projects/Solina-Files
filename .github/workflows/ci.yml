@@ -18,6 +18,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name != 'push' || github.ref != 'refs/heads/main'
     name: Build debug APK
     runs-on: ubuntu-24.04
     timeout-minutes: 150
@@ -61,6 +62,9 @@ jobs:
       - name: Install cargo-ndk
         run: cargo install cargo-ndk --locked
 
+      - name: Run Rust unit and JNI bridge tests
+        run: cargo test --manifest-path native/Cargo.toml -- --test-threads=1
+
       - name: Fetch PDFium
         run: native/fetch-pdfium.sh
 
@@ -96,23 +100,14 @@ jobs:
         with:
           cache-provider: basic
 
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: aarch64-linux-android,armv7-linux-androideabi,x86_64-linux-android
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: native
-
-      - name: Install cargo-ndk
-        run: cargo install cargo-ndk --locked
-
-      - name: Fetch PDFium
-        run: native/fetch-pdfium.sh
-
-      - name: Build the native core
-        run: native/build.sh
-
-      - name: Run Lint (warnings do not fail the build)
-        continue-on-error: true
+      - name: Run Lint
         run: ./gradlew --stacktrace :app:lintDebug
+
+      - name: Upload Lint report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: Solina-Files-Lint-report
+          path: app/build/reports/lint-results-debug.html
+          retention-days: 14
+          if-no-files-found: warn

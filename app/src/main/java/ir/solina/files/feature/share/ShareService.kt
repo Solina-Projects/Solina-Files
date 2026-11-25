@@ -8,10 +8,10 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
-import android.content.pm.ServiceInfo
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.content.pm.ServiceInfo
 import android.os.IBinder
 import android.os.PowerManager
 import androidx.core.app.NotificationCompat
@@ -71,7 +71,11 @@ class ShareService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            ServiceCompat.startForeground(this, NOTIFICATION_ID, notification(), ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE)
+        } else {
+            startForeground(NOTIFICATION_ID, notification())
+        }
         val request = pending
         pending = null
         when (intent?.action) {
@@ -129,7 +133,10 @@ class ShareService : Service() {
     private fun afterChange() {
         if (status.value.any) {
             if (wakeLock?.isHeld != true) {
-                wakeLock = getSystemService(PowerManager::class.java).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "solina:share").apply { acquire() }
+                wakeLock = getSystemService(PowerManager::class.java).newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "solina:share").apply {
+                    // Keep an active user-started share awake, but never leave a lock held indefinitely.
+                    acquire(WAKE_LOCK_TIMEOUT_MS)
+                }
             }
             getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, notification())
         } else {
@@ -171,6 +178,7 @@ class ShareService : Service() {
     companion object {
         private const val CHANNEL = "share"
         private const val NOTIFICATION_ID = 7301
+        private const val WAKE_LOCK_TIMEOUT_MS = 24L * 60L * 60L * 1000L
         private const val ACTION_START = "ir.solina.files.share.START"
         private const val ACTION_STOP_FTP = "ir.solina.files.share.STOP_FTP"
         private const val ACTION_STOP_WEB = "ir.solina.files.share.STOP_WEB"

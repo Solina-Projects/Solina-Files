@@ -163,7 +163,7 @@ object ArchiveReader {
                         path = e.name,
                         isDirectory = e.isDirectory,
                         size = if (e.hasStream()) e.size else 0,
-                        time = if (e.hasLastModifiedDate) e.lastModifiedTime.toMillis() else 0,
+                        time = if (e.hasLastModifiedDate) e.lastModifiedDate.time else 0,
                     )
                 }
             }

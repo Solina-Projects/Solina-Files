@@ -150,7 +150,7 @@ fun SolinaDrawerContent(
     LaunchedEffect(open, closed, reduced) {
         when {
             reduced -> entrance.snapTo(1f)
-            open -> entrance.animateTo(1f, tween(900, easing = LinearEasing))
+            open -> entrance.animateTo(1f, tween(260, easing = LinearEasing))
             closed -> entrance.snapTo(0f)
         }
     }
@@ -161,7 +161,7 @@ fun SolinaDrawerContent(
             val local = ((entrance.value - index * 0.04f) / 0.4f).coerceIn(0f, 1f)
             val eased = EaseOutBack.transform(local)
             alpha = local
-            translationY = (1f - eased) * 28.dp.toPx()
+            translationY = (1f - eased) * 20.dp.toPx()
             val s = 0.94f + 0.06f * eased
             scaleX = s
             scaleY = s
@@ -328,7 +328,7 @@ private fun StorageSolina(path: String, open: Boolean, reduced: Boolean, modifie
     val used = if (total > 0L) ((total - free).toFloat() / total).coerceIn(0f, 1f) else 0f
     val fill by animateFloatAsState(
         targetValue = if (open || reduced) used else 0f,
-        animationSpec = if (reduced) snap() else tween(450),
+        animationSpec = if (reduced) snap() else tween(240),
         label = "drawer-storage-usage",
     )
     Surface(

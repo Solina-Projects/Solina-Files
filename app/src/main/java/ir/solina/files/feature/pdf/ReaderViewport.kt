@@ -13,6 +13,7 @@ import androidx.compose.foundation.gestures.calculatePan
 import androidx.compose.foundation.gestures.calculateZoom
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -48,7 +49,7 @@ class ReaderViewportState(private val sizes: FloatArray) {
     var layout by mutableStateOf<DocLayout?>(null)
         private set
     var moving by mutableStateOf(false)
-    var settledZoom by mutableStateOf(1f)
+    var settledZoom by mutableFloatStateOf(1f)
         private set
     private var pending: Triple<Int, Float, Float>? = null
 

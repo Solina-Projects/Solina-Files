@@ -74,8 +74,12 @@ object UiSounds {
     private var policy = SoundPolicy()
 
     fun play(sound: UiSound?) {
+        // Do not touch the audio device until sounds are enabled and an actual
+        // sound is requested. The application installs a lazy device delegate,
+        // so the SoundPools and samples are not created during cold start.
+        if (!enabled || sound == null) return
         val d = device ?: return
-        if (sound == null || !d.foreground) return
+        if (!d.foreground) return
         val ringer = d.ringer
         if (policy.allow(sound, enabled, ringer, clock(), inSilent)) d.play(sound, loud = ringer != RingerMode.NORMAL)
     }

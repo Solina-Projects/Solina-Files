@@ -1,7 +1,7 @@
 package ir.solina.files.core.rename
 
 import android.content.Context
-import android.media.ExifInterface
+import androidx.exifinterface.media.ExifInterface
 import android.os.Build
 import ir.solina.files.core.model.FileItem
 

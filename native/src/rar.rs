@@ -308,6 +308,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "requires RAR fixtures under app/src/test/resources/rar, which are not present in this repository"]
     fn lists_and_extracts_rar4_and_rar5() {
         let (_, entries) = list(&fixture("test_read_format_rar.rar"), None).unwrap();
         let names: Vec<_> = entries.iter().map(|e| e.name.as_str()).collect();
@@ -328,6 +329,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "requires RAR fixtures under app/src/test/resources/rar, which are not present in this repository"]
     fn passwords_missing_wrong_and_right() {
         let enc = fixture("test_read_format_rar5_encrypted.rar");
         let mut c = Collect::new();
@@ -346,6 +348,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "requires RAR fixtures under app/src/test/resources/rar, which are not present in this repository"]
     fn volumes_are_followed_from_the_first_part() {
         let mut c = Collect::new();
         assert_eq!(extract(&fixture("test_rar_multivolume_single_file.part1.rar"), None, &mut c), 0);
@@ -355,6 +358,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "requires RAR fixtures under app/src/test/resources/rar, which are not present in this repository"]
     fn the_sink_can_cancel() {
         let mut c = Collect::new();
         c.stop_after = Some(1);

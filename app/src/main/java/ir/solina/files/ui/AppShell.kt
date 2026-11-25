@@ -4,6 +4,15 @@ import android.app.Application
 import android.net.Uri
 import android.os.Environment
 import androidx.activity.compose.BackHandler
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.CancellationException
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.animate
+import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -316,11 +325,27 @@ fun AppShell(
     }
 
     BackHandler(enabled = drawerState.isOpen) { scope.launch { drawerState.close() } }
-    BackHandler(
+    // Predictive back: while the gesture is dragged the top screen shrinks and shifts
+    // away with the finger (read in graphicsLayer, so no recomposition). Releasing
+    // completes the pop (AnimatedContent then finishes the exit); cancelling springs back.
+    var backProgress by remember { mutableFloatStateOf(0f) }
+    PredictiveBackHandler(
         enabled = route == Route.Settings || route is Route.Customize || route == Route.RecycleBin || route is Route.Search || route is Route.ApkInfo ||
             route == Route.ColorPicker,
-    ) {
-        stack.pop()
+    ) { events ->
+        try {
+            events.collect { backProgress = it.progress }
+            stack.pop()
+            scope.launch {
+                delay(400)
+                backProgress = 0f
+            }
+        } catch (e: CancellationException) {
+            withContext(NonCancellable) {
+                animate(backProgress, 0f, animationSpec = spring(dampingRatio = 0.8f, stiffness = 500f)) { v, _ -> backProgress = v }
+            }
+            throw e
+        }
     }
 
     fun go(path: String) {
@@ -427,7 +452,16 @@ fun AppShell(
                     }
                     saveable.SaveableStateProvider(entry.key) {
                         CompositionLocalProvider(LocalViewModelStoreOwner provides entry) {
-                            Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                            Surface(
+                                Modifier.fillMaxSize().graphicsLayer {
+                                    val p = backProgress
+                                    val k = 1f - 0.08f * p
+                                    scaleX = k
+                                    scaleY = k
+                                    translationX = side * size.width * 0.06f * p
+                                },
+                                color = MaterialTheme.colorScheme.background,
+                            ) {
                                 Screen(entry.route, settings, settingsRepo, vm, actions)
                             }
                         }
@@ -537,9 +571,7 @@ private fun Screen(
             // Perf item 16: select only the active folder path instead of
             // subscribing to the whole explorer state, so explorer list and
             // selection changes do not recompose this screen.
-            val activeFolder by remember(vm) {
-                vm.state.map { it.activePane.path }.distinctUntilChanged()
-            }.collectAsStateWithLifecycle(vm.state.value.activePane.path)
+            val activeFolder by remember(vm) { vm.selectState { it.activePane.path } }.collectAsStateWithLifecycle()
             SettingsScreen(
                 settings = settings,
                 repo = settingsRepo,
@@ -557,9 +589,7 @@ private fun Screen(
             // Perf item 16: select only the active folder path instead of
             // subscribing to the whole explorer state, so explorer list and
             // selection changes do not recompose this screen.
-            val activeFolder by remember(vm) {
-                vm.state.map { it.activePane.path }.distinctUntilChanged()
-            }.collectAsStateWithLifecycle(vm.state.value.activePane.path)
+            val activeFolder by remember(vm) { vm.selectState { it.activePane.path } }.collectAsStateWithLifecycle()
             SettingsScreen(
                 settings = settings,
                 repo = settingsRepo,
@@ -608,9 +638,7 @@ private fun Screen(
             // Perf item 16: select only the inactive pane path instead of
             // reading the whole explorer state, so explorer changes do not
             // recompose the archive screen.
-            val otherPaneDir by remember(vm) {
-                vm.state.map { it.pane(it.inactive).path }.distinctUntilChanged()
-            }.collectAsStateWithLifecycle(vm.state.value.pane(vm.state.value.inactive).path)
+            val otherPaneDir by remember(vm) { vm.selectState { it.pane(it.inactive).path } }.collectAsStateWithLifecycle()
             ArchiveScreen(
                 path = r.path,
                 otherPaneDir = otherPaneDir,
@@ -661,9 +689,7 @@ private fun Screen(
         Route.Share -> {
             // Perf item 16: select only the active pane path instead of
             // reading the whole explorer state.
-            val currentFolder by remember(vm) {
-                vm.state.map { it.pane(it.active).path }.distinctUntilChanged()
-            }.collectAsStateWithLifecycle(vm.state.value.pane(vm.state.value.active).path)
+            val currentFolder by remember(vm) { vm.selectState { it.pane(it.active).path } }.collectAsStateWithLifecycle()
             ShareScreen(
                 currentFolder = currentFolder.takeUnless { RemoteUri.isRemote(it) }
                     ?: android.os.Environment.getExternalStorageDirectory().path,
@@ -673,9 +699,7 @@ private fun Screen(
         Route.SigningKeys -> {
             // Perf item 16: select only the active pane path instead of
             // reading the whole explorer state.
-            val exportDir by remember(vm) {
-                vm.state.map { it.pane(it.active).path }.distinctUntilChanged()
-            }.collectAsStateWithLifecycle(vm.state.value.pane(vm.state.value.active).path)
+            val exportDir by remember(vm) { vm.selectState { it.pane(it.active).path } }.collectAsStateWithLifecycle()
             SigningKeysScreen(
                 exportDir = exportDir.takeUnless { RemoteUri.isRemote(it) }
                     ?: android.os.Environment.getExternalStoragePublicDirectory(android.os.Environment.DIRECTORY_DOWNLOADS).path,
@@ -687,9 +711,7 @@ private fun Screen(
         Route.Remote -> {
             // Perf item 16: select only the active pane path instead of
             // reading the whole explorer state.
-            val localDir by remember(vm) {
-                vm.state.map { it.pane(it.active).path }.distinctUntilChanged()
-            }.collectAsStateWithLifecycle(vm.state.value.pane(vm.state.value.active).path)
+            val localDir by remember(vm) { vm.selectState { it.pane(it.active).path } }.collectAsStateWithLifecycle()
             RemoteScreen(
                 onBack = actions.pop,
                 onOpenLocalFile = { actions.openFile(FileItem.of(File(it))) },

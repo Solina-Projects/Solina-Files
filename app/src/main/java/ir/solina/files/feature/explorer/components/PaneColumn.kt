@@ -5,8 +5,12 @@ import ir.solina.files.ui.isolated
 import ir.solina.files.ui.LocalUiDensity
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
@@ -225,9 +229,26 @@ fun PaneColumn(
         // composition (FolderList's DisposableEffect), so back navigation
         // restores it exactly as before.
         key(page.path) {
+            // Direction-aware entrance: going into a folder the new list arrives from the
+            // trailing side, going up from the leading side. Only the incoming list animates
+            // (a small graphicsLayer-cheap slide + fade), so the old list is never kept alive.
+            val dirSign = if (LocalLayoutDirection.current == LayoutDirection.Rtl) -1 else 1
+            val slide = when (page.direction) {
+                NavDirection.FORWARD -> dirSign
+                NavDirection.BACK -> -dirSign
+                else -> 0
+            }
+            // MutableTransitionState(false -> true) so the entrance really plays on first
+            // composition; `visible = true` alone would show the list without animating.
+            val shown = remember { MutableTransitionState(false).apply { targetState = true } }
             AnimatedVisibility(
-                visible = true,
-                enter = fadeIn(motion.defaultEffectsSpec()),
+                visibleState = shown,
+                enter = if (slide == 0) {
+                    fadeIn(motion.defaultEffectsSpec())
+                } else {
+                    fadeIn(motion.defaultEffectsSpec()) +
+                        slideInHorizontally(motion.defaultSpatialSpec()) { w -> slide * w / 10 }
+                },
                 label = "folderFade",
                 modifier = Modifier.fillMaxSize().clipToBounds(),
             ) {
@@ -306,7 +327,11 @@ private fun FolderList(
     val hasParent = folder.path != "/"
     val offset = if (hasParent) 1 else 0
     val saved = scrollMemory[folder.path]
-    val cameFromIndex = folder.cameFrom?.let { from -> folder.items.indexOfFirst { it.path == from } } ?: -1
+    // FolderPage is rebuilt by its parent on state updates; memoize this O(n)
+    // lookup so stats/selection/progress changes don't rescan the whole folder.
+    val cameFromIndex = remember(folder.items, folder.cameFrom) {
+        folder.cameFrom?.let { from -> folder.items.indexOfFirst { it.path == from } } ?: -1
+    }
     val listState = rememberLazyListState(
         initialFirstVisibleItemIndex = saved?.first ?: (cameFromIndex + offset - 2).coerceAtLeast(0),
         initialFirstVisibleItemScrollOffset = saved?.second ?: 0,
@@ -493,7 +518,11 @@ private fun FolderGrid(
     val hasParent = folder.path != "/"
     val offset = if (hasParent) 1 else 0
     val saved = scrollMemory[folder.path]
-    val cameFromIndex = folder.cameFrom?.let { from -> folder.items.indexOfFirst { it.path == from } } ?: -1
+    // FolderPage is rebuilt by its parent on state updates; memoize this O(n)
+    // lookup so stats/selection/progress changes don't rescan the whole folder.
+    val cameFromIndex = remember(folder.items, folder.cameFrom) {
+        folder.cameFrom?.let { from -> folder.items.indexOfFirst { it.path == from } } ?: -1
+    }
     val gridState = rememberLazyGridState(
         initialFirstVisibleItemIndex = saved?.first ?: (cameFromIndex + offset - 2).coerceAtLeast(0),
         initialFirstVisibleItemScrollOffset = saved?.second ?: 0,
@@ -733,7 +762,7 @@ private fun PathHeader(
                     Box(contentAlignment = Alignment.Center) {
                         androidx.compose.animation.AnimatedContent(
                             targetState = isGrid,
-                            transitionSpec = { (fadeIn(motion.fastEffectsSpec()) + scaleIn(motion.fastSpatialSpec(), initialScale = 0.7f)).togetherWith(fadeOut(motion.fastEffectsSpec()) + scaleOut(motion.fastSpatialSpec(), targetScale = 0.7f)) },
+                            transitionSpec = { (fadeIn(motion.fastEffectsSpec()) + scaleIn(motion.fastSpatialSpec(), initialScale = 0.92f)).togetherWith(fadeOut(motion.fastEffectsSpec()) + scaleOut(motion.fastSpatialSpec(), targetScale = 0.92f)) },
                             label = "header-layout-icon",
                         ) { grid ->
                             Icon(

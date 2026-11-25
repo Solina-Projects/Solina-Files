@@ -84,6 +84,7 @@ import ir.solina.files.core.trash.RecycleBin
 import java.io.File
 import java.io.IOException
 import java.io.InputStream
+import ir.solina.files.core.nativebridge.NativeBridge
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -93,11 +94,14 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.sample
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.update
@@ -141,7 +145,15 @@ class ExplorerViewModel(
         // subfolder was pure overhead on every navigation. Pass false
         // explicitly so this still compiles if FileItem.of keeps its
         // calculateChildCount parameter.
-        local = { p -> withContext(Dispatchers.IO) { File(p).takeIf { it.isDirectory }?.listFiles()?.map { FileItem.of(it, false) } } },
+        local = { p ->
+            withContext(Dispatchers.IO) {
+                File(p).takeIf { it.isDirectory }?.let { dir ->
+                    // One native readdir+stat pass; falls back to java.io.File if native is unavailable.
+                    NativeBridge.listDirectory(dir.absolutePath)?.map { FileItem.fromNative(dir.absolutePath, it) }
+                        ?: dir.listFiles()?.map { FileItem.of(it, false) }
+                }
+            }
+        },
         root = { p -> privilegedAccess()?.let { a -> withContext(Dispatchers.IO) { a.list(p) } } },
         missing = { p -> isMissing(p) },
         fallback = { p -> if (p == "/") withContext(Dispatchers.IO) { TopLevel.probe() } else null },
@@ -152,6 +164,20 @@ class ExplorerViewModel(
         ExplorerUiState(left = PaneState(path = rootPath), right = PaneState(path = rootPath)),
     )
     val state: StateFlow<ExplorerUiState> = _state.asStateFlow()
+
+    /**
+     * Exposes a narrow, eagerly shared StateFlow for Compose consumers.
+     * The initial snapshot is read here in the ViewModel, not during
+     * composition; this also avoids rebuilding a mapped Flow on recomposition.
+     */
+    fun <T> selectState(
+        sampleMillis: Long = 0L,
+        selector: (ExplorerUiState) -> T,
+    ): StateFlow<T> {
+        val selected = state.map(selector).distinctUntilChanged()
+        val updates = if (sampleMillis > 0L) selected.sample(sampleMillis) else selected
+        return updates.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), selector(state.value))
+    }
 
     private val navJobs = mutableMapOf<Pane, Job>()
 
@@ -188,14 +214,54 @@ class ExplorerViewModel(
                     if (state.path != dirPath) state else state.copy(folderStats = state.folderStats + batch)
                 }
             }
-            for (item in items) {
-                if (!item.isDirectory || !item.canRead || "://" in item.path) continue
+            val directories = items.filter { it.isDirectory && it.canRead && "://" !in it.path }
+
+            // Prefer a single Rust walk for all direct child folders. This
+            // avoids recursively walking the same nested tree once per row.
+            val nativeBatch = calculateFolderStatsBatch(dirPath, directories)
+            if (nativeBatch != null) {
+                if (_state.value.pane(pane).path != dirPath) return@launch
+                val batch = directories.mapNotNull { item ->
+                    nativeBatch[item.name]?.let { item.path to it }
+                }.toMap()
+                if (batch.isNotEmpty()) {
+                    updatePane(pane) { state ->
+                        if (state.path != dirPath) state else state.copy(folderStats = state.folderStats + batch)
+                    }
+                }
+                return@launch
+            }
+
+            // Safe fallback for Root/unsupported native environments.
+            for (item in directories) {
                 val stats = calculateFolderStats(item.path) ?: continue
                 if (_state.value.pane(pane).path != dirPath) return@launch
                 pending[item.path] = stats
                 if (pending.size >= 8 || android.os.SystemClock.elapsedRealtime() - lastFlush >= 200) flush()
             }
             flush()
+        }
+    }
+
+    private suspend fun calculateFolderStatsBatch(
+        rootPath: String,
+        directories: List<FileItem>,
+    ): Map<String, Pair<Long, Int>>? = withContext(Dispatchers.IO) {
+        if (directories.isEmpty()) return@withContext emptyMap()
+        val token = NativeBridge.newScanToken()
+        val finished = java.util.concurrent.atomic.AtomicBoolean(false)
+        val watcher = launch {
+            try {
+                kotlinx.coroutines.awaitCancellation()
+            } finally {
+                if (!finished.get()) NativeBridge.cancelScanToken(token)
+            }
+        }
+        try {
+            NativeBridge.folderStatsBatch(rootPath, directories.map { it.name }, token)
+        } finally {
+            finished.set(true)
+            watcher.cancel()
         }
     }
 
@@ -207,6 +273,25 @@ class ExplorerViewModel(
         // swallow the CancellationException from ensureActive, so catch
         // it explicitly and rethrow.)
         try {
+            // Native walk first (single pass, no per-file JVM objects). Cancelling the
+            // coroutine flips the native token so the walk stops mid-tree.
+            val token = NativeBridge.newScanToken()
+            val finished = java.util.concurrent.atomic.AtomicBoolean(false)
+            val watcher = launch {
+                try {
+                    kotlinx.coroutines.awaitCancellation()
+                } finally {
+                    if (!finished.get()) NativeBridge.cancelScanToken(token)
+                }
+            }
+            val nativeStats = try {
+                NativeBridge.folderStats(path, token)
+            } finally {
+                finished.set(true)
+                watcher.cancel()
+            }
+            if (nativeStats != null) return@withContext nativeStats
+            ensureActive()
             var bytes = 0L
             var count = 0
             File(path).walkTopDown()

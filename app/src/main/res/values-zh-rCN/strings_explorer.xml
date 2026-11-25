@@ -232,4 +232,21 @@
     <string name="explorer_incoming_hidden">Solina 无法看到 %1$s 的存储位置</string>
     <string name="explorer_incoming_save">保存到 Download</string>
     <string name="explorer_incoming_unreadable">另一个应用不允许读取此文件</string>
+
+    <string name="explorer_pane_dual">双栏</string>
+    <string name="explorer_pane_single">单栏</string>
+    <string name="explorer_pane_dual_desc">并排显示两个窗格</string>
+    <string name="explorer_pane_single_desc">单个窗格</string>
+    <string name="explorer_quick_create_title">创建新项目</string>
+    <string name="explorer_quick_new_folder">新建文件夹</string>
+    <string name="explorer_quick_new_text_file">文本文件</string>
+    <string name="explorer_quick_new_html_file">HTML 文件</string>
+    <string name="explorer_quick_new_project">新建项目</string>
+    <string name="explorer_quick_create_close">关闭快速创建</string>
+    <string name="explorer_quick_create_open">创建文件或文件夹</string>
+    <string name="explorer_layout_list">列表布局</string>
+    <string name="explorer_layout_grid">网格布局</string>
+    <string name="explorer_density_selected">已选择：%1$s</string>
+    <string name="explorer_view_grid">网格视图</string>
+    <string name="explorer_view_list">列表视图</string>
 </resources>

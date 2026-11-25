@@ -179,6 +179,7 @@ fun VideoPlayerScreen(path: String, showHidden: Boolean, onBack: () -> Unit, vm:
     }
 }
 
+@androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)
 @Composable
 private fun AutoHideControls(player: Player, visible: Boolean, onHide: () -> Unit) {
     val playing = !rememberPlayPauseButtonState(player).showPlay

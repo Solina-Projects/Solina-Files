@@ -294,7 +294,6 @@ class RemoteViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     override fun onCleared() {
-        super.onCleared()
         runCatching { fs?.close() }
     }
 

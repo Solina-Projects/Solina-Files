@@ -117,8 +117,8 @@ fun Modifier.dropHaloBehind(anim: DropAnimation, reach: Float = 1f): Modifier {
 }
 
 @Composable
-fun DropHalo(anim: DropAnimation, anchor: Modifier, content: @Composable () -> Unit) {
-    Box(anchor.dropHaloBehind(anim).then(if (anim.hover.value > 0.5f) Modifier.testTag("drop-target") else Modifier), contentAlignment = Alignment.Center) {
+fun DropHalo(anim: DropAnimation, modifier: Modifier, content: @Composable () -> Unit) {
+    Box(modifier.dropHaloBehind(anim).then(if (anim.hover.value > 0.5f) Modifier.testTag("drop-target") else Modifier), contentAlignment = Alignment.Center) {
         content()
     }
 }

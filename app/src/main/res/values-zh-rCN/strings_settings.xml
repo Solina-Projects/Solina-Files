@@ -418,4 +418,10 @@
     <plurals name="settings_toolbar_spill_quick">
         <item quantity="other">快捷按钮最多 %1$d 个，因此 %2$s 已移到菜单</item>
     </plurals>
+
+    <string name="settings_tab_floating_bar">悬浮栏</string>
+    <string name="settings_floating_bar_note">选择要显示、放入溢出菜单或隐藏的悬浮操作。单栏和双栏模式分别使用这些设置。</string>
+
+    <string name="settings_backup_not_strata">这不是 Solina Files 设置文件</string>
+    <string name="drawer_used">已使用</string>
 </resources>
