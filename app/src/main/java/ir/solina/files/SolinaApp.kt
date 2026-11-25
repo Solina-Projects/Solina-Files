@@ -14,6 +14,7 @@ import ir.solina.files.core.media.ApkIconKeyer
 import ir.solina.files.core.remote.SafFileSystem
 import ir.solina.files.core.root.RootManager
 import ir.solina.files.core.shizuku.ShizukuManager
+import ir.solina.files.core.sound.SoundDevice
 import ir.solina.files.core.sound.SoundPoolDevice
 import ir.solina.files.core.sound.UiSounds
 import ir.solina.files.core.util.Formatters
@@ -22,6 +23,12 @@ import ir.solina.files.ui.i18n.AppLocales
 import ir.solina.files.ui.security.AppLock
 
 class SolinaFilesApp : Application(), SingletonImageLoader.Factory {
+
+    // SoundPool construction and loading 22 samples is deferred until the
+    // first enabled sound event instead of running on the application startup path.
+    private val soundDevice by lazy(LazyThreadSafetyMode.SYNCHRONIZED) {
+        SoundPoolDevice(this).also { it.trackActivities(this) }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -33,7 +40,13 @@ class SolinaFilesApp : Application(), SingletonImageLoader.Factory {
         RootManager.init(this)
         SafFileSystem.appContext = this
         runCatching { ShizukuManager.init(this) }
-        runCatching { UiSounds.device = SoundPoolDevice(this).also { it.trackActivities(this) } }
+        UiSounds.device = object : SoundDevice {
+            override val ringer get() = soundDevice.ringer
+            override val foreground get() = soundDevice.foreground
+            override fun play(sound: ir.solina.files.core.sound.UiSound, loud: Boolean) {
+                soundDevice.play(sound, loud)
+            }
+        }
     }
 
     override fun newImageLoader(context: PlatformContext): ImageLoader =
