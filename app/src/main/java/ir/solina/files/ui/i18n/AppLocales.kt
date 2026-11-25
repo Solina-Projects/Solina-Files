@@ -29,7 +29,7 @@ object AppLocales {
             activity.getSystemService(LocaleManager::class.java)?.applicationLocales =
                 if (language == AppLanguage.SYSTEM) LocaleList.getEmptyLocaleList() else LocaleList.forLanguageTags(language.tag)
         } else {
-            activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, language.tag).commit()
+            activity.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putString(KEY, language.tag).apply()
             applyTo(activity.applicationContext)
             activity.recreate()
         }
@@ -78,7 +78,7 @@ object AppLocales {
             app.getSystemService(LocaleManager::class.java)?.applicationLocales =
                 LocaleList.forLanguageTags(AppLanguage.PERSIAN.tag)
         } else {
-            prefs.edit().putString(KEY, AppLanguage.PERSIAN.tag).commit()
+            prefs.edit().putString(KEY, AppLanguage.PERSIAN.tag).apply()
             applyTo(app)
         }
     }
