@@ -13,12 +13,14 @@ val keystoreProperties = Properties().apply {
 }
 val hasReleaseKeystore = keystorePropertiesFile.exists()
 
-// Use the checked-in app icon asset so PR merge checkouts and clean CI builds
-// do not depend on a root-level image that may be absent from the merge tree.
+// Keep generated launcher artwork under build/ and register its resource
+// directory up front so AGP can see it during resource merging on clean CI builds.
+val generatedSolinaIconRes = layout.buildDirectory.dir("generated/solinaLauncher/res")
 val syncSolinaLauncherIcon = tasks.register<Copy>("syncSolinaLauncherIcon") {
     from(rootProject.file("docs/solina_files_icon_512.png"))
-    into(layout.projectDirectory.dir("src/main/res/drawable-nodpi"))
+    into(generatedSolinaIconRes.map { it.dir("drawable-nodpi") })
     rename { "solina_project_icon.png" }
+    outputs.file(generatedSolinaIconRes.map { it.file("drawable-nodpi/solina_project_icon.png") })
 }
 
 // Redesign v2: fetch Vazirmatn TTFs into src/main/res/font/ before the build,
@@ -35,7 +37,16 @@ tasks.named("preBuild").configure {
     dependsOn(syncSolinaLauncherIcon, fetchVazirmatn)
 }
 
+// Resource merge tasks must wait for the generated icon file to exist.
+tasks.configureEach {
+    if (name.startsWith("merge") && name.endsWith("Resources")) {
+        dependsOn(syncSolinaLauncherIcon)
+    }
+}
+
 android {
+    sourceSets.getByName("main").res.srcDir(generatedSolinaIconRes)
+
     namespace = "ir.solina.files"
 
     compileSdk {
