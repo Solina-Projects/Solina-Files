@@ -70,6 +70,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -457,7 +458,7 @@ private fun ClassPage(s: DexUiState, vm: DexViewModel, snackbar: SnackbarHostSta
     val editing = s.editable && s.editing && smali
     var finding by remember { mutableStateOf(false) }
     var findSeed by remember { mutableStateOf(SearchQuery("")) }
-    var findKey by remember { mutableStateOf(0L) }
+    var findKey by remember { mutableLongStateOf(0L) }
     var members by remember { mutableStateOf(false) }
     val state by rememberUpdatedState(s)
 
